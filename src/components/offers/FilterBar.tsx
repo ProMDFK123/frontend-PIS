@@ -40,7 +40,7 @@ export default function FilterBar({ text, setText, type, setType, sort, setSort 
                 >
                     <option value="recientes">Ordenar: más recientes</option>
                     <option value="fecha">Ordenar: fecha límite</option>
-                    <option value="monto">Ordenar: precio más bajo</option>
+                    <option value="monto">Ordenar: precio/remuneración (menor primero)</option>
                 </select>
             </div>
         </div>

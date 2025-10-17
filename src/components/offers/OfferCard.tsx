@@ -1,82 +1,117 @@
 // components/offers/OfferCard.tsx
+import Link from "next/link";
+
 export type Offer = {
   id: string;
   title: string;
   type: "Trabajo" | "CompraVenta";
   image: string;
 
-  // 👇 campos visibles en la card
-  deadline: string;   // fecha límite de postulación (YYYY-MM-DD)
-  duration?: string;  // duración del trabajo (texto libre, opcional)
-  stipend: number;    // remuneración CLP (0 si no aplica)
+  // Trabajo
+  deadline?: string;
+  duration?: string;
 
-  // 👇 campos internos (para ordenar/recientes)
-  postedAt: string;   // YYYY-MM-DD
+  // Ambos
+  stipend: number;
 
-  // ❌ intencionalmente removidos del UI: area, company, location
+  // meta
+  postedAt: string;
+  owner?: string; // opcional, si luego quieres mostrar oferente/vendedor
 };
 
 function peso(clp: number) {
   if (clp <= 0) return "No disponible";
-  return clp.toLocaleString("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 });
+  return clp.toLocaleString("es-CL", {
+    style: "currency",
+    currency: "CLP",
+    maximumFractionDigits: 0,
+  });
 }
 
 export default function OfferCard({ offer }: { offer: Offer }) {
-  const { title, type, image, deadline, duration, stipend } = offer;
+  const { id, title, type, image, deadline, duration, stipend, owner } = offer;
+  const isJob = type === "Trabajo";
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
-      <div className="h-44 w-full overflow-hidden">
-        <img src={image} alt={title} className="h-full w-full object-cover" />
-      </div>
-
-      <div className="p-4">
-        {/* Etiqueta “tipo” muy sutil */}
-        <div className="mb-2">
-          <span className="inline-flex items-center rounded-full bg-[var(--chip)] px-3 py-1 text-xs font-medium text-[var(--ink)]/80">
-            {type === "Trabajo" ? "Oferta de trabajo" : "Compra/venta"}
-          </span>
+    <Link
+      href={`/offers/${id}`}
+      className="group block focus:outline-none"
+      aria-label={`Ver detalles de ${title}`}
+    >
+      <article
+        className="
+          relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]
+          shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg
+          focus-visible:ring-[3px] focus-visible:ring-[var(--ring)]
+        "
+      >
+        <div className="h-44 w-full overflow-hidden">
+          <img src={image} alt={title} className="h-full w-full object-cover transition group-hover:scale-[1.02]" />
         </div>
 
-        <h3 className="text-lg font-extrabold text-[var(--ink)]">{title}</h3>
-
-        <ul className="mt-3 space-y-2 text-[var(--muted-ink)] text-sm">
-          <li className="flex items-center gap-2">
-            <span>⏰</span>
-            <span>
-              Postula hasta:{" "}
-              <strong className="text-[var(--ink)]">
-                {new Date(deadline).toLocaleDateString("es-CL")}
-              </strong>
+        <div className="p-4">
+          <div className="mb-2">
+            <span className="inline-flex items-center rounded-full bg-[var(--chip)] px-3 py-1 text-xs font-medium text-[var(--ink)]/80">
+              {isJob ? "Oferta de trabajo" : "Compra/venta"}
             </span>
-          </li>
+          </div>
 
-          {duration && (
+          <h3 className="text-lg font-extrabold text-[var(--ink)]">{title}</h3>
+
+          <ul className="mt-3 space-y-2 text-[var(--muted-ink)] text-sm">
+            {isJob && deadline && (
+              <li className="flex items-center gap-2">
+                <span>⏰</span>
+                <span>
+                  Postula hasta:{" "}
+                  <strong className="text-[var(--ink)]">
+                    {new Date(deadline).toLocaleDateString("es-CL")}
+                  </strong>
+                </span>
+              </li>
+            )}
+
+            {isJob && duration && (
+              <li className="flex items-center gap-2">
+                <span>🗓️</span>
+                <span>
+                  Duración: <strong className="text-[var(--ink)]">{duration}</strong>
+                </span>
+              </li>
+            )}
+
             <li className="flex items-center gap-2">
-              <span>🗓️</span>
+              <span>💰</span>
               <span>
-                Duración: <strong className="text-[var(--ink)]">{duration}</strong>
+                {isJob ? "Remuneración" : "Precio"}:{" "}
+                <strong className="text-[var(--ink)]">{peso(stipend)}</strong>
               </span>
             </li>
-          )}
 
-          <li className="flex items-center gap-2">
-            <span>💰</span>
-            <span>
-              Remuneración: <strong className="text-[var(--ink)]">{peso(stipend)}</strong>
+            {owner && (
+              <li className="flex items-center gap-2">
+                <span>👤</span>
+                <span>
+                  {isJob ? "Oferente" : "Vendedor"}:{" "}
+                  <strong className="text-[var(--ink)]">{owner}</strong>
+                </span>
+              </li>
+            )}
+          </ul>
+
+          {/* CTA visual (no es <a>, para evitar anidar enlaces) */}
+          <div className="mt-4">
+            <span
+              className="
+                inline-flex items-center justify-center rounded-xl px-4 py-2 text-[15px] font-semibold text-white
+                bg-[var(--primary)] hover:opacity-95 transition
+              "
+            >
+              Ver detalles
             </span>
-          </li>
-        </ul>
-
-        <div className="mt-4">
-          <button
-            className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-[15px] font-semibold text-white
-                       bg-[var(--primary)] hover:opacity-95 transition"
-          >
-            Ver detalles
-          </button>
+          </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </Link>
   );
 }
