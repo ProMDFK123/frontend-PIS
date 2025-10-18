@@ -30,7 +30,8 @@ export default function RegisterPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-blue-500 text-center px-4">
+    <div className="min-h-screen flex flex-col justify-center items-center 
+    bg-blue-500 text-center px-4">
       {/* Logo */}
       <div className="relative w-24 h-24 mb-4">
         <Image
@@ -53,7 +54,8 @@ export default function RegisterPage() {
             <button
               key={role.id}
               onClick={() => router.push(`/register/${role.id}`)}
-              className="w-full py-3 px-4 rounded-xl border border-gray-300 hover:bg-blue-50 font-medium transition"
+              className="w-full py-3 px-4 rounded-xl border border-gray-300 
+              hover:bg-blue-50 font-medium transition"
             >
               {role.title}
             </button>
@@ -75,7 +77,8 @@ export default function RegisterPage() {
       {/* Botón volver */}
       <button
         onClick={() => router.push("/")}
-        className="mt-6 px-6 py-2 rounded-full border border-white text-white hover:bg-white hover:text-blue-600 transition"
+        className="mt-6 px-6 py-2 rounded-full border border-white text-white 
+        hover:bg-white hover:text-blue-600 transition"
       >
         ← Volver
       </button>

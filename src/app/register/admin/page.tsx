@@ -45,13 +45,14 @@ export default function RegisterAdminPage() {
       {/* Contenido Principal con Fondo */}
       <main
         className="flex-grow flex items-center justify-center bg-cover bg-center"
-        // Asegúrate de que tienes una imagen en public/ucnferia.png o cámbiala por la ruta correcta
         style={{ backgroundImage: "url('/ucnferia.png')" }} 
       >
         {/* Capa de Oscurecimiento y Desenfoque*/}
-        <div className="flex-grow flex items-center justify-center bg-green-900/40 backdrop-blur-sm p-4 w-full h-full">
+        <div className="flex-grow flex items-center justify-center 
+        bg-green-900/40 backdrop-blur-sm p-4 w-full h-full">
           {/* Contenedor del Formulario (Tarjeta) */}
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative animate-in zoom-in duration-300">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md 
+          relative animate-in zoom-in duration-300">
             
             {/* Contenido interno de la Tarjeta */}
             <div className="p-8 sm:p-10">
@@ -61,7 +62,8 @@ export default function RegisterAdminPage() {
                 <button
                   type="button"
                   onClick={() => router.back()}
-                  className="text-gray-500 hover:text-blue-700 transition mr-4 p-2 -ml-2 rounded-full hover:bg-gray-100"
+                  className="text-gray-500 hover:text-blue-700 transition mr-4 
+                  p-2 -ml-2 rounded-full hover:bg-gray-100"
                   aria-label="Volver"
                 >
                   <ArrowLeft size={24} />
@@ -90,7 +92,8 @@ export default function RegisterAdminPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Nombre */}
                 <div>
-                  <label htmlFor="nombre" className="text-sm font-medium text-gray-700 block mb-1">
+                  <label htmlFor="nombre" className="text-sm font-medium 
+                  text-gray-700 block mb-1">
                     Nombre
                   </label>
                   <input
@@ -101,13 +104,16 @@ export default function RegisterAdminPage() {
                     onChange={handleChange}
                     placeholder="Juan Perez"
                     required
-                    className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150"
+                    className="w-full border border-gray-300 rounded-lg p-3 
+                    text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    transition duration-150"
                   />
                 </div>
 
                 {/* Correo */}
                 <div>
-                  <label htmlFor="correo" className="text-sm font-medium text-gray-700 block mb-1">
+                  <label htmlFor="correo" className="text-sm font-medium 
+                  text-gray-700 block mb-1">
                     Correo
                   </label>
                   <input
@@ -118,13 +124,16 @@ export default function RegisterAdminPage() {
                     value={formData.correo}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150"
+                    className="w-full border border-gray-300 rounded-lg p-3 
+                    text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    transition duration-150"
                   />
                 </div>
 
                 {/* RUT */}
                 <div>
-                  <label htmlFor="rut" className="text-sm font-medium text-gray-700 block mb-1">
+                  <label htmlFor="rut" className="text-sm font-medium 
+                  text-gray-700 block mb-1">
                     RUT
                   </label>
                   <input
@@ -135,13 +144,16 @@ export default function RegisterAdminPage() {
                     value={formData.rut}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150"
+                    className="w-full border border-gray-300 rounded-lg p-3 
+                    text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    transition duration-150"
                   />
                 </div>
 
                 {/* Teléfono */}
                 <div>
-                  <label htmlFor="telefono" className="text-sm font-medium text-gray-700 block mb-1">
+                  <label htmlFor="telefono" className="text-sm font-medium 
+                  text-gray-700 block mb-1">
                     Teléfono
                   </label>
                   <input
@@ -152,13 +164,16 @@ export default function RegisterAdminPage() {
                     value={formData.telefono}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150"
+                    className="w-full border border-gray-300 rounded-lg p-3 
+                    text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    transition duration-150"
                   />
                 </div>
 
                 {/* Contraseña */}
                 <div>
-                  <label htmlFor="password" className="text-sm font-medium text-gray-700 block mb-1">
+                  <label htmlFor="password" className="text-sm font-medium 
+                  text-gray-700 block mb-1">
                     Contraseña
                   </label>
                   <input
@@ -168,13 +183,16 @@ export default function RegisterAdminPage() {
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150"
+                    className="w-full border border-gray-300 rounded-lg p-3 
+                    text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    transition duration-150"
                   />
                 </div>
 
                 {/* Repetir Contraseña */}
                 <div>
-                  <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 block mb-1">
+                  <label htmlFor="confirmPassword" className="text-sm font-medium 
+                  text-gray-700 block mb-1">
                     Repetir Contraseña
                   </label>
                   <input
@@ -184,14 +202,17 @@ export default function RegisterAdminPage() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150"
+                    className="w-full border border-gray-300 rounded-lg p-3 
+                    text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    transition duration-150"
                   />
                 </div>
 
                 {/* Botón Crear Cuenta */}
                 <button
                   type="submit"
-                  className="w-full text-white rounded-lg py-3 font-semibold transition duration-150 hover:opacity-90 shadow-md hover:shadow-lg mt-6"
+                  className="w-full text-white rounded-lg py-3 font-semibold 
+                  transition duration-150 hover:opacity-90 shadow-md hover:shadow-lg mt-6"
                   style={{ backgroundColor: PRIMARY_COLOR }}
                 >
                   Crear Cuenta

@@ -41,9 +41,10 @@ export default function RegisterParticularPage() {
         className="flex-grow flex items-center justify-center bg-cover bg-center"
         style={{ backgroundImage: "url('/ucnferia.png')" }} 
       >
-        {/* Capa de Oscurecimiento AZUL/CELESTE y Desenfoque */}
+        {/* Capa de Oscurecimiento y Desenfoque */}
         <div 
-          className="flex-grow flex items-center justify-center backdrop-blur-sm p-4 w-full h-full"
+          className="flex-grow flex items-center justify-center backdrop-blur-sm 
+          p-4 w-full h-full"
           style={{ backgroundColor: OVERLAY_COLOR }} 
         >
           {/* Contenedor del Formulario (Tarjeta) */}
@@ -73,7 +74,8 @@ export default function RegisterParticularPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Nombre */}
                 <div>
-                  <label htmlFor="nombre" className="text-sm font-medium text-gray-700 block mb-1">
+                  <label htmlFor="nombre" className="text-sm font-medium 
+                  text-gray-700 block mb-1">
                     Nombre
                   </label>
                   <input
@@ -84,13 +86,15 @@ export default function RegisterParticularPage() {
                     onChange={handleChange}
                     placeholder="Juan Pérez"
                     required
-                    className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md p-2 
+                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
 
                 {/* RUT */}
                 <div>
-                  <label htmlFor="rut" className="text-sm font-medium text-gray-700 block mb-1">
+                  <label htmlFor="rut" className="text-sm font-medium 
+                  text-gray-700 block mb-1">
                     RUT
                   </label>
                   <input
@@ -101,13 +105,15 @@ export default function RegisterParticularPage() {
                     value={formData.rut}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md p-2 
+                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
 
                 {/* Correo */}
                 <div>
-                  <label htmlFor="correo" className="text-sm font-medium text-gray-700 block mb-1">
+                  <label htmlFor="correo" className="text-sm font-medium 
+                  text-gray-700 block mb-1">
                     Correo
                   </label>
                   <input
@@ -118,13 +124,15 @@ export default function RegisterParticularPage() {
                     value={formData.correo}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md p-2 
+                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
 
                 {/* Teléfono */}
                 <div>
-                  <label htmlFor="telefono" className="text-sm font-medium text-gray-700 block mb-1">
+                  <label htmlFor="telefono" className="text-sm font-medium 
+                  text-gray-700 block mb-1">
                     Teléfono
                   </label>
                   <input
@@ -135,13 +143,15 @@ export default function RegisterParticularPage() {
                     value={formData.telefono}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md p-2 
+                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
 
                 {/* Contraseña */}
                 <div>
-                  <label htmlFor="password" className="text-sm font-medium text-gray-700 block mb-1">
+                  <label htmlFor="password" className="text-sm font-medium 
+                  text-gray-700 block mb-1">
                     Contraseña
                   </label>
                   <input
@@ -151,13 +161,15 @@ export default function RegisterParticularPage() {
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md p-2 
+                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
 
                 {/* Repetir Contraseña */}
                 <div>
-                  <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 block mb-1">
+                  <label htmlFor="confirmPassword" className="text-sm font-medium 
+                  text-gray-700 block mb-1">
                     Repetir Contraseña
                   </label>
                   <input
@@ -167,14 +179,16 @@ export default function RegisterParticularPage() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md p-2 
+                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
 
                 {/* Botón Crear Cuenta */}
                 <button
                   type="submit"
-                  className="w-full text-white rounded-md py-2 font-medium transition mt-6"
+                  className="w-full text-white rounded-md py-2 font-medium 
+                  transition mt-6"
                   style={{ backgroundColor: PRIMARY_COLOR }}
                 >
                   Crear Cuenta
