@@ -1,12 +1,12 @@
 type Props = {
-    text: string;
-    setText: (v: string) => void;
+  text: string;
+  setText: (v: string) => void;
 
-    type: "Todos" | "Trabajo" | "CompraVenta";
-    setType: (v: "Todos" | "Trabajo" | "CompraVenta") => void;
+  type: "Todos" | "Trabajo" | "Voluntariado" | "CompraVenta";
+  setType: (v: "Todos" | "Trabajo" | "Voluntariado" | "CompraVenta") => void;
 
-    sort: "recientes" | "fecha" | "monto";
-    setSort: (v: "recientes" | "fecha" | "monto") => void;
+  sort: "recientes" | "fecha" | "monto";
+  setSort: (v: "recientes" | "fecha" | "monto") => void;
 };
 
 export default function FilterBar({ text, setText, type, setType, sort, setSort }: Props) {
@@ -23,13 +23,14 @@ export default function FilterBar({ text, setText, type, setType, sort, setSort 
 
                 {/* Tipo */}
                 <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value as Props["type"])}
-                    className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-2 outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--ring)]"
+                value={type}
+                onChange={(e) => setType(e.target.value as Props["type"])}
+                className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-2 outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--ring)]"
                 >
-                    <option>Todos</option>
-                    <option>Trabajo</option>
-                    <option>CompraVenta</option>
+                <option>Todos</option>
+                <option>Trabajo</option>
+                <option>Voluntariado</option>
+                <option>CompraVenta</option>
                 </select>
 
                 {/* Ordenar por */}
