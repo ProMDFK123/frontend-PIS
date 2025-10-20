@@ -10,11 +10,13 @@ export default function RegisterAdminPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     nombre: "",
+    apellido: "",
     correo: "",
     rut: "",
     telefono: "",
     password: "",
     confirmPassword: "",
+    superAdmin: false,
   });
 
   const [message, setMessage] = useState({ type: '', text: '' }); // Para mensajes de error/éxito
@@ -24,20 +26,52 @@ export default function RegisterAdminPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setMessage({ type: '', text: '' }); // Limpiar mensajes
 
-    // Validaciones
     if (formData.password !== formData.confirmPassword) {
-      setMessage({ type: 'error', text: 'Las contraseñas no coinciden.' });
+      alert("Las contraseñas no coinciden.");
       return;
     }
-    
-    console.log("Datos de administrador enviados:", formData);
-    setMessage({ type: 'success', text: 'Formulario enviado. Revisar consola para datos.' });
-    
-    // Aquí se haría el POST a tu backend
+
+    try {
+      const payload = {
+        Email: formData.correo,
+        Password: formData.password,
+        ConfirmPassword: formData.confirmPassword,
+        Name: formData.nombre,
+        LastName: formData.apellido,
+        Rut: formData.rut,
+        PhoneNumber: formData.telefono,
+        SuperAdmin: formData.superAdmin,
+      };
+
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5185/api";
+
+      const response = await fetch(`${API_URL}/auth/register/admin`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error en el registro:", errorData);
+        alert(errorData.message || "Error al registrar administrador.");
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Registro exitoso:", data);
+      alert(data.message || "Administrador registrado con éxito.");
+      router.push("/"); // o la ruta que prefieras
+
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      alert("No se pudo conectar con el servidor. Intenta nuevamente más tarde.");
+    }
   };
 
   return (
@@ -206,6 +240,22 @@ export default function RegisterAdminPage() {
                     text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
                     transition duration-150"
                   />
+                </div>
+
+                {/* SuperAdmin */}
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="superAdmin"
+                    name="superAdmin"
+                    checked={formData.superAdmin}
+                    onChange={(e) => 
+                      setFormData((prev) => ({ ...prev, superAdmin: e.target.checked}))
+                    }
+                  />
+                  <label htmlFor="superAdmin" className="text-sm text-gray-700">
+                    ¿Es SuperAdmin?
+                  </label>
                 </div>
 
                 {/* Botón Crear Cuenta */}

@@ -12,24 +12,68 @@ export default function RegisterStudentPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     nombre: "",
-    email: "", // Manteniendo 'email' para el formato @alumnos.ucn.cl
+    apellido: "",
+    email: "",
     rut: "",
     telefono: "",
     password: "",
     confirmPassword: "",
+    discapacidad: "Ninguna",
   });
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("Datos enviados:", formData);
+
     if (formData.password !== formData.confirmPassword) {
-      console.error("Las contraseñas no coinciden.");
+      alert("Las contraseñas no coinciden.");
       return;
+    }
+
+    try {
+      const fullEmail = `${formData.email}@alumnos.ucn.cl`;
+
+      const payload = {
+        Name: formData.nombre,
+        LastName: formData.apellido,
+        Email: fullEmail,
+        Rut: formData.rut,
+        PhoneNumber: formData.telefono,
+        Password: formData.password,
+        ConfirmPassword: formData.confirmPassword,
+        Disability: formData.discapacidad,
+      };
+
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5185/api';
+
+      const response = await fetch(`${API_URL}/register/student`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error en el registro:", errorData);
+        alert(errorData.Message || "Error al registrarse. Por favor, inténtalo de nuevo.");
+        return;
+      }
+
+      const data = await response.json();
+      alert(data.Message || "Registro exitoso.");
+
+      router.push("/");
+    }catch (error) {
+      console.error("Error con la solicitud:", error);
+      alert("No se pudo conectar con el servidor. Por favor, inténtalo de nuevo más tarde.");
     }
   };
 
@@ -83,9 +127,28 @@ export default function RegisterStudentPage() {
                     name="nombre"
                     value={formData.nombre}
                     onChange={handleChange}
-                    placeholder="Juan Pérez"
+                    placeholder="Juan"
                     required
                     className="w-full border border-gray-300 rounded-md p-2 
+                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Apellido */}
+                <div>
+                  <label htmlFor="apellido" className="text-sm font-medium 
+                  text-gray-700 block mb-1">
+                    Apellido
+                  </label>
+                  <input
+                    id="apellido"
+                    type="text"
+                    name="apellido"
+                    value={formData.apellido}
+                    onChange={handleChange}
+                    placeholder="Peréz"
+                    required
+                    className="w-full border border-gray-300 rounded-md p-2
                     text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
@@ -109,7 +172,8 @@ export default function RegisterStudentPage() {
                       text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                     <span className="border border-l-0 border-gray-300 
-                    rounded-r-md p-2 bg-gray-100 text-gray-600 text-sm flex items-center">
+                    rounded-r-md p-2 bg-gray-100 text-gray-600 text-sm flex 
+                    items-center">
                       @alumnos.ucn.cl
                     </span>
                   </div>
@@ -187,6 +251,30 @@ export default function RegisterStudentPage() {
                     className="w-full border border-gray-300 rounded-md p-2 
                     text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
+                </div>
+
+                {/* Discapacidad */}
+                <div>
+                  <label htmlFor="discapacidad" className="text-sm font-medium
+                  text-gray-700 block mb-1">
+                    Discapacidad
+                  </label>
+                  <select
+                    id="discapacidad"
+                    name="discapacidad"
+                    value={formData.discapacidad}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-300 rounded-md p-2
+                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="Ninguna">Ninguna</option>
+                    <option value="Visual">Visual</option>
+                    <option value="Auditiva">Auditiva</option>
+                    <option value="Motora">Motora</option>
+                    <option value="Cognitiva">Cognitiva</option>
+                    <option value="Otra">Otra</option>
+                  </select>
                 </div>
 
                 {/* Botón Crear Cuenta */}

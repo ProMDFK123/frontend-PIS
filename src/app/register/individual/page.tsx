@@ -12,6 +12,7 @@ export default function RegisterParticularPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     nombre: "",
+    apellido: "",
     rut: "",
     correo: "",
     telefono: "",
@@ -24,14 +25,52 @@ export default function RegisterParticularPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
     console.log("Datos enviados:", formData);
+
     if (formData.password !== formData.confirmPassword) {
       console.error("Las contraseñas no coinciden.");
       return;
     }
-    // Lógica de registro para particular...
+    
+    try{
+      const payload = {
+        Name: formData.nombre,
+        LastName: formData.apellido,
+        Email: formData.correo,
+        Rut: formData.rut,
+        PhoneNumber: formData.telefono,
+        Password: formData.password,
+        ConfirmPassword: formData.confirmPassword,
+      };
+
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5185/api';
+
+      const response = await fetch(`${API_URL}/register/individual`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error en el registro:", errorData);
+        alert(errorData.Message || "Error al registrarse. Por favor, inténtalo de nuevo.");
+        return;
+      }
+
+      const data = await response.json();
+      alert(data.Message || "Registro exitoso.");
+
+      router.push("/");
+    }catch(error){
+      console.error("Error con la solicitud:", error);
+      alert("No se pudo conectar con el servidor. Por favor, inténtalo de nuevo más tarde.");
+    }
   };
 
   return (
