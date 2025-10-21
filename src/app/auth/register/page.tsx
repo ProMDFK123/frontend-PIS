@@ -53,7 +53,7 @@ export default function RegisterPage() {
           {roles.map((role) => (
             <button
               key={role.id}
-              onClick={() => router.push(`/register/${role.id}`)}
+              onClick={() => router.push(`/auth/register/${role.id}`)}
               className="w-full py-3 px-4 rounded-xl border border-gray-300 
               hover:bg-blue-50 font-medium transition"
             >

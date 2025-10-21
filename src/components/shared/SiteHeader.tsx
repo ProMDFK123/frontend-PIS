@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const links = [
   { href: "/", label: "Inicio" },
   { href: "/offers", label: "Explorar" },
-  { href: "/login", label: "Ingresar", accented: true },
+  { href: "/auth/login", label: "Ingresar", accented: true },
 ];
 
 export default function SiteHeader() {
