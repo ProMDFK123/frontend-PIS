@@ -66,7 +66,7 @@ export default function RegisterAdminPage() {
       const data = await response.json();
       console.log("Registro exitoso:", data);
       alert(data.message || "Administrador registrado con éxito.");
-      router.push("/");
+      router.push("/auth/verify-email");
 
     } catch (error) {
       console.error("Error en la solicitud:", error);

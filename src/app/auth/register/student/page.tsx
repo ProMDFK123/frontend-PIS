@@ -70,7 +70,7 @@ export default function RegisterStudentPage() {
       const data = await response.json();
       alert(data.Message || "Registro exitoso.");
 
-      router.push("/");
+      router.push("/auth/verify-email");
     }catch (error) {
       console.error("Error con la solicitud:", error);
       alert("No se pudo conectar con el servidor. Por favor, inténtalo de nuevo más tarde.");
