@@ -1,13 +1,17 @@
 "use client"
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+
+import { useRouter, useSearchParams } from "next/navigation";
 import Cookies from "js-cookie";
 import { loginUser } from "@/services/authService";
 import type { LoginRequestDto } from "@/services/dtos/authDto";
 
 export default function LoginPage() {
     const router = useRouter();
+    const sp = useSearchParams();
+    const returnTo = sp?.get("returnTo") || "/";
+    const msg = sp?.get("msg");
 
     const [form, setForm] = useState({
         correo: "",
@@ -20,8 +24,8 @@ export default function LoginPage() {
     // Redirección automática si ya hay token
     useEffect(() => {
         const token = Cookies.get("token");
-        if (token) router.push("/"); // Redirige al home
-    }, [router]);
+        if (token) if (token) router.replace(returnTo);     //  vuelve a la ruta original si ya hay token
+    }, [router, returnTo]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
@@ -54,7 +58,7 @@ export default function LoginPage() {
             Cookies.set("token", response.token, { expires: form.rememberMe ? 7 : undefined });
 
             alert(response.message || "Inicio de sesión exitoso.");
-            router.push("/");
+            router.replace(returnTo); // regresar a la página que quiso ver
         } catch (err) {
             console.error("Error al iniciar sesión: ", err);
             setError("No se pudo conectar con el servidor. Intente más tarde.");
@@ -79,6 +83,12 @@ export default function LoginPage() {
                 <h2 className="text-2xl font-semibold text-white mt-16 mb-6">
                     Inicio de Sesión
                 </h2>
+                {/* Banner de aviso */}
+                {msg === "login_required" && (
+                    <div className="w-full mb-4 rounded-xl border border-blue-300 bg-blue-50/90 text-blue-800 px-3 py-2 text-sm">
+                        Tienes que iniciar sesión primero.
+                    </div>
+                )}
 
                 {/* Formulario */}
                 <form onSubmit={handleSubmit} className="w-full space-y-4">
