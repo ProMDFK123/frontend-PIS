@@ -4,26 +4,24 @@ import { useState, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-// Colores
-const PRIMARY_COLOR = "#2C3E90"; // Color del botón
-const OVERLAY_COLOR = "rgba(64, 64, 48, 0.4)"; // Color de la capa de opacidad.
+const PRIMARY_COLOR = "#2C3E90"; // Color principal del botón
 
-export default function RegisterStudentPage() {
+export default function RegisterAdminPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
-    email: "",
+    correo: "",
     rut: "",
     telefono: "",
     password: "",
     confirmPassword: "",
-    discapacidad: "Ninguna",
+    superAdmin: false,
   });
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const [message, setMessage] = useState({ type: '', text: '' }); // Para mensajes de error/éxito
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -37,22 +35,20 @@ export default function RegisterStudentPage() {
     }
 
     try {
-      const fullEmail = `${formData.email}@alumnos.ucn.cl`;
-
       const payload = {
-        Name: formData.nombre,
-        LastName: formData.apellido,
-        Email: fullEmail,
-        Rut: formData.rut,
-        PhoneNumber: formData.telefono,
+        Email: formData.correo,
         Password: formData.password,
         ConfirmPassword: formData.confirmPassword,
-        Disability: formData.discapacidad,
+        Name: formData.nombre,
+        LastName: formData.apellido,
+        Rut: formData.rut,
+        PhoneNumber: formData.telefono,
+        SuperAdmin: formData.superAdmin,
       };
 
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5185/api';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5185/api";
 
-      const response = await fetch(`${API_URL}/register/student`, {
+      const response = await fetch(`${API_URL}/auth/register/admin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,55 +59,68 @@ export default function RegisterStudentPage() {
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Error en el registro:", errorData);
-        alert(errorData.Message || "Error al registrarse. Por favor, inténtalo de nuevo.");
+        alert(errorData.message || "Error al registrar administrador.");
         return;
       }
 
       const data = await response.json();
-      alert(data.Message || "Registro exitoso.");
+      console.log("Registro exitoso:", data);
+      alert(data.message || "Administrador registrado con éxito.");
+      router.push("/auth/verify-email");
 
-      router.push("/");
-    }catch (error) {
-      console.error("Error con la solicitud:", error);
-      alert("No se pudo conectar con el servidor. Por favor, inténtalo de nuevo más tarde.");
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      alert("No se pudo conectar con el servidor. Intenta nuevamente más tarde.");
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Contenido Principal con Fondo y Capa Cálida */}
+    <div className="min-h-screen flex flex-col font-sans bg-gray-100">
+      {/* Contenido Principal con Fondo */}
       <main
         className="flex-grow flex items-center justify-center bg-cover bg-center"
         style={{ backgroundImage: "url('/ucnferia.png')" }} 
       >
-        {/* Capa de Oscurecimiento y Desenfoque */}
-        <div 
-          className="flex-grow flex items-center justify-center backdrop-blur-sm 
-          p-4 w-full h-full"
-          style={{ backgroundColor: OVERLAY_COLOR }} 
-        >
+        {/* Capa de Oscurecimiento y Desenfoque*/}
+        <div className="flex-grow flex items-center justify-center 
+        bg-green-900/40 backdrop-blur-sm p-4 w-full h-full">
           {/* Contenedor del Formulario (Tarjeta) */}
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md relative">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md 
+          relative animate-in zoom-in duration-300">
             
             {/* Contenido interno de la Tarjeta */}
-            <div className="p-8">
+            <div className="p-8 sm:p-10">
               {/* Contenedor del Título con Flecha */}
               <div className="flex items-center justify-start pb-4">
                 {/* Botón Volver (Flecha Izquierda) */}
                 <button
                   type="button"
                   onClick={() => router.back()}
-                  className="text-gray-500 hover:text-gray-800 transition mr-4"
+                  className="text-gray-500 hover:text-blue-700 transition mr-4 
+                  p-2 -ml-2 rounded-full hover:bg-gray-100"
                   aria-label="Volver"
                 >
                   <ArrowLeft size={24} />
                 </button>
                 {/* Título */}
-                <h2 className="text-xl font-medium text-gray-800">
-                  Registro estudiantes
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Registro de Administrador
                 </h2>
               </div>
-              <hr className="mb-6"/>
+              <hr className="mb-6 border-gray-200"/>
+
+              {/* Mensajes de Alerta */}
+              {message.text && (
+                <div 
+                  className={`p-3 mb-4 rounded-lg text-sm font-medium ${
+                    message.type === 'error' ? 'bg-red-100 text-red-700 border border-red-300' : 
+                    'bg-green-100 text-green-700 border border-green-300'
+                  }`}
+                  role="alert"
+                >
+                  {message.text}
+                </div>
+              )}
 
               {/* Formulario */}
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -127,56 +136,32 @@ export default function RegisterStudentPage() {
                     name="nombre"
                     value={formData.nombre}
                     onChange={handleChange}
-                    placeholder="Juan"
+                    placeholder="Juan Perez"
                     required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg p-3 
+                    text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    transition duration-150"
                   />
                 </div>
 
-                {/* Apellido */}
+                {/* Correo */}
                 <div>
-                  <label htmlFor="apellido" className="text-sm font-medium 
+                  <label htmlFor="correo" className="text-sm font-medium 
                   text-gray-700 block mb-1">
-                    Apellido
+                    Correo
                   </label>
                   <input
-                    id="apellido"
-                    type="text"
-                    name="apellido"
-                    value={formData.apellido}
+                    id="correo"
+                    type="email"
+                    name="correo"
+                    placeholder="correo@ucn.cl"
+                    value={formData.correo}
                     onChange={handleChange}
-                    placeholder="Peréz"
                     required
-                    className="w-full border border-gray-300 rounded-md p-2
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg p-3 
+                    text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    transition duration-150"
                   />
-                </div>
-
-                {/* Correo Electrónico (con sufijo @alumnos.ucn.cl) */}
-                <div>
-                  <label htmlFor="email" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    Correo electrónico
-                  </label>
-                  <div className="flex">
-                    <input
-                      id="email"
-                      type="text"
-                      name="email"
-                      placeholder="ejemplo"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      className="w-full border border-gray-300 rounded-l-md p-2 
-                      text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
-                    <span className="border border-l-0 border-gray-300 
-                    rounded-r-md p-2 bg-gray-100 text-gray-600 text-sm flex 
-                    items-center">
-                      @alumnos.ucn.cl
-                    </span>
-                  </div>
                 </div>
 
                 {/* RUT */}
@@ -193,8 +178,9 @@ export default function RegisterStudentPage() {
                     value={formData.rut}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg p-3 
+                    text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    transition duration-150"
                   />
                 </div>
 
@@ -212,8 +198,9 @@ export default function RegisterStudentPage() {
                     value={formData.telefono}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg p-3 
+                    text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    transition duration-150"
                   />
                 </div>
 
@@ -230,8 +217,9 @@ export default function RegisterStudentPage() {
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg p-3 
+                    text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    transition duration-150"
                   />
                 </div>
 
@@ -248,50 +236,43 @@ export default function RegisterStudentPage() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg p-3 
+                    text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    transition duration-150"
                   />
                 </div>
 
-                {/* Discapacidad */}
-                <div>
-                  <label htmlFor="discapacidad" className="text-sm font-medium
-                  text-gray-700 block mb-1">
-                    Discapacidad
+                {/* SuperAdmin */}
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="superAdmin"
+                    name="superAdmin"
+                    checked={formData.superAdmin}
+                    onChange={(e) => 
+                      setFormData((prev) => ({ ...prev, superAdmin: e.target.checked}))
+                    }
+                  />
+                  <label htmlFor="superAdmin" className="text-sm text-gray-700">
+                    ¿Es SuperAdmin?
                   </label>
-                  <select
-                    id="discapacidad"
-                    name="discapacidad"
-                    value={formData.discapacidad}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  >
-                    <option value="Ninguna">Ninguna</option>
-                    <option value="Visual">Visual</option>
-                    <option value="Auditiva">Auditiva</option>
-                    <option value="Motora">Motora</option>
-                    <option value="Cognitiva">Cognitiva</option>
-                    <option value="Otra">Otra</option>
-                  </select>
                 </div>
 
                 {/* Botón Crear Cuenta */}
                 <button
                   type="submit"
-                  className="w-full text-white rounded-md py-2 font-medium 
-                  transition mt-6"
+                  className="w-full text-white rounded-lg py-3 font-semibold 
+                  transition duration-150 hover:opacity-90 shadow-md hover:shadow-lg mt-6"
                   style={{ backgroundColor: PRIMARY_COLOR }}
                 >
-                  Crear cuenta
+                  Crear Cuenta
                 </button>
               </form>
 
-              {/* Enlace login */}
+              {/* Enlace de Inicio de Sesión */}
               <p className="text-center text-sm mt-6 text-gray-600">
                 ¿Tienes una cuenta?{" "}
-                <a href="/login" className="text-blue-600 hover:underline transition">
+                <a href="/login" onClick={(e) => { e.preventDefault(); router.push('/login'); }} className="text-blue-600 font-medium hover:underline transition">
                   Inicia sesión aquí
                 </a>
               </p>

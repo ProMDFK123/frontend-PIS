@@ -8,12 +8,12 @@ import { ArrowLeft } from "lucide-react";
 const PRIMARY_COLOR = "#2C3E90"; // Color del botón
 const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)"; // Color de la capa de opacidad.
 
-export default function RegisterCompanyPage() {
+export default function RegisterParticularPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     nombre: "",
-    razonSocial: "",
-    rutEmpresa: "",
+    apellido: "",
+    rut: "",
     correo: "",
     telefono: "",
     password: "",
@@ -37,10 +37,10 @@ export default function RegisterCompanyPage() {
     
     try{
       const payload = {
-        CompanyName: formData.nombre,
-        LegalName: formData.razonSocial,
+        Name: formData.nombre,
+        LastName: formData.apellido,
         Email: formData.correo,
-        Rut: formData.rutEmpresa,
+        Rut: formData.rut,
         PhoneNumber: formData.telefono,
         Password: formData.password,
         ConfirmPassword: formData.confirmPassword,
@@ -48,7 +48,7 @@ export default function RegisterCompanyPage() {
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5185/api';
 
-      const response = await fetch(`${API_URL}/register/company`, {
+      const response = await fetch(`${API_URL}/register/individual`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,7 +66,7 @@ export default function RegisterCompanyPage() {
       const data = await response.json();
       alert(data.Message || "Registro exitoso.");
 
-      router.push("/");
+      router.push("/auth/verify-email");
     }catch(error){
       console.error("Error con la solicitud:", error);
       alert("No se pudo conectar con el servidor. Por favor, inténtalo de nuevo más tarde.");
@@ -104,7 +104,7 @@ export default function RegisterCompanyPage() {
                 </button>
                 {/* Título */}
                 <h2 className="text-xl font-medium text-gray-800">
-                  Registro empresa
+                  Registro persona particular
                 </h2>
               </div>
               <hr className="mb-6"/>
@@ -123,44 +123,25 @@ export default function RegisterCompanyPage() {
                     name="nombre"
                     value={formData.nombre}
                     onChange={handleChange}
-                    placeholder="Empresa Inc."
+                    placeholder="Juan Pérez"
                     required
                     className="w-full border border-gray-300 rounded-md p-2 
                     text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
 
-                {/* Razón social */}
+                {/* RUT */}
                 <div>
-                  <label htmlFor="razonSocial" className="text-sm font-medium 
+                  <label htmlFor="rut" className="text-sm font-medium 
                   text-gray-700 block mb-1">
-                    Razón social
+                    RUT
                   </label>
                   <input
-                    id="razonSocial"
+                    id="rut"
                     type="text"
-                    name="razonSocial"
-                    placeholder="Empresa SA"
-                    value={formData.razonSocial}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* RUT Empresa */}
-                <div>
-                  <label htmlFor="rutEmpresa" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    RUT Empresa
-                  </label>
-                  <input
-                    id="rutEmpresa"
-                    type="text"
-                    name="rutEmpresa"
-                    placeholder="40.000.000-0"
-                    value={formData.rutEmpresa}
+                    name="rut"
+                    placeholder="12.345.678-9"
+                    value={formData.rut}
                     onChange={handleChange}
                     required
                     className="w-full border border-gray-300 rounded-md p-2 

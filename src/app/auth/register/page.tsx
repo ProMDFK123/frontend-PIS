@@ -53,7 +53,7 @@ export default function RegisterPage() {
           {roles.map((role) => (
             <button
               key={role.id}
-              onClick={() => router.push(`/register/${role.id}`)}
+              onClick={() => router.push(`/auth/register/${role.id}`)}
               className="w-full py-3 px-4 rounded-xl border border-gray-300 
               hover:bg-blue-50 font-medium transition"
             >
@@ -65,7 +65,7 @@ export default function RegisterPage() {
         <p className="text-sm text-gray-600 mt-6">
           ¿Ya tienes cuenta?{" "}
           <a
-            href="/login"
+            href="/auth/login"
             className="text-blue-600 hover:underline font-medium"
           >
             Inicia sesión aquí
