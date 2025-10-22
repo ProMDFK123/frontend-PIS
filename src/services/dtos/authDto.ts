@@ -100,3 +100,25 @@ export interface ResendVerificationResponseDto{
     message: string;
     data?: string;
 }
+
+// Reset Password DTOs
+// Reset
+// Request
+export interface ResetPasswordDto{
+    Email: string;
+}
+// Response
+export interface ResetPasswordResponseDto{
+    message: string;
+}
+// Verification
+// Request
+export interface VerifyResetCodeDto{
+    Email: string;
+    verificationCode: string;
+    password: string;
+}
+// Response
+export interface VerifyResetCodeResponseDto{
+    message: string;
+}

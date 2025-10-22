@@ -1,8 +1,8 @@
 // src/services/authService.ts
 
 import api from "./Service";
-import { type LoginRequestDto, type LoginResponseDto, type AdminRequestDto, type AdminResponseDto, type CompanyRequestDto, CompanyResponsetDto, IndividualRequestDto, IndividualResponseDto, StudentRequestDto, VerifyEmailDto, VerifyEmailResponseDto, ResendVerificationDto, ResendVerificationResponseDto } from "./dtos/authDto";
-import { mapLoginResponse, mapAdminResponse, mapCompanyResponse, mapVerifyEmailResponse, mapResendVerificationResponse } from "./adapters/authAdapter";
+import { type LoginRequestDto, type LoginResponseDto, type AdminRequestDto, type AdminResponseDto, type CompanyRequestDto, CompanyResponsetDto, IndividualRequestDto, IndividualResponseDto, StudentRequestDto, VerifyEmailDto, VerifyEmailResponseDto, ResendVerificationDto, ResendVerificationResponseDto, ResetPasswordDto, ResetPasswordResponseDto, VerifyResetCodeDto, VerifyResetCodeResponseDto } from "./dtos/authDto";
+import { mapLoginResponse, mapAdminResponse, mapCompanyResponse, mapVerifyEmailResponse, mapResendVerificationResponse, mapResetVerificationResponse } from "./adapters/authAdapter";
 
 // Login Serive
 export async function loginUser(payload: LoginRequestDto) {
@@ -50,4 +50,24 @@ export async function resendVerification(payload: ResendVerificationDto) {
     const response = await api.post<ResendVerificationResponseDto>(
         "/auth/resend-verification", payload);
     return mapResendVerificationResponse(response.data);
+}
+
+// Reset Password Services
+// Send code to email.
+export async function sendCode(payload: ResetPasswordDto){
+    const response = await api.post<ResetPasswordResponseDto>(
+        "/auth/reset-password", payload);
+    return mapResetVerificationResponse(response.data);
+}
+// Code verification and password update.
+export async function verifyResetCode(payload: VerifyResetCodeDto){
+    const response = await api.post<VerifyResetCodeResponseDto>(
+        "/auth/reset-code/verify", payload);
+    return mapResetVerificationResponse(response.data);
+}
+// Resend code.
+export async function resendCode(payload: ResetPasswordDto){
+    const response = await api.post<ResetPasswordResponseDto>(
+        "/auth/reset-password", payload);
+    return mapResetVerificationResponse(response.data);
 }

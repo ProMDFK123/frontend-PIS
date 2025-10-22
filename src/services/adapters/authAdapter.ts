@@ -73,3 +73,13 @@ export function mapResendVerificationResponse(dto: ResendVerificationResponseDto
         info: dto.data ?? null,
     };
 }
+
+// Reset Password Adapters
+// Reset
+export function mapResetPaswordResponse(dto: VerifyEmailResponseDto){
+    return{message: dto.message,};
+}
+// Verification
+export function mapResetVerificationResponse(dto: ResendVerificationResponseDto){
+    return{message: dto.message,};
+}
