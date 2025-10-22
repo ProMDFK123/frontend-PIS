@@ -1,6 +1,6 @@
 // src/services/adapters/authAdapter.ts
 
-import { AdminResponseDto, CompanyResponsetDto, IndividualResponseDto, LoginResponseDto, StudentRequestDto } from "../dtos/authDto";
+import { AdminResponseDto, CompanyResponsetDto, IndividualResponseDto, LoginResponseDto, ResendVerificationResponseDto, StudentRequestDto, VerifyEmailResponseDto } from "../dtos/authDto";
 
 // Login Adapter
 export function mapLoginResponse(dto: LoginResponseDto) {
@@ -10,7 +10,7 @@ export function mapLoginResponse(dto: LoginResponseDto) {
     };
 }
 
-// Register Adapter
+// Register Adapters
 // Admin
 export function mapAdminResponse(dto: AdminResponseDto){
     return {
@@ -56,4 +56,20 @@ export const StudentAdapter = {toDTO(formData: StudentForm): StudentRequestDto{
 // Response Adapter
 export function mapStudentResponse(dto: IndividualResponseDto){
     return {message: dto.message};
+}
+
+// Email Verification Adapters
+// Verify-Email
+export function mapVerifyEmailResponse(dto: VerifyEmailResponseDto){
+    return{
+        message: dto.message,
+        info: dto.data ?? null,
+    };
+}
+// Resend-Verification
+export function mapResendVerificationResponse(dto: ResendVerificationResponseDto){
+    return{
+        message: dto.message,
+        info: dto.data ?? null,
+    };
 }

@@ -77,3 +77,26 @@ export interface StudentRequestDto{
 export interface StudentResponseDto{
     message: string;
 }
+
+// Email Verification DTOs
+// Verify-Email
+// Request
+export interface VerifyEmailDto{
+    Email: string;
+    VerificationCode: string;
+}
+// Response
+export interface VerifyEmailResponseDto{
+    message: string;
+    data?: string;
+}
+// Resend-Verification
+// Request
+export interface ResendVerificationDto{
+    Email: string;
+}
+// Response
+export interface ResendVerificationResponseDto{
+    message: string;
+    data?: string;
+}
