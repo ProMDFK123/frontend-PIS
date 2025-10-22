@@ -3,10 +3,11 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { registerCompany } from "@/services/authService";
+import { CompanyRequestDto } from "@/services/dtos/authDto";
 
-// Colores
-const PRIMARY_COLOR = "#2C3E90"; // Color del botón
-const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)"; // Color de la capa de opacidad.
+const PRIMARY_COLOR = "#2C3E90";
+const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";
 
 export default function RegisterCompanyPage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function RegisterCompanyPage() {
     password: "",
     confirmPassword: "",
   });
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -28,15 +30,13 @@ export default function RegisterCompanyPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    console.log("Datos enviados:", formData);
-
     if (formData.password !== formData.confirmPassword) {
-      console.error("Las contraseñas no coinciden.");
+      setMessage({ type: "error", text: "Las contraseñas no coinciden." });
       return;
     }
-    
-    try{
-      const payload = {
+
+    try {
+      const payload: CompanyRequestDto = {
         CompanyName: formData.nombre,
         LegalName: formData.razonSocial,
         Email: formData.correo,
@@ -46,54 +46,34 @@ export default function RegisterCompanyPage() {
         ConfirmPassword: formData.confirmPassword,
       };
 
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5185/api';
-
-      const response = await fetch(`${API_URL}/register/company`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+      const result = await registerCompany(payload);
+      setMessage({ type: "success", text: result.message });
+      setTimeout(() => router.push("/auth/verify-email"), 1500);
+    } catch (error: any) {
+      console.error("Error al registrar empresa:", error);
+      setMessage({
+        type: "error",
+        text:
+          error.response?.data?.message ||
+          "No se pudo completar el registro. Intenta nuevamente.",
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error en el registro:", errorData);
-        alert(errorData.Message || "Error al registrarse. Por favor, inténtalo de nuevo.");
-        return;
-      }
-
-      const data = await response.json();
-      alert(data.Message || "Registro exitoso.");
-
-      router.push("/auth/verify-email");
-    }catch(error){
-      console.error("Error con la solicitud:", error);
-      alert("No se pudo conectar con el servidor. Por favor, inténtalo de nuevo más tarde.");
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Contenido Principal con Fondo y Capa Azul */}
       <main
         className="flex-grow flex items-center justify-center bg-cover bg-center"
-        style={{ backgroundImage: "url('/ucnferia.png')" }} 
+        style={{ backgroundImage: "url('/ucnferia.png')" }}
       >
-        {/* Capa de Oscurecimiento y Desenfoque */}
-        <div 
+        <div
           className="flex-grow flex items-center justify-center backdrop-blur-sm 
           p-4 w-full h-full"
-          style={{ backgroundColor: OVERLAY_COLOR }} 
+          style={{ backgroundColor: OVERLAY_COLOR }}
         >
-          {/* Contenedor del Formulario (Tarjeta) */}
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md relative">
-            
-            {/* Contenido interno de la Tarjeta */}
             <div className="p-8">
-              {/* Contenedor del Título con Flecha */}
               <div className="flex items-center justify-start pb-4">
-                {/* Botón Volver (Flecha Izquierda) */}
                 <button
                   type="button"
                   onClick={() => router.back()}
@@ -102,161 +82,96 @@ export default function RegisterCompanyPage() {
                 >
                   <ArrowLeft size={24} />
                 </button>
-                {/* Título */}
                 <h2 className="text-xl font-medium text-gray-800">
                   Registro empresa
                 </h2>
               </div>
-              <hr className="mb-6"/>
+              <hr className="mb-6" />
 
-              {/* Formulario */}
+              {message && (
+                <div
+                  className={`p-3 mb-4 rounded-md text-sm font-medium ${
+                    message.type === "error"
+                      ? "bg-red-100 text-red-700 border border-red-300"
+                      : "bg-green-100 text-green-700 border border-green-300"
+                  }`}
+                  role="alert"
+                >
+                  {message.text}
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Nombre */}
-                <div>
-                  <label htmlFor="nombre" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    Nombre
-                  </label>
-                  <input
-                    id="nombre"
-                    type="text"
-                    name="nombre"
-                    value={formData.nombre}
-                    onChange={handleChange}
-                    placeholder="Empresa Inc."
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
+                {[
+                  { id: "nombre", label: "Nombre", type: "text", placeholder: "Empresa Inc." },
+                  { id: "razonSocial", label: "Razón social", type: "text", placeholder: "Empresa S.A." },
+                  { id: "rutEmpresa", label: "RUT Empresa", type: "text", placeholder: "40.000.000-0" },
+                  { id: "correo", label: "Correo", type: "email", placeholder: "correo@empresa.cl" },
+                  { id: "telefono", label: "Teléfono", type: "tel", placeholder: "+56912345678" },
+                ].map(({ id, label, type, placeholder }) => (
+                  <div key={id}>
+                    <label
+                      htmlFor={id}
+                      className="text-sm font-medium text-gray-700 block mb-1"
+                    >
+                      {label}
+                    </label>
+                    <input
+                      id={id}
+                      name={id}
+                      type={type}
+                      placeholder={placeholder}
+                      value={(formData as any)[id]}
+                      onChange={handleChange}
+                      required
+                      className="w-full border border-gray-300 rounded-md p-2 
+                      text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                ))}
 
-                {/* Razón social */}
-                <div>
-                  <label htmlFor="razonSocial" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    Razón social
-                  </label>
-                  <input
-                    id="razonSocial"
-                    type="text"
-                    name="razonSocial"
-                    placeholder="Empresa SA"
-                    value={formData.razonSocial}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
+                {/* Contraseñas */}
+                {["password", "confirmPassword"].map((field) => (
+                  <div key={field}>
+                    <label
+                      htmlFor={field}
+                      className="text-sm font-medium text-gray-700 block mb-1"
+                    >
+                      {field === "password" ? "Contraseña" : "Repetir Contraseña"}
+                    </label>
+                    <input
+                      id={field}
+                      name={field}
+                      type="password"
+                      value={(formData as any)[field]}
+                      onChange={handleChange}
+                      required
+                      className="w-full border border-gray-300 rounded-md p-2 
+                      text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                ))}
 
-                {/* RUT Empresa */}
-                <div>
-                  <label htmlFor="rutEmpresa" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    RUT Empresa
-                  </label>
-                  <input
-                    id="rutEmpresa"
-                    type="text"
-                    name="rutEmpresa"
-                    placeholder="40.000.000-0"
-                    value={formData.rutEmpresa}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Correo */}
-                <div>
-                  <label htmlFor="correo" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    Correo
-                  </label>
-                  <input
-                    id="correo"
-                    type="email"
-                    name="correo"
-                    placeholder="correo@example.com"
-                    value={formData.correo}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Teléfono */}
-                <div>
-                  <label htmlFor="telefono" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    Teléfono
-                  </label>
-                  <input
-                    id="telefono"
-                    type="tel"
-                    name="telefono"
-                    placeholder="+56912345678"
-                    value={formData.telefono}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Contraseña */}
-                <div>
-                  <label htmlFor="password" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    Contraseña
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Repetir Contraseña */}
-                <div>
-                  <label htmlFor="confirmPassword" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    Repetir Contraseña
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Botón Crear Cuenta */}
                 <button
                   type="submit"
                   className="w-full text-white rounded-md py-2 font-medium 
-                  transition mt-6"
+                  transition mt-6 shadow-md hover:shadow-lg"
                   style={{ backgroundColor: PRIMARY_COLOR }}
                 >
                   Crear Cuenta
                 </button>
               </form>
 
-              {/* Enlace de Inicio de Sesión */}
               <p className="text-center text-sm mt-6 text-gray-600">
                 ¿Tienes una cuenta?{" "}
-                <a href="/login" className="text-blue-600 hover:underline transition">
+                <a
+                  href="/login"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    router.push("/login");
+                  }}
+                  className="text-blue-600 hover:underline transition"
+                >
                   Inicia sesión aquí
                 </a>
               </p>
