@@ -1,21 +1,31 @@
 "use client"
 
-import {useState} from "react";
-import {useRouter} from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+import { loginUser } from "@/services/authService";
+import type { LoginRequestDto } from "@/services/dtos/authDto";
 
-export default function LoginPage(){
+export default function LoginPage() {
     const router = useRouter();
 
-    const [formData, setFormData] = useState({
+    const [form, setForm] = useState({
         correo: "",
         password: "",
         rememberMe: false,
     });
-    const [error, setError] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    // Redirección automática si ya hay token
+    useEffect(() => {
+        const token = Cookies.get("token");
+        if (token) router.push("/"); // Redirige al home
+    }, [router]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value, type, checked} = e.target;
-        setFormData((prev) => ({
+        const { name, value, type, checked } = e.target;
+        setForm((prev) => ({
             ...prev,
             [name]: type === "checkbox" ? checked : value,
         }));
@@ -23,72 +33,55 @@ export default function LoginPage(){
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
+        setLoading(true);
 
-        try{
-            const payload = {
-                Email: formData.correo,
-                Password: formData.password,
-                RememberMe: formData.rememberMe,
-            };
+        const payload: LoginRequestDto = {
+            Email: form.correo,
+            Password: form.password,
+            RememeberMe: form.rememberMe,
+        };
 
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5185/api";
+        try {
+            const response = await loginUser(payload);
 
-            const response = await fetch(`${API_URL}/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload),
-            });
-
-            if(!response.ok){
-                const errorData = await response.json();
-                console.error("Error al iniciar sesión:", errorData);
-                alert(errorData.message || "Error al iniciar sesión.");
+            if (!response.token) {
+                setError(response.message || "Usuario no registrado o contraseña incorrecta.");
                 return;
             }
 
-            const data = await response.json();
-            console.log("Login exitoso:", data);
+            // Guardar JWT en cookies
+            Cookies.set("token", response.token, { expires: form.rememberMe ? 7 : undefined });
 
-            if(data.data){
-                if(formData.rememberMe){
-                    localStorage.setItem("token", data.data);
-                } else {
-                    sessionStorage.setItem("token", data.data);
-                }
-            }
-
-            alert(data.message || "Login exitoso.");
+            alert(response.message || "Inicio de sesión exitoso.");
             router.push("/");
-        } catch (error){
-            console.error("Error con la solicitud:", error);
-            alert("No se pudo conectar con el servidor. Intente más tarde.");
+        } catch (err) {
+            console.error("Error al iniciar sesión: ", err);
+            setError("No se pudo conectar con el servidor. Intente más tarde.");
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#0d8ef2]">
-            {/* Tarjeta de Login */}
-            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-xl
-            w-[360px] flex flex-col items-center relative">
+        <div className="min-h-screen flex items-center justify-center bg-[#0d8ef2] px-4">
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-xl w-[360px] flex flex-col items-center relative">
+                {/* Logo */}
                 <div className="absolute -top-20 flex flex-col items-center">
-                    {/* Logo de la FEUCN */}
                     <img
                         src="/feucn_logo.png"
                         alt="Logo FEUCN"
-                        className="w-32 h-32 rounded-full border-4 border-white
-                        shadow-md object-cover"
+                        className="w-32 h-32 rounded-full border-4 border-white shadow-md object-cover"
                     />
                 </div>
 
-                {/* Formulario */}
+                {/* Título */}
                 <h2 className="text-2xl font-semibold text-white mt-16 mb-6">
                     Inicio de Sesión
                 </h2>
 
+                {/* Formulario */}
                 <form onSubmit={handleSubmit} className="w-full space-y-4">
-                    {/* Correo */}
                     <div>
                         <label className="block text-sm text-white mb-1">
                             Correo Electrónico
@@ -96,72 +89,57 @@ export default function LoginPage(){
                         <input
                             type="email"
                             name="correo"
-                            value={formData.correo}
+                            value={form.correo}
                             onChange={handleChange}
                             placeholder="email@example.com"
-                            className="w-full px-3 py-2 rpunded-md border
-                            border-gray-300 focus:outline-none focus:ring-2 
-                            focus:ring-blue-400"
+                            className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
                             required
                         />
                     </div>
 
-                    {/* Contraseña */}
                     <div>
-                        <label className="block text-sm text-white mb-1">
-                            Contraseña
-                        </label>
+                        <label className="block text-sm text-white mb-1">Contraseña</label>
                         <input
                             type="password"
                             name="password"
-                            value={formData.password}
+                            value={form.password}
                             onChange={handleChange}
                             placeholder="********"
-                            className="w-full px-3 py-2 rounded-md border 
-                            border-gray-300 focus:outline-none focus:ring-2
-                            focus:ring-blue-400"
+                            className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
                             required
                         />
                     </div>
 
-                    {/* Recordarme */}
-                    <div className="flex items-center justify-between text-sm
-                    text-white">
+                    <div className="flex items-center justify-between text-sm text-white">
                         <label className="flex items-center gap-2">
                             <input
                                 type="checkbox"
                                 name="rememberMe"
-                                checked={formData.rememberMe}
+                                checked={form.rememberMe}
                                 onChange={handleChange}
                                 className="accent-blue-500"
                             />
                             Recordarme
                         </label>
 
-                        {/* Olvidé mi Contraseña */}
                         <a href="/auth/reset-password" className="hover:underline">
                             ¿Olvidaste tu contraseña?
                         </a>
                     </div>
 
-                    {/* Mensajes de Error */}
                     {error && (
-                        <p className="text-red-200 text-sm text-center mt-2">
-                            {error}
-                        </p>
+                        <p className="text-red-200 text-sm text-center mt-2">{error}</p>
                     )}
 
-                    {/* Botón de Login */}
                     <button
                         type="submit"
-                        className="w-full bg-[#1f2937] text-white py-2 rounded-md
-                        hover:bg-[#374151] transition duration-200"
+                        disabled={loading}
+                        className="w-full bg-[#1f2937] text-white py-2 rounded-md hover:bg-[#374151] transition duration-200 disabled:opacity-60"
                     >
-                        Iniciar Sesión
+                        {loading ? "Cargando..." : "Iniciar Sesión"}
                     </button>
                 </form>
 
-                {/* Registro */}
                 <p className="text-sm text-white mt-4">
                     ¿No tienes una cuenta?{" "}
                     <a href="/auth/register" className="underline hover:text-gray-200">
@@ -169,12 +147,10 @@ export default function LoginPage(){
                     </a>
                 </p>
 
-                {/* Volver al Inicio */}
                 <button
                     onClick={() => router.push("/")}
-                    className="mt-6 px-4 py-2 bg-transparent border border-white
-                    text-white rounded-md hover:bg-white hover:text-[#0d8ef2]
-                    transition">
+                    className="mt-6 px-4 py-2 bg-transparent border border-white text-white rounded-md hover:bg-white hover:text-[#0d8ef2] transition"
+                >
                     ← Volver
                 </button>
             </div>

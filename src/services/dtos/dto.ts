@@ -1,4 +1,4 @@
-// services/dto.ts
+// services/dtos/dto.ts
 export type OfferBasicDto = {
   id: number;
   title: string;

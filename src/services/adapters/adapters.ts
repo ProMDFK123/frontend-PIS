@@ -1,6 +1,6 @@
-// services/adapters.ts
+// services/adapters/adapters.ts
 import { Offer } from "@/components/offers/OfferCard";
-import { OfferBasicDto, BuySellBasicDto } from "./dto";
+import { OfferBasicDto, BuySellBasicDto } from "@/services/dtos/dto";
 
 function toOfferType(t: OfferBasicDto["offerType"]): Offer["type"] {
   if (t === "Voluntariado" || t === 1) return "Voluntariado";

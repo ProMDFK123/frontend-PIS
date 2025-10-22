@@ -1,103 +1,90 @@
-"use client"
+"use client";
 
-import {useState} from "react";
+import { useState } from "react";
+import { sendCode, verifyResetCode, resendCode } from "@/services/authService";
+import type { ResetPasswordDto, VerifyResetCodeDto } from "@/services/dtos/authDto";
 
-export default function ResetPasswordPage(){
+export default function ResetPasswordPage() {
   const [step, setStep] = useState<1 | 2>(1);
-  const [email, setEmail] = useState("");
+  const [Email, setEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
+    setMessage(null);
+    setError(null);
     setLoading(true);
-    setMessage("");
-    setError("");
 
-    try{
-        const response = await fetch("/auth/reset-password", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({email}),
-        });
+    const payload: ResetPasswordDto = { Email };
 
-        const data = await response.json();
-
-        if(!response.ok) throw new Error(data.message || "Error al enviar el código.");
-
-        setMessage(data.message || "Código enviado correctamente.");
-        setStep(2);
-    }catch(err: any){
-        setError(err.message || "Ocurrió un error.");
-    }finally{
-        setLoading(false);
+    try {
+      const res = await sendCode(payload);
+      setMessage(res.message);
+      setStep(2);
+    } catch (err: any) {
+      console.error("Error al enviar código:", err);
+      setError("No se pudo enviar el código. Intenta nuevamente.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
+    setMessage(null);
+    setError(null);
     setLoading(true);
-    setMessage("");
-    setError("");
 
-    if(password!==confirmPassword){
-        setError("Las contraseñas no coinciden.");
-        setLoading(false);
-        return;
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden.");
+      setLoading(false);
+      return;
     }
 
-    try{
-        const response = await fetch("/auth/reset-code/verify", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({email, verificationCode, password}),
-        });
+    const payload: VerifyResetCodeDto = {
+      Email,
+      verificationCode,
+      password,
+    };
 
-        const data = await response.json();
-
-        if(!response.ok) throw new Error(data.message || "Error al verificar el código.");
-
-        setMessage(data.message || "Contraseña cambiada correctamente.");
-        setStep(1);
-        setEmail("");
-        setVerificationCode("");
-        setPassword("");
-        setConfirmPassword("");
-    }catch(err: any){
-        setError(err.message || "Ocurrió un error.");
-    }finally{
-        setLoading(false);
+    try {
+      const res = await verifyResetCode(payload);
+      setMessage(res.message || "Contraseña cambiada correctamente.");
+      setStep(1);
+      setEmail("");
+      setVerificationCode("");
+      setPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      console.error("Error al verificar código:", err);
+      setError("El código es incorrecto o ha expirado.");
+    } finally {
+      setLoading(false);
     }
   };
 
-    const handleResendCode = async () => {
-        setLoading(true);
-        setMessage("");
-        setError("");
+  const handleResendCode = async () => {
+    setMessage(null);
+    setError(null);
+    setLoading(true);
 
-        try {
-        const res = await fetch("/api/auth/reset-password", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email }),
-        });
+    const payload: ResetPasswordDto = { Email };
 
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(data.message || "Error al reenviar el código.");
-
-        setMessage(data.message || "Código reenviado correctamente.");
-        } catch (err: any) {
-        setError(err.message || "Ha ocurrido un error.");
-        } finally {
-        setLoading(false);
-        }
-    };
-
+    try {
+      const res = await resendCode(payload);
+      setMessage(res.message);
+    } catch (err: any) {
+      console.error("Error al reenviar código:", err);
+      setError("No se pudo reenviar el código.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-blue-600 px-4">
@@ -130,7 +117,7 @@ export default function ResetPasswordPage(){
             <input
               type="email"
               placeholder="email@example.com"
-              value={email}
+              value={Email}
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -138,7 +125,7 @@ export default function ResetPasswordPage(){
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-800 text-white py-2 rounded-md hover:bg-blue-900 transition-colors"
+              className="w-full bg-blue-800 text-white py-2 rounded-md hover:bg-blue-900 transition-colors disabled:opacity-60"
             >
               {loading ? "Enviando..." : "Enviar código"}
             </button>
@@ -173,7 +160,7 @@ export default function ResetPasswordPage(){
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-800 text-white py-2 rounded-md hover:bg-blue-900 transition-colors"
+              className="w-full bg-blue-800 text-white py-2 rounded-md hover:bg-blue-900 transition-colors disabled:opacity-60"
             >
               {loading ? "Verificando..." : "Verificar y cambiar"}
             </button>

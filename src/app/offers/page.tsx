@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import FilterBar from "@/components/offers/FilterBar";
 import OfferCard, { Offer } from "@/components/offers/OfferCard";
 import api from "@/services/Service";
-import type { ApiListResponse, OfferBasicDto, BuySellBasicDto } from "@/services/dto";
-import { mapOfferDtoToCard, mapBuySellDtoToCard } from "@/services/adapters";
+import type { ApiListResponse, OfferBasicDto, BuySellBasicDto } from "@/services/dtos/dto";
+import { mapOfferDtoToCard, mapBuySellDtoToCard } from "@/services/adapters/adapters";
 
 const SEED: Offer[] = [ /* ... seeds... */ ];
 

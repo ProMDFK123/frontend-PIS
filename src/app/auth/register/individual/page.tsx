@@ -3,13 +3,15 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { registerIndividual } from "@/services/authService";
+import { IndividualRequestDto } from "@/services/dtos/authDto";
 
-// Colores
-const PRIMARY_COLOR = "#2C3E90"; // Color del botón
-const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)"; // Color de la capa de opacidad.
+const PRIMARY_COLOR = "#2C3E90";
+const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";
 
 export default function RegisterParticularPage() {
   const router = useRouter();
+
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -28,72 +30,48 @@ export default function RegisterParticularPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    console.log("Datos enviados:", formData);
-
     if (formData.password !== formData.confirmPassword) {
-      console.error("Las contraseñas no coinciden.");
+      alert("Las contraseñas no coinciden.");
       return;
     }
-    
-    try{
-      const payload = {
-        Name: formData.nombre,
-        LastName: formData.apellido,
-        Email: formData.correo,
-        Rut: formData.rut,
-        PhoneNumber: formData.telefono,
-        Password: formData.password,
-        ConfirmPassword: formData.confirmPassword,
-      };
 
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5185/api';
+    const payload: IndividualRequestDto = {
+      Name: formData.nombre,
+      LastName: formData.apellido,
+      Email: formData.correo,
+      Rut: formData.rut,
+      PhoneNumber: formData.telefono,
+      Password: formData.password,
+      ConfirmPassword: formData.confirmPassword,
+    };
 
-      const response = await fetch(`${API_URL}/register/individual`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error en el registro:", errorData);
-        alert(errorData.Message || "Error al registrarse. Por favor, inténtalo de nuevo.");
-        return;
-      }
-
-      const data = await response.json();
-      alert(data.Message || "Registro exitoso.");
-
+    try {
+      const response = await registerIndividual(payload);
+      alert(response.message || "Registro exitoso.");
       router.push("/auth/verify-email");
-    }catch(error){
-      console.error("Error con la solicitud:", error);
-      alert("No se pudo conectar con el servidor. Por favor, inténtalo de nuevo más tarde.");
+    } catch (error: any) {
+      console.error("Error al registrar:", error);
+      alert(
+        error.response?.data?.Message ||
+          "Error al registrarse. Inténtalo nuevamente."
+      );
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Contenido Principal con Fondo y Capa Azul */}
       <main
         className="flex-grow flex items-center justify-center bg-cover bg-center"
-        style={{ backgroundImage: "url('/ucnferia.png')" }} 
+        style={{ backgroundImage: "url('/ucnferia.png')" }}
       >
-        {/* Capa de Oscurecimiento y Desenfoque */}
-        <div 
+        <div
           className="flex-grow flex items-center justify-center backdrop-blur-sm 
           p-4 w-full h-full"
-          style={{ backgroundColor: OVERLAY_COLOR }} 
+          style={{ backgroundColor: OVERLAY_COLOR }}
         >
-          {/* Contenedor del Formulario (Tarjeta) */}
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md relative">
-            
-            {/* Contenido interno de la Tarjeta */}
             <div className="p-8">
-              {/* Contenedor del Título con Flecha */}
               <div className="flex items-center justify-start pb-4">
-                {/* Botón Volver (Flecha Izquierda) */}
                 <button
                   type="button"
                   onClick={() => router.back()}
@@ -102,142 +80,81 @@ export default function RegisterParticularPage() {
                 >
                   <ArrowLeft size={24} />
                 </button>
-                {/* Título */}
                 <h2 className="text-xl font-medium text-gray-800">
                   Registro persona particular
                 </h2>
               </div>
-              <hr className="mb-6"/>
+              <hr className="mb-6" />
 
-              {/* Formulario */}
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Nombre */}
-                <div>
-                  <label htmlFor="nombre" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    Nombre
-                  </label>
-                  <input
-                    id="nombre"
-                    type="text"
-                    name="nombre"
-                    value={formData.nombre}
-                    onChange={handleChange}
-                    placeholder="Juan Pérez"
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
+                <InputField
+                  id="nombre"
+                  label="Nombre"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                />
+                <InputField
+                  id="apellido"
+                  label="Apellido"
+                  name="apellido"
+                  value={formData.apellido}
+                  onChange={handleChange}
+                />
+                <InputField
+                  id="rut"
+                  label="RUT"
+                  name="rut"
+                  value={formData.rut}
+                  onChange={handleChange}
+                />
+                <InputField
+                  id="correo"
+                  label="Correo"
+                  name="correo"
+                  type="email"
+                  value={formData.correo}
+                  onChange={handleChange}
+                />
+                <InputField
+                  id="telefono"
+                  label="Teléfono"
+                  name="telefono"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                />
+                <InputField
+                  id="password"
+                  label="Contraseña"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+                <InputField
+                  id="confirmPassword"
+                  label="Repetir Contraseña"
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
 
-                {/* RUT */}
-                <div>
-                  <label htmlFor="rut" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    RUT
-                  </label>
-                  <input
-                    id="rut"
-                    type="text"
-                    name="rut"
-                    placeholder="12.345.678-9"
-                    value={formData.rut}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Correo */}
-                <div>
-                  <label htmlFor="correo" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    Correo
-                  </label>
-                  <input
-                    id="correo"
-                    type="email"
-                    name="correo"
-                    placeholder="correo@example.com"
-                    value={formData.correo}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Teléfono */}
-                <div>
-                  <label htmlFor="telefono" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    Teléfono
-                  </label>
-                  <input
-                    id="telefono"
-                    type="tel"
-                    name="telefono"
-                    placeholder="+56912345678"
-                    value={formData.telefono}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Contraseña */}
-                <div>
-                  <label htmlFor="password" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    Contraseña
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Repetir Contraseña */}
-                <div>
-                  <label htmlFor="confirmPassword" className="text-sm font-medium 
-                  text-gray-700 block mb-1">
-                    Repetir Contraseña
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Botón Crear Cuenta */}
                 <button
                   type="submit"
-                  className="w-full text-white rounded-md py-2 font-medium 
-                  transition mt-6"
+                  className="w-full text-white rounded-md py-2 font-medium transition mt-6"
                   style={{ backgroundColor: PRIMARY_COLOR }}
                 >
                   Crear Cuenta
                 </button>
               </form>
 
-              {/* Enlace de Inicio de Sesión */}
               <p className="text-center text-sm mt-6 text-gray-600">
                 ¿Tienes una cuenta?{" "}
-                <a href="/login" className="text-blue-600 hover:underline transition">
+                <a
+                  href="/login"
+                  className="text-blue-600 hover:underline transition"
+                >
                   Inicia sesión aquí
                 </a>
               </p>
@@ -245,6 +162,46 @@ export default function RegisterParticularPage() {
           </div>
         </div>
       </main>
+    </div>
+  );
+}
+
+// 🔹 Componente reutilizable para campos del formulario
+interface InputFieldProps {
+  id: string;
+  label: string;
+  name: string;
+  value: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  type?: string;
+  placeholder?: string;
+}
+
+function InputField({
+  id,
+  label,
+  name,
+  value,
+  onChange,
+  type = "text",
+  placeholder = "",
+}: InputFieldProps) {
+  return (
+    <div>
+      <label htmlFor={id} className="text-sm font-medium text-gray-700 block mb-1">
+        {label}
+      </label>
+      <input
+        id={id}
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        required
+        className="w-full border border-gray-300 rounded-md p-2 text-sm 
+                   focus:outline-none focus:ring-1 focus:ring-blue-500"
+      />
     </div>
   );
 }
