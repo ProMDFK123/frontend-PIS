@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { RegisterAdmin } from "@/services/authService";
 import type { AdminRequestDto } from "@/services/dtos/authDto";
+import { formatRut } from "src/utils/Util"
 
 const PRIMARY_COLOR = "#2C3E90";
 
@@ -30,10 +31,12 @@ export default function RegisterAdminPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+
+    let newValue = type === "checkbox" ? checked : value;
+
+    if(name === "rut") newValue = formatRut(value);
+
+    setForm((prev) => ({...prev, [name]: newValue,}));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

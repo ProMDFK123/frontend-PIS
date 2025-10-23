@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent, ChangeEventHandler } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { registerStudent } from "@/services/authService";
 import { StudentAdapter } from "@/services/adapters/authAdapter";
+import { formatRut } from "src/utils/Util"
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(64, 64, 48, 0.4)";
@@ -22,11 +23,14 @@ export default function RegisterStudentPage() {
     discapacidad: "Ninguna",
   });
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const {name, value} = e.target;
+
+    let newValue = value;
+
+    if(name === "rut") newValue = formatRut(value);
+
+    setFormData((prev) => ({...prev, [name]: newValue}));
   };
 
   const handleSubmit = async (e: FormEvent) => {
