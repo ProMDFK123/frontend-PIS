@@ -3,13 +3,12 @@
 import { AdminResponseDto, CompanyResponsetDto, IndividualResponseDto, LoginResponseDto, ResendVerificationResponseDto, StudentRequestDto, VerifyEmailResponseDto } from "../dtos/authDto";
 
 // Login Adapter
-export function mapLoginResponse(dto: LoginResponseDto) {
-    return {
-        message: dto.message,
-        token: dto.data ?? null,
-    };
+export function mapLoginResponse(dto: any) {
+  // soporta {token}, {data: token}, {data: {token}}, {message}
+  const token = dto?.token ?? dto?.data?.token ?? dto?.data ?? null;
+  const message = dto?.message ?? (token ? "Login successful" : "Invalid credentials");
+  return { message, token };
 }
-
 // Register Adapters
 // Admin
 export function mapAdminResponse(dto: AdminResponseDto){
