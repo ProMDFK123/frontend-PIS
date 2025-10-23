@@ -1,7 +1,7 @@
 // src/services/authService.ts
 
 import api from "./Service";
-import { type LoginRequestDto, type LoginResponseDto, type AdminRequestDto, type AdminResponseDto, type CompanyRequestDto, CompanyResponsetDto, IndividualRequestDto, IndividualResponseDto, StudentRequestDto, VerifyEmailDto, VerifyEmailResponseDto, ResendVerificationDto, ResendVerificationResponseDto, ResetPasswordDto, ResetPasswordResponseDto, VerifyResetCodeDto, VerifyResetCodeResponseDto } from "./dtos/authDto";
+import { type LoginRequestDto, type LoginResponseDto, type AdminRequestDto, type AdminResponseDto, type CompanyRequestDto, CompanyResponsetDto, IndividualRequestDto, IndividualResponseDto, StudentRequestDto, VerifyEmailDto, VerifyEmailResponseDto, ResendVerificationDto, ResendVerificationResponseDto, ResetPasswordDto, ResetPasswordResponseDto, VerifyResetCodeDto, VerifyResetCodeResponseDto, StudentResponseDto } from "./dtos/authDto";
 import { mapLoginResponse, mapAdminResponse, mapCompanyResponse, mapVerifyEmailResponse, mapResendVerificationResponse, mapResetVerificationResponse } from "./adapters/authAdapter";
 
 // Login Service
@@ -27,12 +27,15 @@ export async function registerCompany(payload: CompanyRequestDto){
   const response = await api.post<CompanyResponsetDto>("/api/auth/register/company", payload);
   return mapCompanyResponse(response.data);
 }
-export async function registerIndividual(payload: IndividualRequestDto){
-  const response = await api.post<IndividualResponseDto>("/api/auth/register/individual", payload);
-  return {message: response.data.message};
+export async function registerIndividual(payload: IndividualRequestDto) {
+  const response = await api.post("/api/auth/register/individual", payload);
+  return {
+    message: response.data.message || response.data.Message,
+    data: response.data.data || response.data.Data,
+  };
 }
 export async function registerStudent(payload: StudentRequestDto){
-  const response = await api.post<IndividualResponseDto>("/api/auth/register/student", payload);
+  const response = await api.post<StudentResponseDto>("/api/auth/register/student", payload);
   return {message: response.data.message};
 }
 
