@@ -43,7 +43,7 @@ export default function LoginPage() {
         const payload: LoginRequestDto = {
             Email: form.correo,
             Password: form.password,
-            RememeberMe: form.rememberMe,
+            RememberMe: form.rememberMe,
         };
 
         try {

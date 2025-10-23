@@ -5,7 +5,7 @@
 export interface LoginRequestDto {
     Email: string;
     Password: string;
-    RememeberMe: boolean;
+    RememberMe: boolean;
 }
 // Response
 export interface LoginResponseDto {
