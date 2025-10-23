@@ -10,7 +10,7 @@ import type { LoginRequestDto } from "@/services/dtos/authDto";
 export default function LoginPage() {
     const router = useRouter();
     const sp = useSearchParams();
-    const returnTo = sp?.get("returnTo") || "/";
+    const returnTo = sp?.get("returnTo") || "/offers";
     const msg = sp?.get("msg");
 
     const [form, setForm] = useState({

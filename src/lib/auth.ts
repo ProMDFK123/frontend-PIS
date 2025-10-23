@@ -1,16 +1,66 @@
 // frontend-PIS/src/lib/auth.ts
+
+import Cookies from "js-cookie";
+
 export function getTokenFromCookie(): string | null {
   if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
-  return match ? decodeURIComponent(match[1]) : null;
+  return Cookies.get("token") ?? null;
 }
 
 export function isLoggedIn(): boolean {
   return !!getTokenFromCookie();
 }
 
+export function getUserFromToken():
+  | { name?: string; email?: string; sub?: string }
+  | null {
+  const token = getTokenFromCookie();
+  if (!token) return null;
+  try {
+    const payloadBase64 = token.split(".")[1];
+    const json = JSON.parse(
+      decodeURIComponent(
+        atob(payloadBase64)
+          .split("")
+          .map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      )
+    );
+
+    // Claims comunes en ASP.NET
+    const NAME_URI = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
+    const GIVEN_URI = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname";
+    const SURNAME_URI = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname";
+    const EMAIL_URI = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
+
+    const given = json[GIVEN_URI] || json.given_name || undefined;
+    const surname = json[SURNAME_URI] || json.family_name || undefined;
+
+    const rawName =
+      json.name ||
+      json.unique_name ||
+      json[NAME_URI] ||
+      (given && surname ? `${given} ${surname}` : given || undefined);
+
+    const email = json.email || json.emails || json[EMAIL_URI] || undefined;
+    const sub = json.sub || undefined;
+
+    // nombre que mostramos en la UI
+    const displayName = rawName || (email ? String(email).split("@")[0] : undefined);
+
+    return { name: displayName, email, sub };
+  } catch {
+    return null;
+  }
+}
+
+export function logoutAndRedirect(path = "/") {
+  Cookies.remove("token", { path: "/" });
+  if (typeof window !== "undefined") window.location.href = path;
+}
+
 export function buildLoginUrl(returnTo: string = "/", msg?: string): string {
   const q = new URLSearchParams({ returnTo });
-  if (msg) q.set("msg", msg); //mensaje de aviso que inicie sesión
+  if (msg) q.set("msg", msg);
   return `/auth/login?${q.toString()}`;
 }
