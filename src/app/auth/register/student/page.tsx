@@ -81,13 +81,13 @@ export default function RegisterStudentPage() {
 
               {/* Formulario */}
               <form onSubmit={handleSubmit} className="space-y-4">
-                {renderInput("nombre", "Nombre", formData.nombre, handleChange)}
-                {renderInput("apellido", "Apellido", formData.apellido, handleChange)}
-                {renderInput("email", "Correo", formData.email, handleChange, "text", "ejemplo")}
-                {renderInput("rut", "RUT", formData.rut, handleChange)}
-                {renderInput("telefono", "Teléfono", formData.telefono, handleChange, "tel")}
-                {renderInput("password", "Contraseña", formData.password, handleChange, "password")}
-                {renderInput("confirmPassword", "Repetir Contraseña", formData.confirmPassword, handleChange, "password")}
+                {renderInput("nombre", "Nombre", formData.nombre, handleChange, "text", "Juan")}
+                {renderInput("apellido", "Apellido", formData.apellido, handleChange, "text", "Pérez")}
+                {renderInput("email", "Correo", formData.email, handleChange, "text", "email@alumnos.ucn.cl")}
+                {renderInput("rut", "RUT", formData.rut, handleChange, "text", "12345678-9")}
+                {renderInput("telefono", "Teléfono", formData.telefono, handleChange, "text", "+56912345678")}
+                {renderInput("password", "Contraseña", formData.password, handleChange, "password", "••••••••")}
+                {renderInput("confirmPassword", "Repetir Contraseña", formData.confirmPassword, handleChange, "password", "••••••••")}
 
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">

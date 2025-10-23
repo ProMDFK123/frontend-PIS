@@ -117,17 +117,13 @@ export default function RegisterAdminPage() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 {[
-                  { id: "nombre", label: "Nombre", type: "text" },
-                  { id: "apellido", label: "Apellido", type: "text" },
-                  { id: "correo", label: "Correo", type: "email" },
-                  { id: "rut", label: "RUT", type: "text" },
-                  { id: "telefono", label: "Teléfono", type: "tel" },
-                  { id: "password", label: "Contraseña", type: "password" },
-                  {
-                    id: "confirmPassword",
-                    label: "Repetir Contraseña",
-                    type: "password",
-                  },
+                  { id: "nombre", label: "Nombre", type: "text", placeholder: "Juan" },
+                  { id: "apellido", label: "Apellido", type: "text", placeholder: "Pérez" },
+                  { id: "correo", label: "Correo", type: "email", placeholder: "email@example.com" },
+                  { id: "rut", label: "RUT", type: "text", placeholder: "12345678-9" },
+                  { id: "telefono", label: "Teléfono", type: "tel", placeholder: "+56912345678" },
+                  { id: "password", label: "Contraseña", type: "password", placeholder: "••••••••" },
+                  { id: "confirmPassword", label: "Repetir Contraseña", type: "password", placeholder: "••••••••" },
                 ].map((field) => (
                   <div key={field.id}>
                     <label
@@ -142,6 +138,7 @@ export default function RegisterAdminPage() {
                       name={field.id}
                       value={(form as any)[field.id]}
                       onChange={handleChange}
+                      placeholder={field.placeholder} // <--- aquí se agrega
                       required
                       className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150"
                     />
@@ -156,10 +153,7 @@ export default function RegisterAdminPage() {
                     checked={form.superAdmin}
                     onChange={handleChange}
                   />
-                  <label
-                    htmlFor="superAdmin"
-                    className="text-sm text-gray-700"
-                  >
+                  <label htmlFor="superAdmin" className="text-sm text-gray-700">
                     ¿Es SuperAdmin?
                   </label>
                 </div>

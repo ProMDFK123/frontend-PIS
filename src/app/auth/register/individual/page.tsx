@@ -93,6 +93,7 @@ export default function RegisterParticularPage() {
                   name="nombre"
                   value={formData.nombre}
                   onChange={handleChange}
+                  placeholder="Juan"
                 />
                 <InputField
                   id="apellido"
@@ -100,6 +101,7 @@ export default function RegisterParticularPage() {
                   name="apellido"
                   value={formData.apellido}
                   onChange={handleChange}
+                  placeholder="Pérez"
                 />
                 <InputField
                   id="rut"
@@ -107,6 +109,7 @@ export default function RegisterParticularPage() {
                   name="rut"
                   value={formData.rut}
                   onChange={handleChange}
+                  placeholder="12345678-9"
                 />
                 <InputField
                   id="correo"
@@ -115,6 +118,7 @@ export default function RegisterParticularPage() {
                   type="email"
                   value={formData.correo}
                   onChange={handleChange}
+                  placeholder="email@example.com"
                 />
                 <InputField
                   id="telefono"
@@ -122,6 +126,7 @@ export default function RegisterParticularPage() {
                   name="telefono"
                   value={formData.telefono}
                   onChange={handleChange}
+                  placeholder="+56912345678"
                 />
                 <InputField
                   id="password"
@@ -130,6 +135,7 @@ export default function RegisterParticularPage() {
                   type="password"
                   value={formData.password}
                   onChange={handleChange}
+                  placeholder="••••••••"
                 />
                 <InputField
                   id="confirmPassword"
@@ -138,6 +144,7 @@ export default function RegisterParticularPage() {
                   type="password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
+                  placeholder="••••••••"
                 />
 
                 <button
