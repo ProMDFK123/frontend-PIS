@@ -102,7 +102,7 @@ export default function RegisterStudentPage() {
                     <option value="Ninguna">Ninguna</option>
                     <option value="Visual">Visual</option>
                     <option value="Auditiva">Auditiva</option>
-                    <option value="Motora">Motora</option>
+                    <option value="Motriz">Motriz</option>
                     <option value="Cognitiva">Cognitiva</option>
                     <option value="Otra">Otra</option>
                   </select>

@@ -11,16 +11,20 @@ export function mapLoginResponse(dto: any) {
 }
 // Register Adapters
 // Admin
-export function mapAdminResponse(dto: AdminResponseDto){
-    return {
-        message: dto.message,
-        success: !!dto.data,
-    };
+export function mapAdminResponse(dto: AdminResponseDto) {
+  return {
+    success: true,
+    message: dto.data || dto.message,
+  };
 }
+
 // Company
-export function mapCompanyResponse(dto: CompanyResponsetDto){
-    return{message: dto.message};
+export function mapCompanyResponse(dto: CompanyResponsetDto | any) {
+  return {
+    message: dto.data || dto.message || dto.status || "Registro completado con éxito",
+  };
 }
+
 // Individual
 export function mapIndividualResponse(dto: IndividualResponseDto){
     return {message: dto.message};
