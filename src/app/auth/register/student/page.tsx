@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent, ChangeEventHandler } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { registerStudent } from "@/services/authService";
 import { StudentAdapter } from "@/services/adapters/authAdapter";
+import { formatRut } from "src/utils/Util"
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(64, 64, 48, 0.4)";
@@ -22,11 +23,14 @@ export default function RegisterStudentPage() {
     discapacidad: "Ninguna",
   });
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const {name, value} = e.target;
+
+    let newValue = value;
+
+    if(name === "rut") newValue = formatRut(value);
+
+    setFormData((prev) => ({...prev, [name]: newValue}));
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -81,13 +85,13 @@ export default function RegisterStudentPage() {
 
               {/* Formulario */}
               <form onSubmit={handleSubmit} className="space-y-4">
-                {renderInput("nombre", "Nombre", formData.nombre, handleChange)}
-                {renderInput("apellido", "Apellido", formData.apellido, handleChange)}
-                {renderInput("email", "Correo", formData.email, handleChange, "text", "ejemplo")}
-                {renderInput("rut", "RUT", formData.rut, handleChange)}
-                {renderInput("telefono", "Teléfono", formData.telefono, handleChange, "tel")}
-                {renderInput("password", "Contraseña", formData.password, handleChange, "password")}
-                {renderInput("confirmPassword", "Repetir Contraseña", formData.confirmPassword, handleChange, "password")}
+                {renderInput("nombre", "Nombre", formData.nombre, handleChange, "text", "Juan")}
+                {renderInput("apellido", "Apellido", formData.apellido, handleChange, "text", "Pérez")}
+                {renderInput("email", "Correo", formData.email, handleChange, "text", "email@alumnos.ucn.cl")}
+                {renderInput("rut", "RUT", formData.rut, handleChange, "text", "12345678-9")}
+                {renderInput("telefono", "Teléfono", formData.telefono, handleChange, "text", "+56912345678")}
+                {renderInput("password", "Contraseña", formData.password, handleChange, "password", "••••••••")}
+                {renderInput("confirmPassword", "Repetir Contraseña", formData.confirmPassword, handleChange, "password", "••••••••")}
 
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">

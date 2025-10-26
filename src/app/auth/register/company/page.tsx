@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { registerCompany } from "@/services/authService";
 import { CompanyRequestDto } from "@/services/dtos/authDto";
+import { formatRut } from "src/utils/Util"
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";
@@ -24,7 +25,11 @@ export default function RegisterCompanyPage() {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    let newValue = value;
+
+    if (name === "rutEmpresa") newValue = formatRut(value);
+    setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -101,66 +106,70 @@ export default function RegisterCompanyPage() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {[
-                  { id: "nombre", label: "Nombre", type: "text", placeholder: "Empresa Inc." },
-                  { id: "razonSocial", label: "Razón social", type: "text", placeholder: "Empresa S.A." },
-                  { id: "rutEmpresa", label: "RUT Empresa", type: "text", placeholder: "40.000.000-0" },
-                  { id: "correo", label: "Correo", type: "email", placeholder: "correo@empresa.cl" },
-                  { id: "telefono", label: "Teléfono", type: "tel", placeholder: "+56912345678" },
-                ].map(({ id, label, type, placeholder }) => (
-                  <div key={id}>
-                    <label
-                      htmlFor={id}
-                      className="text-sm font-medium text-gray-700 block mb-1"
-                    >
-                      {label}
-                    </label>
-                    <input
-                      id={id}
-                      name={id}
-                      type={type}
-                      placeholder={placeholder}
-                      value={(formData as any)[id]}
-                      onChange={handleChange}
-                      required
-                      className="w-full border border-gray-300 rounded-md p-2 
-                      text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
-                  </div>
-                ))}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {[ 
+                { id: "nombre", label: "Nombre", type: "text", placeholder: "Empresa Inc." },
+                { id: "razonSocial", label: "Razón social", type: "text", placeholder: "Empresa S.A." },
+                { id: "rutEmpresa", label: "RUT Empresa", type: "text", placeholder: "12345678-9" },
+                { id: "correo", label: "Correo", type: "email", placeholder: "correo@empresa.cl" },
+                { id: "telefono", label: "Teléfono", type: "tel", placeholder: "+56912345678" },
+              ].map(({ id, label, type, placeholder }) => (
+                <div key={id}>
+                  <label
+                    htmlFor={id}
+                    className="text-sm font-medium text-gray-700 block mb-1"
+                  >
+                    {label}
+                  </label>
+                  <input
+                    id={id}
+                    name={id}
+                    type={type}
+                    placeholder={placeholder}
+                    value={(formData as any)[id]}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-300 rounded-md p-2 
+                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              ))}
 
-                {/* Contraseñas */}
-                {["password", "confirmPassword"].map((field) => (
-                  <div key={field}>
-                    <label
-                      htmlFor={field}
-                      className="text-sm font-medium text-gray-700 block mb-1"
-                    >
-                      {field === "password" ? "Contraseña" : "Repetir Contraseña"}
-                    </label>
-                    <input
-                      id={field}
-                      name={field}
-                      type="password"
-                      value={(formData as any)[field]}
-                      onChange={handleChange}
-                      required
-                      className="w-full border border-gray-300 rounded-md p-2 
-                      text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
-                  </div>
-                ))}
+              {/* Contraseñas */}
+              {[
+                { id: "password", label: "Contraseña", placeholder: "••••••••" },
+                { id: "confirmPassword", label: "Repetir Contraseña", placeholder: "••••••••" },
+              ].map(({ id, label, placeholder }) => (
+                <div key={id}>
+                  <label
+                    htmlFor={id}
+                    className="text-sm font-medium text-gray-700 block mb-1"
+                  >
+                    {label}
+                  </label>
+                  <input
+                    id={id}
+                    name={id}
+                    type="password"
+                    placeholder={placeholder} // <- agregado
+                    value={(formData as any)[id]}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-300 rounded-md p-2 
+                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              ))}
 
-                <button
-                  type="submit"
-                  className="w-full text-white rounded-md py-2 font-medium 
-                  transition mt-6 shadow-md hover:shadow-lg"
-                  style={{ backgroundColor: PRIMARY_COLOR }}
-                >
-                  Crear Cuenta
-                </button>
-              </form>
+              <button
+                type="submit"
+                className="w-full text-white rounded-md py-2 font-medium 
+                transition mt-6 shadow-md hover:shadow-lg"
+                style={{ backgroundColor: PRIMARY_COLOR }}
+              >
+                Crear Cuenta
+              </button>
+            </form>
 
               <p className="text-center text-sm mt-6 text-gray-600">
                 ¿Tienes una cuenta?{" "}

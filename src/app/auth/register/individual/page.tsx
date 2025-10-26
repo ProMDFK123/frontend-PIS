@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { registerIndividual } from "@/services/authService";
 import { IndividualRequestDto } from "@/services/dtos/authDto";
+import { formatRut } from "src/utils/Util"
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";
@@ -24,7 +25,11 @@ export default function RegisterParticularPage() {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    let newValue = value;
+
+    if (name === "rut") newValue = formatRut(value);
+    setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -93,6 +98,7 @@ export default function RegisterParticularPage() {
                   name="nombre"
                   value={formData.nombre}
                   onChange={handleChange}
+                  placeholder="Juan"
                 />
                 <InputField
                   id="apellido"
@@ -100,6 +106,7 @@ export default function RegisterParticularPage() {
                   name="apellido"
                   value={formData.apellido}
                   onChange={handleChange}
+                  placeholder="Pérez"
                 />
                 <InputField
                   id="rut"
@@ -107,6 +114,7 @@ export default function RegisterParticularPage() {
                   name="rut"
                   value={formData.rut}
                   onChange={handleChange}
+                  placeholder="12345678-9"
                 />
                 <InputField
                   id="correo"
@@ -115,6 +123,7 @@ export default function RegisterParticularPage() {
                   type="email"
                   value={formData.correo}
                   onChange={handleChange}
+                  placeholder="email@example.com"
                 />
                 <InputField
                   id="telefono"
@@ -122,6 +131,7 @@ export default function RegisterParticularPage() {
                   name="telefono"
                   value={formData.telefono}
                   onChange={handleChange}
+                  placeholder="+56912345678"
                 />
                 <InputField
                   id="password"
@@ -130,6 +140,7 @@ export default function RegisterParticularPage() {
                   type="password"
                   value={formData.password}
                   onChange={handleChange}
+                  placeholder="••••••••"
                 />
                 <InputField
                   id="confirmPassword"
@@ -138,6 +149,7 @@ export default function RegisterParticularPage() {
                   type="password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
+                  placeholder="••••••••"
                 />
 
                 <button
