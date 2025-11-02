@@ -109,8 +109,8 @@ export default function HomePage() {
           </div>
 
           <div className="mt-6">
-            <a
-              href="/offers"
+           <a
+              href="#explora"
               className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-[15px] font-semibold text-white
                         bg-[var(--primary)] hover:opacity-95 transition"
             >
