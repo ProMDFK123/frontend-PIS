@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import { isLoggedIn, getUserFromToken, logoutAndRedirect } from "@/lib/auth";
 
-// 👇 ahora este "Explorar" manda a la sección de la home
+
 const baseLinks = [
   { href: "/", label: "Inicio" },
   { href: "/offers", label: "Explorar" },
