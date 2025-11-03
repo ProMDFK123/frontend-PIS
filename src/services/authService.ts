@@ -2,7 +2,7 @@
 
 import api from "src/services/Service";
 import { type LoginRequestDto, type LoginResponseDto, type AdminRequestDto, type AdminResponseDto, type CompanyRequestDto, CompanyResponsetDto, IndividualRequestDto, IndividualResponseDto, StudentRequestDto, VerifyEmailDto, VerifyEmailResponseDto, ResendVerificationDto, ResendVerificationResponseDto, ResetPasswordDto, ResetPasswordResponseDto, VerifyResetCodeDto, VerifyResetCodeResponseDto, StudentResponseDto } from "./dtos/authDto";
-import { mapLoginResponse, mapAdminResponse, mapCompanyResponse, mapVerifyEmailResponse, mapResendVerificationResponse, mapResetVerificationResponse } from "./adapters/authAdapter";
+import { mapLoginResponse, mapAdminResponse, mapCompanyResponse, mapVerifyEmailResponse, mapResendVerificationResponse, mapResetVerificationResponse, mapIndividualResponse, mapStudentResponse } from "./adapters/authAdapter";
 
 // Login Service
 export async function loginUser(payload: LoginRequestDto | any) {
@@ -19,32 +19,37 @@ export async function loginUser(payload: LoginRequestDto | any) {
 }
 
 // Register Services
-export async function RegisterAdmin(payload: AdminRequestDto){
+export async function RegisterAdmin(payload: AdminRequestDto | any){
   const response = await api.post<AdminResponseDto>("/api/auth/register/admin", payload);
   return mapAdminResponse(response.data);
 }
-export async function registerCompany(payload: CompanyRequestDto){
+export async function registerCompany(payload: CompanyRequestDto | any){
   const response = await api.post<CompanyResponsetDto>("/api/auth/register/company", payload);
   return mapCompanyResponse(response.data);
 }
-export async function registerIndividual(payload: IndividualRequestDto) {
+export async function registerIndividual(payload: IndividualRequestDto | any) {
   const response = await api.post("/api/auth/register/individual", payload);
-  return {
-    message: response.data.message || response.data.Message,
-    data: response.data.data || response.data.Data,
-  };
+  return mapIndividualResponse(response.data);
 }
-export async function registerStudent(payload: StudentRequestDto){
-  const response = await api.post<StudentResponseDto>("/api/auth/register/student", payload);
-  return {message: response.data.message};
+export async function registerStudent(payload: StudentRequestDto) {
+  try {
+    const response = await api.post<StudentResponseDto>(
+      "/api/auth/register/student",
+      payload
+    );
+    return mapStudentResponse(response.data);
+  } catch (error: any) {
+    console.error("Error al registrar estudiante:", error.response?.data);
+    throw error;
+  }
 }
 
 // Email Verification
-export async function verifyEmail(payload: VerifyEmailDto){
+export async function verifyEmail(payload: VerifyEmailDto | any){
   const response = await api.post<VerifyEmailResponseDto>("/api/auth/verify-email", payload);
   return mapVerifyEmailResponse(response.data);
 }
-export async function resendVerification(payload: ResendVerificationDto) {
+export async function resendVerification(payload: ResendVerificationDto | any) {
   const response = await api.post<ResendVerificationResponseDto>("/api/auth/resend-verification", payload);
   return mapResendVerificationResponse(response.data);
 }
