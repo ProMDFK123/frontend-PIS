@@ -43,12 +43,10 @@ interface StudentForm{
 }
 // Request Adapter
 export const StudentAdapter = {toDTO(formData: StudentForm): StudentRequestDto{
-    const fullEmail = `${formData.email}@alumnos.ucn.cl`;
-
     return {
         Name: formData.nombre,
         LastName: formData.apellido,
-        Email: fullEmail,
+        Email: formData.email,
         Rut: formData.rut,
         PhoneNumber: formData.telefono,
         Password: formData.password,
