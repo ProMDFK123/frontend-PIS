@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
-import FeedbackModal from "@/app/jobs/reviews/evaluation";
+import FeedbackModal from "@/app/jobs/reviews/employer/evaluation";
 
 import {
   Dialog,
