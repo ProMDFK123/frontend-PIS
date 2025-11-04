@@ -1,6 +1,8 @@
 // services/adapters/adapters.ts
 import { Offer } from "@/components/offers/OfferCard";
 import { OfferBasicDto, BuySellBasicDto } from "@/services/dtos/dto";
+import { OfferForAdmin } from "@/types/admin-publications";
+import { PendingOffersForAdminDto } from "@/services/dtos/adminDto";
 
 function toOfferType(t: OfferBasicDto["offerType"]): Offer["type"] {
   if (t === "Voluntariado" || t === 1) return "Voluntariado";
@@ -31,4 +33,30 @@ export function mapBuySellDtoToCard(b: BuySellBasicDto): Offer {
     postedAt: b.publicationDate ?? new Date().toISOString(),
     owner: b.userName ?? "UCN",
   };
+}
+
+function toOfferTypeForAdmin(dto: PendingOffersForAdminDto): OfferForAdmin["type"] {
+    // Usamos el campo 'type' (minúscula) y verificamos el número
+    if (dto.type === 0 || dto.type === 1) { 
+        return "Trabajo"; 
+    }
+    return "Trabajo"; // Fallback seguro
+}
+
+// 🚨 Corrección: mapOfferDtoToValidate debe aceptar el nuevo DTO
+export function mapOfferDtoToValidate(o: PendingOffersForAdminDto): OfferForAdmin {
+    return {
+        id: String(o.id), // Asumimos que el ID fue incluido en el DTO de lectura
+        title: o.title, 
+        // 🚨 Usar el DTO completo como argumento
+        type: toOfferTypeForAdmin(o), 
+    };
+}
+
+export function mapBuySellDtoToValidate(b: BuySellBasicDto): OfferForAdmin {
+    return {
+        id: `bs-${String(b.id)}`, 
+        title: b.title, 
+        type: "CompraVenta", 
+    };
 }
