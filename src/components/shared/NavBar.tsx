@@ -21,7 +21,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/" className="font-bold text-primary">BolsaUCN</a>
             <div className="flex gap-5 text-sm">
               <a href="/" className="hover:text-primary">Inicio</a>
-              <a href="/offers" className="hover:text-primary">Explorar</a>
               <a href="/auth/login" className="hover:text-primary">Ingresar</a>
             </div>
           </nav>

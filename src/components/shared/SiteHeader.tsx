@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import { isLoggedIn, getUserFromToken, logoutAndRedirect } from "@/lib/auth";
 
+
 const baseLinks = [
   { href: "/", label: "Inicio" },
   { href: "/offers", label: "Explorar" },
@@ -56,7 +57,6 @@ export default function SiteHeader() {
           <span className="ml-1 rounded-md bg-[var(--primary)] px-2 py-1 text-white">FEUCN</span>
         </Link>
 
-        {/* Links + acción (mismo grupo, mismo espaciado) */}
         <div className="flex items-center gap-2">
           {baseLinks.map((l) => (
             <Link
@@ -64,15 +64,14 @@ export default function SiteHeader() {
               href={l.href}
               className={cn(
                 "rounded-xl px-4 py-2 text-[var(--ink)]/85 hover:bg-[var(--chip)] transition",
-                pathname === l.href && "bg-[var(--chip)] text-[var(--ink)]",
-                pathname.startsWith("/offers") && l.href === "/offers" && "bg-[var(--chip)] text-[var(--ink)]"
+                // marcamos activo solo si coincide exacto o si estamos en /offers y el link es /offers
+                pathname === l.href && "bg-[var(--chip)] text-[var(--ink)]"
               )}
             >
               {l.label}
             </Link>
           ))}
 
-          {/* Acción derecha: Ingresar o Usuario (en la misma línea, como antes) */}
           {!auth.logged ? (
             <Link
               href="/auth/login"
@@ -105,7 +104,6 @@ export default function SiteHeader() {
                   >
                     Editar perfil
                   </Link>
-
                   <Link
                     href="/jobs/history"
                     className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
@@ -113,7 +111,6 @@ export default function SiteHeader() {
                   >
                     Historial de postulaciones
                   </Link>
-
                   <Link
                     href="/offers/history"
                     className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
@@ -121,7 +118,6 @@ export default function SiteHeader() {
                   >
                     Historial de trabajos
                   </Link>
-
                   <button
                     onClick={() => logoutAndRedirect("/")}
                     className="w-full text-left px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"

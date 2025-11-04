@@ -14,7 +14,7 @@ export default function HomeHero() {
       <div className="absolute -bottom-24 -right-24 size-[360px] rounded-full blur-3xl opacity-25 bg-[var(--secondary)]" />
 
       {/* Títulos centrales */}
-      <div className="relative z-10 flex h-full items-center justify-center text-center px-6">
+      <div id="explora" className="relative z-10 flex h-full items-center justify-center text-center px-6">
         <div>
           <h1 className="text-white font-extrabold leading-tight drop-shadow text-[52px] md:text-[64px]">
             Bolsa estudiantil FEUCN
