@@ -50,8 +50,8 @@ export default function RegisterStudentPage() {
     } catch (error: any) {
       console.error("Error en el registro:", error);
       alert(
-        error.response?.data?.Message ||
-          "Error al registrarse. Por favor, inténtalo nuevamente."
+        "Error: " + (error.response?.data?.details ||
+          "Error al registrarse. Por favor, inténtalo nuevamente.")
       );
     }
   };
