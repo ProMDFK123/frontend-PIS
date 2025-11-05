@@ -27,4 +27,6 @@ export interface AdminDetail {
     statusValidation: ValidationStatus; 
     price?: number;
     remuneration?: number;
+    deadlineDate?: string; 
+    endDate?: string;
 }

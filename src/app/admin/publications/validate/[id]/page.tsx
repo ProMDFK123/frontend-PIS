@@ -1,22 +1,40 @@
+// src/app/admin/publications/validate/[id]/page.tsx
 "use client";
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/services/Service';
 import { ChevronLeft } from 'lucide-react'; // Icono para volver
-// Asumimos que AdminDetail y los adaptadores están importados/definidos correctamente
 import type { AdminDetail } from '@/types/admin-publications'; 
 import { mapOfferDtoToDetail, mapBuySellDtoToDetail } from '@/services/adapters/adapters';
 
 
-// --- Funciones Auxiliares (Definidas o importadas) ---
+// --- Funciones Auxiliares ---
 function formatDate(dateString: string | undefined): string {
     if (!dateString) return "N/A";
-    try { return new Date(dateString).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' }); } catch { return dateString; }
+    // Corrección para el desfase de zona horaria: se toma solo la fecha.
+    const dateOnly = dateString.split('T')[0];
+    try { 
+        return new Date(dateOnly).toLocaleDateString('es-CL', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        }); 
+    } catch { 
+        return dateString; 
+    }
 }
 function formatPrice(clp: number | undefined | null): string {
-    // Aceptamos 0 (cero) como un valor formateable.
     if (clp === undefined || clp === null) return "No disponible";
     return clp.toLocaleString("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 });
+}
+// Función para traducir el estado
+function translateStatus(status: AdminDetail['statusValidation'] | string): string {
+    const map: Record<string, string> = {
+        Pending: 'Pendiente',
+        Published: 'Publicado',
+        Rejected: 'Rechazado',
+    };
+    return map[status] || status;
 }
 // ----------------------------------------
 
@@ -30,7 +48,7 @@ export default function AdminDetailPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // --- LÓGICA DE CARGA DE DETALLES (Endpoint GET) ---
+    // --- LÓGICA DE CARGA DE DETALLES ---
     const fetchDetails = async () => {
         if (!id || id === 'undefined') {
             setLoading(false);
@@ -44,13 +62,10 @@ export default function AdminDetailPage() {
             const entityId = isBuySell ? id.split('-')[1] : id;
             const typePath = isBuySell ? "buysells" : "offers";
 
-            // Endpoint GET: /publications/{offers/buysells}/{id}/validation
             const endpoint = `/publications/${typePath}/${entityId}/validation`; 
             
             const response = await api.get<any>(endpoint); 
             
-            // 🚨 CORRECCIÓN 1 (FLUIDEZ DE DATOS): Desempaquetar el DTO de la propiedad 'data'.
-            // Esto transforma { message, data: DTO } en solo DTO.
             const detailDto = response.data?.data ?? response.data; 
             
             if (!detailDto) {
@@ -61,7 +76,6 @@ export default function AdminDetailPage() {
             if (isBuySell) {
                 mappedDetail = mapBuySellDtoToDetail(detailDto);
             } else {
-                // Ahora mapOfferDtoToDetail recibe el objeto de datos correcto.
                 mappedDetail = mapOfferDtoToDetail(detailDto);
             }
             
@@ -86,19 +100,23 @@ export default function AdminDetailPage() {
 
 
     // --- LÓGICA DE VALIDACIÓN (Endpoints PATCH) ---
+    // Endpoint: /api/{offers/buysells}/{id}/publish o /reject
     const handleAction = async (action: 'publish' | 'reject') => {
         if (!detail) return;
 
         const isBuySell = detail.id.startsWith('bs-');
         const entityId = isBuySell ? detail.id.split('-')[1] : detail.id;
-        const typePath = isBuySell ? "buysells" : "offers";
+        // Solo las ofertas (offers) tienen los endpoints /publish y /reject.
+        // Si fuera CompraVenta, asumimos que tiene los mismos endpoints si existen.
+        const typePath = isBuySell ? "buysells" : "offers"; 
         
-        // Endpoint PATCH: /api/offers/{id}/publish o /api/offers/{id}/reject
-        const endpoint = `/api/${typePath}/${entityId}/${action}`; 
+        // La URL de los endpoints es: /api/offers/{id}/publish
+        const endpoint = `/publications/${typePath}/${entityId}/${action}`; 
 
         try {
             await api.patch(endpoint);
-            alert(`Publicación ${detail.title} (${detail.id}) ${action === 'publish' ? 'APROBADA' : 'RECHAZADA'} con éxito.`);
+            // 🚨 CAMBIO: Simplificación del mensaje de éxito
+            alert(`Publicación ${detail.title} (${detail.id}) fue ${action === 'publish' ? 'aceptada' : 'rechazada'} con éxito.`);
             router.push('/admin/publications/validate'); // Volver a la lista
 
         } catch (err) {
@@ -123,7 +141,7 @@ export default function AdminDetailPage() {
             {/* TÍTULO PRINCIPAL Y TIPO (Arriba del diseño de dos tarjetas) */}
             <h1 className="text-4xl font-extrabold text-[var(--ink)] mb-1">{detail.title || "Sin Título"}</h1>
             <p className="text-lg text-[var(--muted-ink)] mb-6">
-                Tipo: {detail.type === 'CompraVenta' ? 'Venta de Artículo' : detail.type === 'Trabajo' ? 'Oferta Laboral' : 'Voluntariado'}
+                Tipo: {detail.type === 'CompraVenta' ? 'Venta de Artículo' : 'Oferta de Trabajo'}
             </p>
 
             {/* --- GRID PRINCIPAL (DOS COLUMNAS) --- */}
@@ -132,18 +150,19 @@ export default function AdminDetailPage() {
                 {/* COLUMNA 1: DETALLES DE LA PUBLICACIÓN Y ACCIONES (2/3 ancho) */}
                 <section className="md:col-span-2 bg-white p-6 rounded-xl shadow-lg border border-[var(--border)] space-y-6">
                     
-                    {/* Tarjeta 1: Imagen y Descripción */}
+                    {/* Imagen */}
+                    <div className="mb-4 overflow-hidden rounded-md max-h-96">
+                        <img 
+                            src={(detail.images && detail.images.length > 0) ? detail.images[0] : '/generic.png'}
+                            alt={detail.title} 
+                            className="w-full object-cover h-64 md:h-96"
+                        />
+                    </div>
+                    
+                    {/* Tarjeta 1: Descripción */}
                     <div className="space-y-4">
                         <h2 className="text-2xl font-bold text-[var(--primary)] mb-4">Detalles de la Oferta</h2>
                         
-                        {/* Imagen (si existe, similar al mockup de voluntariado) */}
-                        {detail.images && detail.images.length > 0 && (
-                            <div className="mb-4 overflow-hidden rounded-md max-h-96">
-                                {/* Placeholder simple de imagen */}
-                                <img src={detail.images[0] || "https://placehold.co/800x400/9C27B0/FFFFFF?text=Imagen+de+Publicaci%C3%B3n"} alt={detail.title} className="w-full object-cover" />
-                            </div>
-                        )}
-
                         <h3 className="text-xl font-bold mt-4">Descripción Completa</h3>
                         <p className="text-[var(--ink)] whitespace-pre-wrap leading-relaxed">
                             {detail.description || "No hay descripción detallada proporcionada."}
@@ -160,15 +179,26 @@ export default function AdminDetailPage() {
                             </div>
                             <div>
                                 <strong>Estado Validación:</strong>
-                                <p className="font-semibold text-orange-600">{detail.statusValidation}</p>
+                                <p className="font-semibold text-orange-600">{translateStatus(detail.statusValidation)}</p>
                             </div>
+                            
+                            {/* Fechas de trabajo añadidas */}
+                            {detail.type !== 'CompraVenta' && (
+                                <div>
+                                    <strong>Fecha de Inicio:</strong>
+                                    <p className="font-semibold text-[var(--muted-ink)]">{formatDate(detail.deadlineDate)}</p>
+                                </div>
+                            )}
+                            {detail.type !== 'CompraVenta' && (
+                                <div>
+                                    <strong>Fecha de Término:</strong>
+                                    <p className="font-semibold text-[var(--muted-ink)]">{formatDate(detail.endDate)}</p>
+                                </div>
+                            )}
+                            
                             <div>
                                 <strong>{detail.type === 'CompraVenta' ? 'Precio Solicitado' : 'Remuneración'}</strong>
                                 <p className="font-semibold text-green-700">{formatPrice(detail.price || detail.remuneration)}</p> 
-                            </div>
-                            <div>
-                                <strong>ID de Recurso:</strong>
-                                <p className="font-semibold text-[var(--muted-ink)]">{detail.id} (Uso interno)</p>
                             </div>
                         </div>
                     </div>
@@ -179,7 +209,6 @@ export default function AdminDetailPage() {
                     <div>
                         <h2 className="text-2xl font-bold text-[var(--primary)] mb-4">Perfil del Contacto</h2>
                         
-                        {/* Información del Contacto (Similar al mockup de Pedro Manrique) */}
                         <div className="flex flex-col items-center text-center space-y-3 pt-2">
                             <div className="w-20 h-20 bg-blue-200 rounded-full flex items-center justify-center text-blue-600 text-3xl font-bold">
                                 {detail.companyName ? detail.companyName[0] : 'U'}
@@ -200,22 +229,18 @@ export default function AdminDetailPage() {
                             onClick={() => handleAction('publish')} 
                             className="w-full flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition"
                         >
-                            ✅ Aceptar y Publicar
+                            Aceptar
                         </button>
                         <button 
                             onClick={() => handleAction('reject')} 
                             className="w-full flex items-center justify-center px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition"
                         >
-                            ❌ Rechazar
+                            Rechazar
                         </button>
                     </div>
                 </section>
             </div>
             {/* FIN DEL GRID */}
-
-            <button onClick={() => router.push('/admin/publications/validate')} className="mt-6 text-[var(--primary)] hover:underline flex items-center gap-1">
-                <ChevronLeft size={20} /> Volver a la lista de pendientes
-            </button>
         </main>
     );
 }

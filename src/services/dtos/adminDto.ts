@@ -13,7 +13,7 @@ export interface OfferDetailForAdminDto {
     PublicationDate: string;
     Type: number; // 0=Trabajo, 1=Voluntariado
     StatusValidation: "Pending" | "Published" | "Rejected"; 
-    Remuneration: number | null; 
+    Remuneration: number; 
     Active: boolean;
     // ... otros campos
 }
