@@ -1,28 +1,28 @@
-// src/app/admin/publications/manage/page.tsx
-
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import FilterBar from "@/components/offers/FilterBar";
 import api from "@/services/Service";
-import Link from "next/link"; // 🚨 Importamos Link para las tarjetas
+import Link from "next/link"; 
 
-// 🚨 CAMBIO 1: Importamos los DTOs, el tipo 'Offer' y los adaptadores de TARJETA
+// Importamos los DTOs, el tipo 'Offer' y los adaptadores de TARJETA
 import type { ApiListResponse, OfferBasicDto, BuySellBasicDto } from "@/services/dtos/dto";
-import type { Offer } from "@/components/offers/OfferCard"; // 🚨 Importamos el tipo 'Offer'
-import { mapOfferDtoToCard, mapBuySellDtoToCard } from "@/services/adapters/adapters"; // 🚨 Usamos los adaptadores de tarjeta
+import type { Offer } from "@/components/offers/OfferCard"; 
+import { mapOfferDtoToCard, mapBuySellDtoToCard } from "@/services/adapters/adapters"; 
 
-// Ya no usamos ManageRowLink
-// import ManageRowLink from "@/components/admin/ManageRowLink"; 
 import { ValidationType } from "@/types/admin-publications"; 
 
-// 🚨 CAMBIO 2: Añadimos la función 'peso' (copiada de OfferCard.tsx)
-function peso(clp: number) {
-  if (clp <= 0) return "No disponible";
-  return clp.toLocaleString("es-CL", {
-    style: "currency",
-    currency: "CLP",
-    maximumFractionDigits: 0,
-  });
+// 🚨 CORRECCIÓN CLAVE: La función 'peso' ahora acepta number, null, o undefined 
+// y maneja los valores nulos antes de llamar a toLocaleString.
+function peso(clp: number | null | undefined) {
+    // 🚨 Nueva verificación robusta
+    if (typeof clp !== "number" || isNaN(clp) || clp <= 0) {
+        return "No disponible";
+    }
+    return clp.toLocaleString("es-CL", {
+        style: "currency",
+        currency: "CLP",
+        maximumFractionDigits: 0,
+    });
 }
 
 export default function ManagePublicationsPage() {
@@ -30,17 +30,18 @@ export default function ManagePublicationsPage() {
     const [type, setType] = useState<ValidationType>("Todos");
     const [sort, setSort] = useState<"recientes" | "fecha" | "monto">("recientes");
     
-    // 🚨 CAMBIO 3: El estado ahora almacena el tipo 'Offer[]'
     const [publications, setPublications] = useState<Offer[] | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     
-// --- Lógica de Carga (usando adaptadores de tarjeta, sin cambios de la última vez) ---
+// --- Lógica de Carga ---
 const fetchPublishedPublications = async () => {
     try {
+        // 🚨 NOTA IMPORTANTE: Si tu API requiere /api/ para esta ruta, debes incluirlo aquí.
+        // Si el 404 persiste, cambia la ruta a: "/api/publications/offers/published"
         const [offersRes, buysellsRes] = await Promise.all([
-            api.get<ApiListResponse<OfferBasicDto>>("/api/publications/offers"),
-            api.get<ApiListResponse<BuySellBasicDto>>("/api/publications/buysells"),
+            api.get<ApiListResponse<OfferBasicDto>>("/publications/offers/published"),
+            api.get<ApiListResponse<BuySellBasicDto>>("/publications/buysells/published"),
         ]);
 
         const offersData = offersRes.data.data;
@@ -55,8 +56,14 @@ const fetchPublishedPublications = async () => {
         setError(null); 
 
     } catch (err: any) {
+        // Si el error es 404/403, es un problema de ruta o autenticación, no de mapeo.
+        const status = err.response?.status;
+        const msg = (status === 404 || status === 403) 
+                    ? `Error ${status}: La API no encontró las publicaciones o la sesión es inválida.` 
+                    : "No se pudieron cargar las publicaciones. Intenta nuevamente.";
+        
         console.error("Error fetching published:", err);
-        setError("No se pudieron cargar las publicaciones. Error: " + err.message); 
+        setError(msg); 
         setPublications([]); 
     }
 }
@@ -68,7 +75,7 @@ const fetchPublishedPublications = async () => {
 
     const source: Offer[] = publications ?? [];
 
-    // --- Lógica de Filtro (usando la de offers/page.tsx) ---
+    // --- Lógica de Filtro (sin cambios) ---
     const filtered = useMemo(() => {
         let list = [...source];
         
@@ -131,78 +138,79 @@ const fetchPublishedPublications = async () => {
                     setSort={setSort as any}
                 />
 
-                {/* 🚨 CAMBIO 4: Usamos el grid y el JSX de 'OfferCard' */}
+                {/* Usamos el grid y el JSX de 'OfferCard' */}
                 <section className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filtered.map((offer) => {
-                      // Lógica interna de OfferCard
-                      const { id, title, type, image, deadline, duration, stipend, owner } = offer;
-                      const isJobLike = type === "Trabajo" || type === "Voluntariado";
-                      
-                      // 🚨 URL específica de Admin
-                      const detailUrl = `/admin/publications/manage/${id}`;
+                        // Lógica interna de OfferCard
+                        const { id, title, type, image, deadline, duration, stipend, owner } = offer;
+                        const isJobLike = type === "Trabajo" || type === "Voluntariado";
+                        
+                        // URL específica de Admin
+                        const detailUrl = `/admin/publications/manage/${id}`;
 
-                      return (
-                        <Link
-                          href={detailUrl}
-                          key={id}
-                          className="group block h-full focus:outline-none"
-                          aria-label={`Gestionar ${title}`}
-                        >
-                          <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]
-                                              shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-[3px] focus-visible:ring-[var(--ring)]">
-                            <div className="h-44 w-full overflow-hidden">
-                              <img src={image} alt={title} className="h-full w-full object-cover transition group-hover:scale-[1.02]" />
-                            </div>
+                        return (
+                            <Link
+                                href={detailUrl}
+                                key={id}
+                                className="group block h-full focus:outline-none"
+                                aria-label={`Gestionar ${title}`}
+                            >
+                                <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]
+                                                    shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-[3px] focus-visible:ring-[var(--ring)]">
+                                    <div className="h-44 w-full overflow-hidden">
+                                        <img src={image} alt={title} className="h-full w-full object-cover transition group-hover:scale-[1.02]" />
+                                    </div>
 
-                            <div className="p-4 flex flex-col flex-1">
-                              <div className="mb-2">
-                                <span className="inline-flex items-center rounded-full bg-[var(--chip)] px-3 py-1 text-xs font-medium text-[var(--ink)]/80">
-                                  {type === "Voluntariado" ? "Voluntariado" : type === "Trabajo" ? "Oferta de trabajo" : "Compra/venta"}
-                                </span>
-                              </div>
+                                    <div className="p-4 flex flex-col flex-1">
+                                        <div className="mb-2">
+                                            <span className="inline-flex items-center rounded-full bg-[var(--chip)] px-3 py-1 text-xs font-medium text-[var(--ink)]/80">
+                                                {type === "Voluntariado" ? "Voluntariado" : type === "Trabajo" ? "Oferta de trabajo" : "Compra/venta"}
+                                            </span>
+                                        </div>
 
-                              <h3 className="text-lg font-extrabold text-[var(--ink)]">{title}</h3>
+                                        <h3 className="text-lg font-extrabold text-[var(--ink)]">{title}</h3>
 
-                              <ul className="mt-3 space-y-2 text-[var(--muted-ink)] text-sm">
-                                {isJobLike && deadline && (
-                                  <li className="flex items-center gap-2">
-                                    <span>⏰</span>
-                                    <span>
-                                      Postula hasta: <strong className="text-[var(--ink)]">{new Date(deadline).toLocaleDateString("es-CL")}</strong>
-                                    </span>
-                                  </li>
-                                )}
-                                {isJobLike && duration && (
-                                  <li className="flex items-center gap-2">
-                                    <span>🗓️</span>
-                                    <span>Duración: <strong className="text-[var(--ink)]">{duration}</strong></span>
-                                  </li>
-                                )}
-                                <li className="flex items-center gap-2">
-                                  <span>💰</span>
-                                  <span>{isJobLike ? "Remuneración" : "Precio"}: <strong className="text-[var(--ink)]">{peso(stipend)}</strong></span>
-                                </li>
-                                {owner && (
-                                  <li className="flex items-center gap-2">
-                                    <span>👤</span>
-                                    <span>Oferente: <strong className="text-[var(--ink)]">{owner}</strong></span>
-                                  </li>
-                                )}
-                              </ul>
+                                        <ul className="mt-3 space-y-2 text-[var(--muted-ink)] text-sm">
+                                            {isJobLike && deadline && (
+                                                <li className="flex items-center gap-2">
+                                                    <span>⏰</span>
+                                                    <span>
+                                                        Postula hasta: <strong className="text-[var(--ink)]">{new Date(deadline).toLocaleDateString("es-CL")}</strong>
+                                                    </span>
+                                                </li>
+                                            )}
+                                            {isJobLike && duration && (
+                                                <li className="flex items-center gap-2">
+                                                    <span>🗓️</span>
+                                                    <span>Duración: <strong className="text-[var(--ink)]">{duration}</strong></span>
+                                                </li>
+                                            )}
+                                            <li className="flex items-center gap-2">
+                                                <span>💰</span>
+                                                {/* 🚨 LLAMADA CORREGIDA A LA FUNCIÓN SEGURA */}
+                                                <span>{isJobLike ? "Remuneración" : "Precio"}: <strong className="text-[var(--ink)]">{peso(stipend)}</strong></span>
+                                            </li>
+                                            {owner && (
+                                                <li className="flex items-center gap-2">
+                                                    <span>👤</span>
+                                                    <span>Oferente: <strong className="text-[var(--ink)]">{owner}</strong></span>
+                                                </li>
+                                            )}
+                                        </ul>
 
-                              <div className="mt-auto pt-4">
-                                {/* 🚨 Botón modificado */}
-                                <span className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-[15px] font-semibold text-white bg-[var(--primary)] hover:opacity-95 transition">
-                                  Gestionar
-                                </span>
-                              </div>
-                            </div>
-                          </article>
-                        </Link>
-                      );
+                                        <div className="mt-auto pt-4">
+                                            {/* Botón modificado */}
+                                            <span className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-[15px] font-semibold text-white bg-[var(--primary)] hover:opacity-95 transition">
+                                                Gestionar
+                                            </span>
+                                        </div>
+                                    </div>
+                                </article>
+                            </Link>
+                        );
                     })}
                     
-                    {/* 🚨 CAMBIO 5: Mensaje de "no resultados" adaptado al grid */}
+                    {/* Mensaje de "no resultados" adaptado al grid */}
                     {publications !== null && filtered.length === 0 && ( 
                         <div className="col-span-full rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-[var(--muted-ink)]">
                             {publications.length === 0 
