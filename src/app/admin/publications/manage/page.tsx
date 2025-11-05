@@ -193,7 +193,7 @@ const fetchPublishedPublications = async () => {
                                             {owner && (
                                                 <li className="flex items-center gap-2">
                                                     <span>👤</span>
-                                                    <span>Oferente: <strong className="text-[var(--ink)]">{owner}</strong></span>
+                                                    <span>Usuario: <strong className="text-[var(--ink)]">{owner}</strong></span>
                                                 </li>
                                             )}
                                         </ul>
