@@ -32,7 +32,6 @@ export default function JobsHistory() {
     setIsModalOpen(false);
   };
 
-
   const trabajos = [
     { id: 1, titulo: "Paseador de perros", estado: "Activo", categoria: "Oferta de trabajo" },
     { id: 2, titulo: "Venta PS4", estado: "Activo", categoria: "Compra y venta" },
