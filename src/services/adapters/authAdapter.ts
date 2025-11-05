@@ -42,18 +42,24 @@ interface StudentForm{
     discapacidad: string;
 }
 // Request Adapter
-export const StudentAdapter = {toDTO(formData: StudentForm): StudentRequestDto{
+export const StudentAdapter = {
+  toDTO(formData: StudentForm): StudentRequestDto {
+    const emailLocalPart = formData.email.replace(/@.*/g, ""); // elimina cualquier dominio si lo escriben
+    const finalEmail = `${emailLocalPart}@alumnos.ucn.cl`;
+
     return {
-        Name: formData.nombre,
-        LastName: formData.apellido,
-        Email: formData.email,
-        Rut: formData.rut,
-        PhoneNumber: formData.telefono,
-        Password: formData.password,
-        ConfirmPassword: formData.confirmPassword,
-        Disability: formData.discapacidad,
+      Name: formData.nombre,
+      LastName: formData.apellido,
+      Email: finalEmail,
+      Rut: formData.rut,
+      PhoneNumber: formData.telefono,
+      Password: formData.password,
+      ConfirmPassword: formData.confirmPassword,
+      Disability: formData.discapacidad,
     };
-},};
+  },
+};
+
 // Response Adapter
 export function mapStudentResponse(dto: IndividualResponseDto){
     return {message: dto.message};
