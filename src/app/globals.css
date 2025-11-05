@@ -32,7 +32,9 @@
   --border: #1F2937;
   --ring: #4C51BF;
 }
-
+html {
+  scroll-behavior: smooth;
+}
 /* Base */
 @layer base {
   * { @apply outline-[var(--ring)]/50; }
