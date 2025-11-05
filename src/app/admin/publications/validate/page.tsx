@@ -136,4 +136,3 @@ const fetchPendingPublications = async () => {
         </div>
     );
 }
-
