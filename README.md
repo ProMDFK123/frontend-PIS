@@ -30,7 +30,7 @@ Luego abre http://localhost:3000 para ver la aplicación en tu navegador.
 ## ⚙️ Variables de entorno
 Crea un archivo .env.local en la raíz del proyecto con el siguiente contenido:
 ```ini
-NEXT_PUBLIC_API_URL=http://localhost:5000
+NEXT_PUBLIC_API_URL=http://localhost:5185
 ```
 
 ## 🌐 Configuración de Axios
