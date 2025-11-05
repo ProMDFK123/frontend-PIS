@@ -91,7 +91,7 @@ export default function AdminManageDetailPage() {
     }, [id]);
 
 
-    // --- LÓGICA DE GESTIÓN CORREGIDA (Ruta /api) ---
+    // --- LÓGICA DE GESTIÓN MODIFICADA ---
     const handleAction = async (action: 'unpublish' | 'delete') => {
         if (!detail) return;
 
@@ -105,25 +105,40 @@ export default function AdminManageDetailPage() {
         const entityId = isBuySell ? detail.id.split('-')[1] : id;
         const typePath = isBuySell ? "buysells" : "offers";
         
-        // 🚨 CORRECCIÓN 1: Ruta /api (basado en PublicationController.cs)
-        const endpoint = `/api/publications/${typePath}/${entityId}/${action}`; 
+        let endpoint = `/api/publications/${typePath}/${entityId}`;
+
+        // 🚨 CAMBIO DE LÓGICA:
+        if (action === 'unpublish') {
+             // Si es oferta (Trabajo/Voluntariado), usamos el endpoint 'close'
+             if (!isBuySell) {
+                endpoint = `/api/publications/${typePath}/${entityId}/close`; // Llama a CloseOfferForAdmin
+             } else {
+                 // Si es compra/venta, mantenemos el endpoint 'unpublish' genérico
+                 endpoint = `/api/publications/${typePath}/${entityId}/unpublish`;
+             }
+        } else { // action === 'delete'
+             endpoint = `/api/publications/${typePath}/${entityId}/delete`; 
+        }
 
         try {
             if (action === 'delete') {
                 await api.delete(endpoint);
             } else {
+                // 'unpublish' (que ahora es 'close' para offers) usa PATCH
                 await api.patch(endpoint);
             }
             
-            alert(`Publicación ${detail.title} (${detail.id}) ${action === 'unpublish' ? 'DESPUBLICADA' : 'ELIMINADA'} con éxito.`);
+            const actionText = action === 'unpublish' ? 'DESPUBLICADA/CERRADA' : 'ELIMINADA';
+            alert(`Publicación ${detail.title} (${detail.id}) ${actionText} con éxito.`);
             router.push('/admin/publications/manage'); 
 
         } catch (err) {
             const status = (err as any).response?.status;
-            setError(`Fallo al ${action === 'unpublish' ? 'despublicar' : 'eliminar'} la oferta. Código: ${status}`);
+            setError(`Fallo al ${action === 'unpublish' ? 'despublicar/cerrar' : 'eliminar'} la oferta. Código: ${status}`);
             console.error("ACTION ERROR:", err);
         }
     };
+    // --- FIN DE LÓGICA DE GESTIÓN MODIFICADA ---
 
 
     // --- RENDERIZADO (sin cambios) ---
