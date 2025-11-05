@@ -51,7 +51,7 @@ export default function OfferDetailPage() {
     let mounted = true;
     (async () => {
       try {
-        const res = await api.get<{ data?: OfferDetail }>(`/api/publications/offers/${id}`);
+        const res = await api.get<{ data?: OfferDetail }>(`/publications/offers/${id}`);
         const d = (res.data?.data ?? res.data) as OfferDetail;
         if (mounted) setData(d);
       } catch {
@@ -78,11 +78,11 @@ export default function OfferDetailPage() {
         const form = new FormData();
         if (motivation.trim()) form.append("motivation", motivation.trim());
         if (cvFile) form.append("cv", cvFile);
-        await api.post(`/api/publications/offers/${id}/apply`, form, {
+        await api.post(`/publications/offers/${id}/apply`, form, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       } else {
-        await api.post(`/api/publications/offers/${id}/apply`);
+        await api.post(`/publications/offers/${id}/apply`);
       }
       setApplyMsg("✅ Postulación enviada.");
       setMotivation("");

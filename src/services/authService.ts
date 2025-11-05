@@ -14,27 +14,27 @@ export async function loginUser(payload: LoginRequestDto | any) {
   };
 
   // usa el endpoint del Swagger
-  const response = await api.post<LoginResponseDto>("/api/Auth/login", body);
+  const response = await api.post<LoginResponseDto>("/Auth/login", body);
   return mapLoginResponse(response.data);
 }
 
 // Register Services
 export async function RegisterAdmin(payload: AdminRequestDto | any){
-  const response = await api.post<AdminResponseDto>("/api/auth/register/admin", payload);
+  const response = await api.post<AdminResponseDto>("/auth/register/admin", payload);
   return mapAdminResponse(response.data);
 }
 export async function registerCompany(payload: CompanyRequestDto | any){
-  const response = await api.post<CompanyResponsetDto>("/api/auth/register/company", payload);
+  const response = await api.post<CompanyResponsetDto>("/auth/register/company", payload);
   return mapCompanyResponse(response.data);
 }
 export async function registerIndividual(payload: IndividualRequestDto | any) {
-  const response = await api.post("/api/auth/register/individual", payload);
+  const response = await api.post("/auth/register/individual", payload);
   return mapIndividualResponse(response.data);
 }
 export async function registerStudent(payload: StudentRequestDto) {
   try {
     const response = await api.post<StudentResponseDto>(
-      "/api/auth/register/student",
+      "/auth/register/student",
       payload
     );
     return mapStudentResponse(response.data);
@@ -46,24 +46,24 @@ export async function registerStudent(payload: StudentRequestDto) {
 
 // Email Verification
 export async function verifyEmail(payload: VerifyEmailDto | any){
-  const response = await api.post<VerifyEmailResponseDto>("/api/auth/verify-email", payload);
+  const response = await api.post<VerifyEmailResponseDto>("/auth/verify-email", payload);
   return mapVerifyEmailResponse(response.data);
 }
 export async function resendVerification(payload: ResendVerificationDto | any) {
-  const response = await api.post<ResendVerificationResponseDto>("/api/auth/resend-verification", payload);
+  const response = await api.post<ResendVerificationResponseDto>("/auth/resend-verification", payload);
   return mapResendVerificationResponse(response.data);
 }
 
 // Reset Password
 export async function sendCode(payload: ResetPasswordDto){
-  const response = await api.post<ResetPasswordResponseDto>("/api/auth/reset-password", payload);
+  const response = await api.post<ResetPasswordResponseDto>("/auth/reset-password", payload);
   return mapResetVerificationResponse(response.data);
 }
 export async function verifyResetCode(payload: VerifyResetCodeDto){
-  const response = await api.post<VerifyResetCodeResponseDto>("/api/auth/reset-code/verify", payload);
+  const response = await api.post<VerifyResetCodeResponseDto>("/auth/reset-code/verify", payload);
   return mapResetVerificationResponse(response.data);
 }
 export async function resendCode(payload: ResetPasswordDto){
-  const response = await api.post<ResetPasswordResponseDto>("/api/auth/reset-password", payload);
+  const response = await api.post<ResetPasswordResponseDto>("/auth/reset-password", payload);
   return mapResetVerificationResponse(response.data);
 }
