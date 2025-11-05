@@ -95,7 +95,7 @@ export default function OffersPage() {
 
         {logged && (
           <Link
-            href="/publish"
+            href="/offerer"
             className="h-10 shrink-0 inline-flex items-center justify-center rounded-xl px-4 font-semibold text-white
                        bg-[var(--primary)] hover:opacity-95 transition mt-1"
           >
