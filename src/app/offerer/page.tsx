@@ -56,6 +56,16 @@ export default function PublicationForm() {
     }
   }, []); // El array vacío asegura que esto se ejecute solo una vez, al montar el componente.
 
+  // ✅ PASO EXTRA: Hook de efecto para limpiar la remuneración si la oferta no es remunerada
+  useEffect(() => {
+    // Si el tipo de oferta es 'Pasantía / Voluntariado' (valor '1'),
+    // forzamos la remuneración a '0' para evitar inconsistencias.
+    if (formData.offerType === '1') {
+      setFormData(prev => ({ ...prev, remuneration: '0' }));
+    }
+  }, [formData.offerType]); // Se ejecuta cada vez que el tipo de oferta cambia
+
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
@@ -74,32 +84,59 @@ export default function PublicationForm() {
 
     if (!formData.title.trim()) {
       newErrors.title = 'El título es requerido';
+    } else if (formData.title.length < 5 || formData.title.length > 200) {
+      newErrors.title = 'El título debe tener entre 5 y 200 caracteres';
     }
 
     if (!formData.description.trim()) {
       newErrors.description = 'La descripción es requerida';
+    } else if (formData.description.length < 10 || formData.description.length > 2000) {
+      newErrors.description =
+        'La descripción debe tener entre 10 y 2000 caracteres';
     }
 
     if (!formData.offerType) {
       newErrors.offerType = 'Debes seleccionar un tipo de oferta';
     }
 
+    // Validar que la fecha límite no sea en el pasado
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalizar a la medianoche para comparar solo fechas
+
     if (!formData.deadlineDate) {
       newErrors.deadlineDate = 'La fecha límite para postular es requerida';
+    } else if (new Date(formData.deadlineDate) < today) {
+      newErrors.deadlineDate = 'La fecha límite no puede ser una fecha pasada';
     }
 
-    // La fecha de término de la oferta es opcional, pero si existe, no puede ser anterior a la fecha límite
-    if (formData.endDate && formData.deadlineDate) {
-      if (new Date(formData.endDate) < new Date(formData.deadlineDate)) {
-        newErrors.endDate = 'La fecha de término debe ser posterior a la fecha límite de postulación';
+    if (!formData.endDate) {
+      newErrors.endDate = 'La fecha de término es requerida';
+    } else if (new Date(formData.endDate) < today) {
+      newErrors.endDate = 'La fecha de término no puede ser una fecha pasada';
+    }
+
+    // Validar que la fecha de término sea posterior a la fecha límite
+    // Solo si ambas fechas son válidas hasta ahora
+    if (!newErrors.endDate && !newErrors.deadlineDate) {
+      if (new Date(formData.endDate) <= new Date(formData.deadlineDate)) {
+        newErrors.endDate =
+          'La fecha de término debe ser posterior a la fecha límite de postulación';
       }
     }
 
     // ✅ Validar que la remuneración no sea negativa
-    if (formData.remuneration) {
+    if (formData.offerType === '0' && !formData.remuneration) {
+      newErrors.remuneration =
+        'La remuneración es requerida para ofertas de trabajo';
+    } else if (formData.remuneration) {
       const remunerationValue = parseFloat(formData.remuneration);
       if (remunerationValue < 0) {
         newErrors.remuneration = 'La remuneración no puede ser un valor negativo';
+      }
+
+      // ✅ Validar que la remuneración sea 0 si es voluntariado
+      if (formData.offerType === '1' && remunerationValue !== 0) {
+        newErrors.remuneration = 'Un voluntariado no puede tener remuneración';
       }
     }
 
@@ -117,6 +154,8 @@ export default function PublicationForm() {
     setIsSubmitting(true);
 
     try {
+      const remunerationValue = formData.offerType === '1' ? 0 : (formData.remuneration ? parseFloat(formData.remuneration) : 0);
+
       // Construir el objeto con los nombres de campo que el backend espera (PascalCase)
       const publication = await publicationService.create({
         Title: formData.title,
@@ -124,7 +163,7 @@ export default function PublicationForm() {
         OfferType: parseInt(formData.offerType, 10),
         EndDate: formData.endDate || undefined,
         DeadlineDate: formData.deadlineDate || undefined,
-        Remuneration: formData.remuneration ? parseFloat(formData.remuneration) : 0,
+        Remuneration: remunerationValue,
         Location: formData.location || undefined,
         Requirements: formData.requirements || undefined,
         ContactInfo: formData.contactInfo || undefined,
@@ -270,7 +309,7 @@ export default function PublicationForm() {
                 } focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all bg-white`}
               >
                 <option value="0">Trabajo (Remunerado)</option>
-                <option value="1">Pasantía / Voluntariado (No remunerado)</option>
+                <option value="1">Pasantía / Voluntariado</option>
               </select>
               {errors.offerType && (
                 <p className="mt-1 text-sm text-red-600">{errors.offerType}</p>
@@ -300,7 +339,7 @@ export default function PublicationForm() {
 
               <div>
                 <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  Fecha de Término de la Oferta (opcional)
+                  Fecha de Término de la Oferta *
                 </label>
                 <input
                   type="date"
@@ -330,7 +369,8 @@ export default function PublicationForm() {
                   name="remuneration"
                   value={formData.remuneration}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                  disabled={formData.offerType === '1'}
+                  className={`w-full px-4 py-3 rounded-lg border ${errors.remuneration ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all ${formData.offerType === '1' ? 'bg-gray-100' : ''}`}
                   placeholder="Ej: 500000 (0 si no aplica)"
                 />
                 {errors.remuneration && (
