@@ -27,7 +27,7 @@ export default function ValidationRowLink({ itemId, item }: ValidationRowLinkPro
     
     // 🚨 RUTA DE DETALLE (Usando la estructura correcta de 2 niveles)
     const typeSegment = (item.type === 'CompraVenta') ? 'buysells' : 'offers';
-    const detailUrl = `/admin/offers/validate/${typeSegment}/${itemId}`; 
+    const detailUrl = `/admin/publications/validate/${itemId}`; 
 
     return (
         // 🚨 ENVOLVEMOS TODO EN EL COMPONENTE LINK

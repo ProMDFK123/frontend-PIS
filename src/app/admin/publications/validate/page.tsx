@@ -21,6 +21,8 @@ export default function ValidationPage() {
     const [offers, setOffers] = useState<ValidationItemFull[] | null>(null);
     const [error, setError] = useState<string | null>(null);
 
+    
+
 
 const fetchPendingPublications = async () => {
     try {
@@ -36,12 +38,11 @@ const fetchPendingPublications = async () => {
         const buysellsData = buysellsRes.data.data;
         
         // 2. Mapeo y Filtro estricto para integridad del ID (¡Causa del "undefined" y fallas!)
-        const mappedOffers = offersData
-            .filter(o => o && o.id) // Solo procesar si el objeto y el ID existen
-            .map(o => ({
-                id: String(o.id),
-                item: mapOfferDtoToValidate(o), 
-            }));
+        const mappedOffers = offersData.filter(o => o && o.id).map(o => ({
+            // Si o.id es nulo aquí, el problema es la estructura de la API.
+            id: String(o.id), 
+            item: mapOfferDtoToValidate(o), 
+        }));
             
         const mappedBuys = buysellsData
             .filter(b => b && b.id)
@@ -135,3 +136,4 @@ const fetchPendingPublications = async () => {
         </div>
     );
 }
+
