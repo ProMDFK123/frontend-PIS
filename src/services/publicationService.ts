@@ -112,7 +112,7 @@ export const publicationService = {
     const response = await api.post<PublicationResponse>(
       
       // El endpoint de la API al que se llamará.
-      // (Se concatena con la baseURL, ej: "http://localhost:5000/api/publications")
+      // (Se concatena con la baseURL, ej: "http://localhost:5185/api/publications")
       "/api/publications", 
       
       // El cuerpo (payload) de la petición. En este caso, es el objeto FormData.
@@ -136,15 +136,21 @@ export const publicationService = {
     return response.data;
   },
 
-  // ... aquí podrías agregar otros métodos del servicio ...
-  //
-  // async getAll(): Promise<PublicationResponse[]> {
-  //   const response = await api.get("/api/publications");
-  //   return response.data;
-  // },
-  //
-  // async getById(id: number): Promise<PublicationResponse> {
-  //   const response = await api.get(`/api/publications/${id}`);
-  //   return response.data;
-  // }
+  /**
+   * Obtiene todas las publicaciones de la categoría "Ofertas".
+   */
+  async getOffers(): Promise<PublicationResponse[]> {
+    // La URL final será: http://localhost:5185/api/publications/offers
+    const response = await api.get<PublicationResponse[]>("/api/publications/offers");
+    return response.data;
+  },
+
+  /**
+   * Obtiene todas las publicaciones de la categoría "Compra y Venta".
+   */
+  async getBuySells(): Promise<PublicationResponse[]> {
+    // La URL final será: http://localhost:5185/api/publications/buysells
+    const response = await api.get<PublicationResponse[]>("/api/publications/buysells");
+    return response.data;
+  }
 };

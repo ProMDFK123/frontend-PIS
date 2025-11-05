@@ -3,9 +3,6 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { buildLoginUrl } from "@/lib/auth";
 
-// Usa siempre /api al final para mantener consistencia con tu backend .NET
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5185/api";
-
 const api = axios.create({
   baseURL: API_URL,
   headers: {

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Navbar from '../../../components/offerer/navbar';
 import Footer from '../../../components/offerer/footer';
-import Pagination from '../../../components/ui/Pagination.tsx/Paginarion';
+
 
 
 //=================================================================
@@ -89,15 +89,6 @@ export default function TusPublicacionesPage() {
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Paginación */}
-        <div className="mt-8 flex justify-end">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={(page) => setCurrentPage(page)}
-          />
         </div>
       </main>
 
