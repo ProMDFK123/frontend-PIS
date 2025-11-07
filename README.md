@@ -21,7 +21,11 @@ git clone github.com/ProMDFK123/frontend-PIS
 ```bash
 npm install
 ```
-### 3️⃣ Ejecutar en modo desarrollo
+### 3️⃣ Instalar js-cookie (si no lo tienes instalado)
+```bash
+npm install js-cookie
+```
+### 4️⃣ Ejecutar en modo desarrollo
 ```bash
 npm run dev
 ```
