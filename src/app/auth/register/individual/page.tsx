@@ -55,11 +55,26 @@ export default function RegisterParticularPage() {
       alert(response.message || "Registro exitoso.");
       router.push("/auth/verify-email");
     } catch (error: any) {
-      console.error("Error al registrar:", error);
-      alert(
-        error.response?.data?.Message ||
-          "Error al registrarse. Inténtalo nuevamente."
-      );
+      console.error("Error en el registro:", error);
+
+      const backendError = error?.response?.data;
+
+      let errorMessage = "Error al registrarse. Por favor, inténtalo nuevamente.";
+
+      if (backendError?.errors) {
+        // Caso validaciones por campo (ej. RUT inválido)
+        errorMessage = Object.entries(backendError.errors)
+          .map(([field, messages]) => `${field}: ${(messages as string[]).join(", ")}`)
+          .join("\n");
+      } else if (backendError?.message) {
+        // Caso general con message y optional details
+        errorMessage = backendError.message;
+        if (backendError.details) {
+          errorMessage += `\nDetalles: ${backendError.details}`;
+        }
+      }
+
+      alert(errorMessage);
     }
   };
 

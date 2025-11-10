@@ -57,11 +57,19 @@ export default function LoginPage() {
             // Guardar JWT en cookies
             Cookies.set("token", response.token, { expires: form.rememberMe ? 7 : undefined });
 
-            alert(response.message || "Inicio de sesión exitoso.");
+            console.log(response.message || "Inicio de sesión exitoso.");
             router.replace(returnTo); // regresar a la página que quiso ver
-        } catch (err) {
-            console.error("Error al iniciar sesión: ", err);
-            setError("No se pudo conectar con el servidor. Intente más tarde.");
+        } catch (error: any) {
+            console.error("Error en el login:", error);
+
+            const backendError = error?.response?.data;
+
+            const errorMessage =
+                backendError?.details ||
+                backendError?.message ||
+                "Credenciales inválidas. Por favor, revisa tu correo y contraseña.";
+
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
