@@ -70,12 +70,26 @@ export default function RegisterAdminPage() {
 
       setStatus({ type: "success", text: result.message });
       setTimeout(() => router.push("/auth/verify-email"), 2000);
-    } catch (err) {
-      console.error("Error en el registro:", err);
-      setStatus({
-        type: "error",
-        text: "No se pudo conectar con el servidor. Intenta nuevamente.",
-      });
+    } catch (error: any) {
+      console.error("Error en el registro:", error);
+
+      const backendError = error?.response?.data;
+
+      // Validación de campos (400 con "errors")
+      if (backendError?.errors) {
+        // toma el primer error que encuentre
+        const firstKey = Object.keys(backendError.errors)[0];
+        const firstMessage = backendError.errors[firstKey][0];
+        setStatus({ type: "error", text: firstMessage });
+        return;
+      }
+
+      // Otros errores (como duplicados, etc.)
+      const errorMessage =
+        backendError?.message ||
+        "Error al registrarse. Por favor, inténtalo nuevamente.";
+
+      setStatus({ type: "error", text: errorMessage });
     } finally {
       setLoading(false);
     }
