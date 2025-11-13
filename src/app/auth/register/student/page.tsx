@@ -87,7 +87,17 @@ export default function RegisterStudentPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {renderInput("nombre", "Nombre", formData.nombre, handleChange, "text", "Juan")}
                 {renderInput("apellido", "Apellido", formData.apellido, handleChange, "text", "Pérez")}
-                {renderInput("email", "Correo", formData.email, handleChange, "text", "email@alumnos.ucn.cl")}
+                <div className="flex items-center border border-gray-300 rounded-md px-2">
+                  <input
+                    type="text"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="example"
+                    className="flex-grow p-2 text-sm focus:outline-none"
+                  />
+                  <span className="text-gray-600 text-sm">@alumnos.ucn.cl</span>
+                </div>
                 {renderInput("rut", "RUT", formData.rut, handleChange, "text", "12345678-9")}
                 {renderInput("telefono", "Teléfono", formData.telefono, handleChange, "text", "+56912345678")}
                 {renderInput("password", "Contraseña", formData.password, handleChange, "password", "••••••••")}

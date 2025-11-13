@@ -1,70 +1,81 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { publicationService } from '@/services/publicationService';
 import { AxiosError } from 'axios';
-import api from '@/services/Service';
+import Cookies from 'js-cookie';
+import { buildLoginUrl } from '@/lib/auth';
 
+// Interfaz para el estado del formulario (usamos camelCase para el estado)
 interface FormData {
   title: string;
   description: string;
-  category: string;
-  startDate: string;
+  offerType: string; // '0' para Trabajo, '1' para Voluntariado
   endDate: string;
+  deadlineDate: string;
   remuneration: string;
-  image: File | null;
+  location: string;
+  requirements: string;
+  contactInfo: string;
+  isCvRequired: boolean;
 }
-
-const CATEGORIES = [
-  'Compra y venta',
-  'Oferta de trabajo'
-];
 
 export default function PublicationForm() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true); // Estado para controlar la carga inicial y la verificación
   const [formData, setFormData] = useState<FormData>({
     title: '',
     description: '',
-    category: '',
-    startDate: '',
+    offerType: '0', // Por defecto 'Trabajo'
     endDate: '',
+    deadlineDate: '',
     remuneration: '',
-    image: null
+    location: '',
+    requirements: '',
+    contactInfo: '',
+    isCvRequired: false,
   });
-  const [imagePreview, setImagePreview] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
+  // ✅ PASO 1: Hook de efecto para verificar la autenticación al cargar el componente
+  useEffect(() => {
+    const token = Cookies.get('token');
+
+    if (!token) {
+      // Si no hay token, redirigir al login.
+      // Guardamos la ruta actual para que el usuario pueda volver aquí después de iniciar sesión.
+      const currentPath = window.location.pathname;
+      window.location.href = buildLoginUrl(currentPath, 'login_required');
+    } else {
+      // Si hay token, el usuario está (probablemente) autenticado.
+      // Dejamos de cargar y mostramos el formulario.
+      setIsLoading(false);
+      //hay que tener cuidado, porque si esta autenticado como estudiante, puede que tambien pueda acceder
+    }
+  }, []); // El array vacío asegura que esto se ejecute solo una vez, al montar el componente.
+
+  // ✅ PASO EXTRA: Hook de efecto para limpiar la remuneración si la oferta no es remunerada
+  useEffect(() => {
+    // Si el tipo de oferta es 'Pasantía / Voluntariado' (valor '1'),
+    // forzamos la remuneración a '0' para evitar inconsistencias.
+    if (formData.offerType === '1') {
+      setFormData(prev => ({ ...prev, remuneration: '0' }));
+    }
+  }, [formData.offerType]); // Se ejecuta cada vez que el tipo de oferta cambia
+
+
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+
     if (errors[name as keyof FormData]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors(prev => ({ ...prev, image: 'La imagen no debe superar los 5MB' }));
-        return;
-      }
-      
-      setFormData(prev => ({ ...prev, image: file }));
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      
-      if (errors.image) {
-        setErrors(prev => ({ ...prev, image: '' }));
-      }
     }
   };
 
@@ -73,27 +84,59 @@ export default function PublicationForm() {
 
     if (!formData.title.trim()) {
       newErrors.title = 'El título es requerido';
+    } else if (formData.title.length < 5 || formData.title.length > 200) {
+      newErrors.title = 'El título debe tener entre 5 y 200 caracteres';
     }
 
     if (!formData.description.trim()) {
       newErrors.description = 'La descripción es requerida';
+    } else if (formData.description.length < 10 || formData.description.length > 2000) {
+      newErrors.description =
+        'La descripción debe tener entre 10 y 2000 caracteres';
     }
 
-    if (!formData.category) {
-      newErrors.category = 'Selecciona una categoría';
+    if (!formData.offerType) {
+      newErrors.offerType = 'Debes seleccionar un tipo de oferta';
     }
 
-    if (!formData.startDate) {
-      newErrors.startDate = 'La fecha de inicio es requerida';
+    // Validar que la fecha límite no sea en el pasado
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalizar a la medianoche para comparar solo fechas
+
+    if (!formData.deadlineDate) {
+      newErrors.deadlineDate = 'La fecha límite para postular es requerida';
+    } else if (new Date(formData.deadlineDate) < today) {
+      newErrors.deadlineDate = 'La fecha límite no puede ser una fecha pasada';
     }
 
     if (!formData.endDate) {
       newErrors.endDate = 'La fecha de término es requerida';
+    } else if (new Date(formData.endDate) < today) {
+      newErrors.endDate = 'La fecha de término no puede ser una fecha pasada';
     }
 
-    if (formData.startDate && formData.endDate) {
-      if (new Date(formData.startDate) > new Date(formData.endDate)) {
-        newErrors.endDate = 'La fecha de término debe ser posterior a la de inicio';
+    // Validar que la fecha de término sea posterior a la fecha límite
+    // Solo si ambas fechas son válidas hasta ahora
+    if (!newErrors.endDate && !newErrors.deadlineDate) {
+      if (new Date(formData.endDate) <= new Date(formData.deadlineDate)) {
+        newErrors.endDate =
+          'La fecha de término debe ser posterior a la fecha límite de postulación';
+      }
+    }
+
+    // ✅ Validar que la remuneración no sea negativa
+    if (formData.offerType === '0' && !formData.remuneration) {
+      newErrors.remuneration =
+        'La remuneración es requerida para ofertas de trabajo';
+    } else if (formData.remuneration) {
+      const remunerationValue = parseFloat(formData.remuneration);
+      if (remunerationValue < 0) {
+        newErrors.remuneration = 'La remuneración no puede ser un valor negativo';
+      }
+
+      // ✅ Validar que la remuneración sea 0 si es voluntariado
+      if (formData.offerType === '1' && remunerationValue !== 0) {
+        newErrors.remuneration = 'Un voluntariado no puede tener remuneración';
       }
     }
 
@@ -111,15 +154,22 @@ export default function PublicationForm() {
     setIsSubmitting(true);
 
     try {
-      // Usar el servicio de Axios
+      const remunerationValue = formData.offerType === '1' ? 0 : (formData.remuneration ? parseFloat(formData.remuneration) : 0);
+
+      // Construir el objeto con los nombres de campo que el backend espera (PascalCase)
       const publication = await publicationService.create({
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        remuneration: formData.remuneration || undefined,
-        image: formData.image || undefined,
+        Title: formData.title,
+        Description: formData.description,
+        OfferType: parseInt(formData.offerType, 10),
+        EndDate: formData.endDate || undefined,
+        DeadlineDate: formData.deadlineDate || undefined,
+        Remuneration: remunerationValue,
+        Location: formData.location || undefined,
+        Requirements: formData.requirements || undefined,
+        ContactInfo: formData.contactInfo || undefined,
+        IsCvRequired: formData.isCvRequired,
+        // El backend espera ImagesURL como un array. Por ahora, enviamos un array vacío.
+        ImagesURL: [],
       });
 
       console.log('Publicación creada exitosamente:', publication);
@@ -128,10 +178,8 @@ export default function PublicationForm() {
       alert('¡Publicación creada exitosamente!');
 
       // Redirigir a la página de éxito o listado
-      router.push('/publicaciones?success=true');
+      router.push('/offerer/your-publications?success=true');
     } catch (error) {
-      console.error('Error al crear publicación:', error);
-      
       // Manejar errores específicos de Axios
       if (error instanceof AxiosError) {
         if (error.response) {
@@ -164,6 +212,21 @@ export default function PublicationForm() {
       setIsSubmitting(false);
     }
   };
+
+  // ✅ PASO 2: Mostrar un estado de carga mientras se verifica el token
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <svg className="animate-spin h-8 w-8 text-white mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p className="text-lg">Verificando autorización...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -231,54 +294,52 @@ export default function PublicationForm() {
               )}
             </div>
 
-            {/* Categoría */}
+            {/* Tipo de Oferta */}
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                Categoría *
+              <label htmlFor="offerType" className="block text-sm font-medium text-gray-700 mb-2">
+                Tipo de Oferta *
               </label>
               <select
-                id="category"
-                name="category"
-                value={formData.category}
+                id="offerType"
+                name="offerType"
+                value={formData.offerType}
                 onChange={handleInputChange}
                 className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.category ? 'border-red-500' : 'border-gray-300'
+                  errors.offerType ? 'border-red-500' : 'border-gray-300'
                 } focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all bg-white`}
               >
-                <option value="">Selecciona una categoría</option>
-                {CATEGORIES.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
+                <option value="0">Trabajo (Remunerado)</option>
+                <option value="1">Pasantía / Voluntariado</option>
               </select>
-              {errors.category && (
-                <p className="mt-1 text-sm text-red-600">{errors.category}</p>
+              {errors.offerType && (
+                <p className="mt-1 text-sm text-red-600">{errors.offerType}</p>
               )}
             </div>
 
             {/* Fechas */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  Fecha de inicio
+                <label htmlFor="deadlineDate" className="block text-sm font-medium text-gray-700 mb-2">
+                  Fecha Límite de Postulación *
                 </label>
                 <input
                   type="date"
-                  id="startDate"
-                  name="startDate"
-                  value={formData.startDate}
+                  id="deadlineDate"
+                  name="deadlineDate"
+                  value={formData.deadlineDate}
                   onChange={handleInputChange}
                   className={`w-full px-4 py-3 rounded-lg border ${
-                    errors.startDate ? 'border-red-500' : 'border-gray-300'
+                    errors.deadlineDate ? 'border-red-500' : 'border-gray-300'
                   } focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all`}
                 />
-                {errors.startDate && (
-                  <p className="mt-1 text-sm text-red-600">{errors.startDate}</p>
+                {errors.deadlineDate && (
+                  <p className="mt-1 text-sm text-red-600">{errors.deadlineDate}</p>
                 )}
               </div>
 
               <div>
                 <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  Fecha de término
+                  Fecha de Término de la Oferta *
                 </label>
                 <input
                   type="date"
@@ -296,60 +357,88 @@ export default function PublicationForm() {
               </div>
             </div>
 
-            {/* Remuneración */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Remuneración */}
+              <div>
+                <label htmlFor="remuneration" className="block text-sm font-medium text-gray-700 mb-2">
+                  Remuneración (CLP)
+                </label>
+                <input
+                  type="number"
+                  id="remuneration"
+                  name="remuneration"
+                  value={formData.remuneration}
+                  onChange={handleInputChange}
+                  disabled={formData.offerType === '1'}
+                  className={`w-full px-4 py-3 rounded-lg border ${errors.remuneration ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all ${formData.offerType === '1' ? 'bg-gray-100' : ''}`}
+                  placeholder="Ej: 500000 (0 si no aplica)"
+                />
+                {errors.remuneration && (
+                  <p className="mt-1 text-sm text-red-600">{errors.remuneration}</p>
+                )}
+              </div>
+              {/* Ubicación */}
+              <div>
+                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                  Ubicación
+                </label>
+                <input
+                  type="text"
+                  id="location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                  placeholder="Ej: Campus Guayacán, Coquimbo"
+                />
+              </div>
+            </div>
+
+            {/* Requisitos */}
             <div>
-              <label htmlFor="remuneration" className="block text-sm font-medium text-gray-700 mb-2">
-                Remuneración
+              <label htmlFor="requirements" className="block text-sm font-medium text-gray-700 mb-2">
+                Requisitos (opcional)
               </label>
-              <input
-                type="text"
-                id="remuneration"
-                name="remuneration"
-                value={formData.remuneration}
+              <textarea
+                id="requirements"
+                name="requirements"
+                value={formData.requirements}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-                placeholder="Ej: $500.000 - $800.000 CLP"
+                rows={3}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none"
+                placeholder="Ej: Estudiante de 3er año en adelante, manejo de Excel..."
               />
             </div>
 
-            {/* Imagen */}
+            {/* Contacto */}
             <div>
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-                Adjunta una imagen
+              <label htmlFor="contactInfo" className="block text-sm font-medium text-gray-700 mb-2">
+                Información de Contacto (opcional)
               </label>
-              <div className="mt-1 flex items-center gap-4">
-                <label className="flex-1 cursor-pointer">
-                  <div className="px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 transition-colors text-center">
-                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p className="mt-1 text-sm text-gray-600">
-                      {formData.image ? formData.image.name : 'Haz clic para seleccionar una imagen'}
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    id="image"
-                    name="image"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-              {errors.image && (
-                <p className="mt-1 text-sm text-red-600">{errors.image}</p>
-              )}
-              
-              {imagePreview && (
-                <div className="mt-4">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="max-h-48 rounded-lg shadow-md mx-auto"
-                  />
-                </div>
-              )}
+              <input
+                type="text"
+                id="contactInfo"
+                name="contactInfo"
+                value={formData.contactInfo}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                placeholder="Ej: correo@ejemplo.com o +569..."
+              />
+            </div>
+
+            {/* Requiere CV */}
+            <div className="flex items-center">
+              <input
+                id="isCvRequired"
+                name="isCvRequired"
+                type="checkbox"
+                checked={formData.isCvRequired}
+                onChange={handleInputChange}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <label htmlFor="isCvRequired" className="ml-2 block text-sm text-gray-900">
+                ¿Se requiere que los postulantes adjunten su CV?
+              </label>
             </div>
 
             {/* Submit Button */}
