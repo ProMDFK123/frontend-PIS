@@ -26,8 +26,8 @@ export default function OffersPage() {
     // 2) fetch de datos
     let mounted = true;
     Promise.all([
-      api.get<ApiListResponse<OfferBasicDto>>("/api/publications/offers"),
-      api.get<ApiListResponse<BuySellBasicDto>>("/api/publications/buysells"),
+      api.get<ApiListResponse<OfferBasicDto>>("/publications/offers"),
+      api.get<ApiListResponse<BuySellBasicDto>>("/publications/buysells"),
     ])
       .then(([offersRes, buysellsRes]) => {
         if (!mounted) return;
