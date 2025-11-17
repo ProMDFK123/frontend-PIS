@@ -2,6 +2,10 @@
 
 import Cookies from "js-cookie";
 
+import jwtDecode from "jwt-decode";
+
+import { JwtClaims } from "@/models/generics";
+
 export function getTokenFromCookie(): string | null {
   if (typeof document === "undefined") return null;
   return Cookies.get("token") ?? null;
@@ -63,4 +67,31 @@ export function buildLoginUrl(returnTo: string = "/", msg?: string): string {
   const q = new URLSearchParams({ returnTo });
   if (msg) q.set("msg", msg);
   return `/auth/login?${q.toString()}`;
+}
+
+export function extractUserFromJwt(token: string) {
+  try {
+    const decoded = jwtDecode<JwtClaims>(token);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export function isTokenExpired(
+  token: { customExp?: number } | null | undefined
+): boolean {
+  if (!token || !token.customExp) return true;
+  const now = Math.floor(Date.now() / 1000);
+  return token.customExp < now;
+}
+
+export function isSessionExpired(
+  session: { customExp?: number } | null | undefined
+): boolean {
+  if (!session?.customExp) return true;
+
+  const nowUTC = Math.floor(Date.now() / 1000);
+  const expired = nowUTC >= session.customExp;
+
+  return expired;
 }

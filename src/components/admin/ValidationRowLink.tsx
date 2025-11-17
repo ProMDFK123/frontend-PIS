@@ -23,14 +23,11 @@ function getTypeInfo(type: OfferForAdmin["type"]) {
 }
 
 export default function ValidationRowLink({ itemId, item }: ValidationRowLinkProps) {
-    const { text, colorClass } = getTypeInfo(item.type);
-    
-    // 🚨 RUTA DE DETALLE (Usando la estructura correcta de 2 niveles)
+    const { text, colorClass } = getTypeInfo(item.type);    
     const typeSegment = (item.type === 'CompraVenta') ? 'buysells' : 'offers';
     const detailUrl = `/admin/publications/validate/${itemId}`; 
 
     return (
-        // 🚨 ENVOLVEMOS TODO EN EL COMPONENTE LINK
         <Link href={detailUrl} className="group block w-full focus:outline-none">
             <article 
                 className="flex items-center justify-between p-4 rounded-lg border border-[var(--border)] bg-white

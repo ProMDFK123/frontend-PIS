@@ -1,5 +1,3 @@
-// app/admin/offers/validate/page.tsx
-
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import FilterBar from "@/components/offers/FilterBar";
@@ -7,12 +5,8 @@ import api from "@/services/Service";
 import type { ApiListResponse, OfferBasicDto, BuySellBasicDto } from "@/services/dtos/dto";
 import { mapOfferDtoToValidate, mapBuySellDtoToValidate } from "@/services/adapters/adapters"; 
 import { PendingOffersForAdminDto } from "@/services/dtos/adminDto";
-
-// 🚨 Importar el componente de LINK que se crea abajo
 import ValidationRowLink from "@/components/admin/ValidationRowLink"; 
-// 🚨 Importar las interfaces correctas de su nueva ubicación
 import { ValidationType, ValidationItemFull } from "@/types/admin-publications"; 
-
 
 export default function ValidationPage() {
     const [text, setText] = useState("");
@@ -21,25 +15,15 @@ export default function ValidationPage() {
     const [offers, setOffers] = useState<ValidationItemFull[] | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    
-
-
 const fetchPendingPublications = async () => {
     try {
         const [offersRes, buysellsRes] = await Promise.all([
-            // La ruta es correcta, el problema está en la respuesta o el mapeo
             api.get<ApiListResponse<PendingOffersForAdminDto>>("/publications/offers/pending"),
             api.get<ApiListResponse<BuySellBasicDto>>("/publications/buysells/pending"),
         ]);
-
-        // 1. OBTENER DATOS SIN FILTROS PREVIOS: 
-        // Accedemos directamente al array de datos para cada respuesta.
         const offersData = offersRes.data.data;
         const buysellsData = buysellsRes.data.data;
-        
-        // 2. Mapeo y Filtro estricto para integridad del ID (¡Causa del "undefined" y fallas!)
         const mappedOffers = offersData.filter(o => o && o.id).map(o => ({
-            // Si o.id es nulo aquí, el problema es la estructura de la API.
             id: String(o.id), 
             item: mapOfferDtoToValidate(o), 
         }));
@@ -51,20 +35,14 @@ const fetchPendingPublications = async () => {
                 item: mapBuySellDtoToValidate(b),
             }));
         
-        // 3. Combinación de los resultados mapeados
-        const allPending = [...mappedOffers, ...mappedBuys];
-        
-        // Si allPending tiene datos, se muestra la cuenta total.
+        const allPending = [...mappedOffers, ...mappedBuys];        
         setOffers(allPending);
         setError(null); 
 
     } catch (err) {
-        // ... (Manejo de error) ...
         setOffers([]); 
     }
 }
-
-
     useEffect(() => {
         fetchPendingPublications();
     }, []); 
@@ -119,7 +97,6 @@ const fetchPendingPublications = async () => {
 
                 <section className="mt-8 grid gap-2">
                     {filtered.map((o) => (
-                        // 🚨 USAMOS EL COMPONENTE DE FILA LINK AHORA
                         <ValidationRowLink 
                             key={o.id} 
                             itemId={o.id}
@@ -128,7 +105,7 @@ const fetchPendingPublications = async () => {
                     ))}
                     {filtered.length === 0 && (
                         <div className="col-span-full rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 text-center text-[var(--muted-ink)]">
-                            ✅ No hay publicaciones pendientes de validación.
+                            No hay publicaciones pendientes de validación.
                         </div>
                     )}
                 </section>
