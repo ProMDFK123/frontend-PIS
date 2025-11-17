@@ -41,6 +41,8 @@ export type BuySellBasic = {
 
 export type AdminItemType = "Trabajo" | "CompraVenta"; 
 
+export type ValidationType = "Todos" | AdminItemType;
+
 export interface OfferForAdmin {
     id: string;
     title: string;

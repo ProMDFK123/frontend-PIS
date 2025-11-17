@@ -1,10 +1,7 @@
-/** 
 import { useQuery } from "@tanstack/react-query";
-
 import { handleApiError } from "@/lib"; 
-import { mapOfferDtoToValidate, mapBuySellDtoToValidate } from "@/lib/validation-utils"; 
-import { validationService } from "@/services/validation-service";
-
+import { mapOfferDtoToValidate, mapBuySellDtoToValidate } from "@/lib"; 
+import { validationService } from "@/services/validationService";
 import { PendingOffersForAdmin, BuySellBasic } from "@/models/responses";
 import { ValidationItemFull } from "@/models/responses"; 
 
@@ -42,4 +39,3 @@ export const useGetPendingPublications = () => {
         initialData: [],
     });
 };
-*/
