@@ -2,7 +2,7 @@
 
 import Cookies from "js-cookie";
 
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 import { JwtClaims } from "@/models/generics";
 

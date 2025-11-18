@@ -7,7 +7,7 @@ import { Button, Card, CardContent } from "@/components/ui";
 import { handleApiError } from "@/lib"; 
 
 import { useValidationView } from "./hooks/use-validation-view";
-import FilterBar from "./components/FilterBar";
+import FilterBar from "./components/filter-bar";
 import ValidationRowLink from "./components/validation-row-link"; 
 
 export default function ValidationView() {
@@ -35,7 +35,7 @@ export default function ValidationView() {
                         <AlertCircle className="h-6 w-6 mx-auto mb-2" />
                         <div className="font-semibold">Error al cargar la validación</div>
                         <div className="text-sm mt-1">{apiErrorDetails}</div>
-                        <Button onClick={actions.handleRetry} className="mt-3 cursor-pointer">
+                        <Button onClick={() => actions.handleRetry()} className="mt-3 cursor-pointer">
                             Reintentar
                         </Button>
                     </div>
@@ -71,7 +71,6 @@ export default function ValidationView() {
             <div className="flex flex-col min-h-screen">
                 <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     <header className="mb-6">
-                        {/* El botón de volver usa la convención del repositorio base (Button, Link) */}
                         <Link href="/admin/products"> 
                             <Button variant="outline" className="mb-4 cursor-pointer">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -86,7 +85,6 @@ export default function ValidationView() {
                         </p>
                     </header>
 
-                    {/* El FilterBar solo recibe los filtros y los setters del Hook */}
                     <FilterBar
                         text={filters.text}
                         setText={actions.setText}

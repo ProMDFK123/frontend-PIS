@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/services/Service';
-import { ChevronLeft } from 'lucide-react'; // Icono para volver
+import { ChevronLeft } from 'lucide-react';
 import type { AdminDetail } from '@/types/admin-publications'; 
 import { mapOfferDtoToDetail, mapBuySellDtoToDetail } from '@/services/adapters/adapters';
 

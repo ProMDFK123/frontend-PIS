@@ -16,3 +16,6 @@ export {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "./alert-dialog";
+export {
+  Input
+} from "./input";
