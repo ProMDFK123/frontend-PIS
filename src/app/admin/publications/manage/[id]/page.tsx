@@ -124,7 +124,7 @@ export default function AdminManageDetailPage() {
         const entityId = isBuySell ? detail.id.split('-')[1] : detail.id;
         const typePath = isBuySell ? "buysells" : "offers";
         
-        let endpoint = `/api/publications/${typePath}/${entityId}`;
+        let endpoint = `/publications/${typePath}/${entityId}`;
 
         if (action === 'unpublish') {
             if (!isBuySell) {
@@ -133,7 +133,7 @@ export default function AdminManageDetailPage() {
                  endpoint = `/publications/${typePath}/${entityId}/unpublish`; // Despublicar (PATCH)
             }
         } else { // action === 'delete'
-            endpoint = `/api/publications/${typePath}/${entityId}`; // Eliminar (DELETE)
+            endpoint = `/publications/${typePath}/${entityId}`; // Eliminar (DELETE)
         }
 
         try {

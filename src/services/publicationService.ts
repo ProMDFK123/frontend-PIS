@@ -37,7 +37,7 @@ export const publicationService = {
   async create(data: CreatePublicationData): Promise<PublicationResponse> {
     // Enviamos el objeto 'data' directamente como JSON.
     // La instancia 'api' de Service.tsx ya tiene "Content-Type": "application/json" por defecto.
-    const response = await api.post<PublicationResponse>("/publications/offers", data);
+    const response = await api.post<PublicationResponse>("/publications", data);
 
     return response.data;
   },
@@ -45,6 +45,8 @@ export const publicationService = {
   async getOffererPublications() {
     // Realiza una petición GET al endpoint que devuelve las publicaciones del oferente autenticado.
     // Se espera que la API devuelva un objeto con una propiedad "data" que contiene el array de publicaciones.
-    return api.get<{ data: OffererPublication[] }>("/publications/my-published");
+    return api.get<{ data: OffererPublication[] }>(
+      "/publications/my-published"
+    );
   },
 };

@@ -35,7 +35,7 @@ export default function BuySellDetailPage() {
     let mounted = true;
     (async () => {
       try {
-        const res = await api.get<{ data?: BuySellDetail }>(`/api/publications/buysells/${id}`);
+        const res = await api.get<{ data?: BuySellDetail }>(`/publications/buysells/${id}`);
         const d = (res.data?.data ?? res.data) as BuySellDetail;
         if (mounted) setData(d);
       } catch (e: any) {

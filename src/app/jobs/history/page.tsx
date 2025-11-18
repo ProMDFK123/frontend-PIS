@@ -48,7 +48,9 @@ function StatusBadge({ value }: { value?: string | null }) {
   const { wrap, label } = map[v] ?? map.pendiente;
 
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm border ${wrap}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm border ${wrap}`}
+    >
       {label}
     </span>
   );
@@ -70,16 +72,22 @@ export default function JobsHistoryPage() {
     let mounted = true;
     (async () => {
       try {
-        const res = await api.get<ApiResponse>("/api/job-applications/my-applications");
+        const res = await api.get<ApiResponse>(
+          "/job-applications/my-applications"
+        );
         if (mounted) setItems(res.data?.data ?? []);
       } catch (e) {
         console.error(e);
-        setError("No pudimos cargar tus postulaciones. Inicia sesión nuevamente si el problema persiste.");
+        setError(
+          "No pudimos cargar tus postulaciones. Inicia sesión nuevamente si el problema persiste."
+        );
       } finally {
         if (mounted) setLoading(false);
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   if (loading) return <main className="max-w-4xl mx-auto p-6">Cargando…</main>;
@@ -87,8 +95,12 @@ export default function JobsHistoryPage() {
   return (
     <main className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
       <header>
-        <h1 className="text-3xl md:text-4xl font-extrabold">Historial de postulaciones</h1>
-        <p className="text-[var(--muted-ink)] mt-2">Aquí puedes revisar todas las postulaciones que has enviado.</p>
+        <h1 className="text-3xl md:text-4xl font-extrabold">
+          Historial de postulaciones
+        </h1>
+        <p className="text-[var(--muted-ink)] mt-2">
+          Aquí puedes revisar todas las postulaciones que has enviado.
+        </p>
         {error && (
           <div className="mt-3 rounded-xl bg-red-50 text-red-700 px-3 py-2 text-sm">
             {error}
@@ -116,17 +128,23 @@ export default function JobsHistoryPage() {
                 aria-hidden="true"
                 className={[
                   "absolute inset-y-0 left-0 w-1",
-                  (it.status ?? "Pendiente").toLowerCase() === "accepted" && "bg-green-400",
-                  (it.status ?? "Pendiente").toLowerCase() === "rejected" && "bg-red-400",
+                  (it.status ?? "Pendiente").toLowerCase() === "accepted" &&
+                    "bg-green-400",
+                  (it.status ?? "Pendiente").toLowerCase() === "rejected" &&
+                    "bg-red-400",
                   (it.status ?? "Pendiente").toLowerCase() !== "accepted" &&
                     (it.status ?? "Pendiente").toLowerCase() !== "rejected" &&
                     "bg-yellow-400",
-                ].filter(Boolean).join(" ")}
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
               />
 
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <h3 className="font-bold text-[17px] truncate">{it.offerTitle}</h3>
+                  <h3 className="font-bold text-[17px] truncate">
+                    {it.offerTitle}
+                  </h3>
                   <div className="text-sm text-[var(--muted-ink)] mt-0.5">
                     Enviada por {it.studentName}
                   </div>

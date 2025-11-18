@@ -31,7 +31,11 @@ function parseType(t: OfferDetail["offerType"]) {
 }
 function money(n?: number | null) {
   if (typeof n !== "number" || isNaN(n)) return "No disponible";
-  return n.toLocaleString("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 });
+  return n.toLocaleString("es-CL", {
+    style: "currency",
+    currency: "CLP",
+    maximumFractionDigits: 0,
+  });
 }
 
 export default function OfferDetailPage() {
@@ -51,19 +55,29 @@ export default function OfferDetailPage() {
     let mounted = true;
     (async () => {
       try {
-        const res = await api.get<{ data?: OfferDetail }>(`/api/publications/offers/${id}`);
+        const res = await api.get<{ data?: OfferDetail }>(
+          `/publications/offers/${id}`
+        );
+        console.log("📦 Respuesta completa del backend:", res.data);
         const d = (res.data?.data ?? res.data) as OfferDetail;
+        console.log("📋 Datos procesados:", d);
         if (mounted) setData(d);
-      } catch {
+      } catch (e) {
+        console.error("❌ Error al cargar oferta:", e);
         setErr("No se pudo cargar la publicación.");
       } finally {
         if (mounted) setLoading(false);
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [id]);
 
-  const offerType = useMemo(() => parseType(data?.offerType), [data?.offerType]);
+  const offerType = useMemo(
+    () => parseType(data?.offerType),
+    [data?.offerType]
+  );
   const company = data?.companyName ?? data?.ownerName ?? "Confidencial";
   const published = toCLDate(data?.postDate ?? data?.publicationDate);
   const deadline = toCLDate(data?.endDate ?? data?.deadlineDate);
@@ -78,11 +92,11 @@ export default function OfferDetailPage() {
         const form = new FormData();
         if (motivation.trim()) form.append("motivation", motivation.trim());
         if (cvFile) form.append("cv", cvFile);
-        await api.post(`/api/publications/offers/${id}/apply`, form, {
+        await api.post(`/publications/offers/${id}/apply`, form, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       } else {
-        await api.post(`/api/publications/offers/${id}/apply`);
+        await api.post(`/publications/offers/${id}/apply`);
       }
       setApplyMsg("✅ Postulación enviada.");
       setMotivation("");
@@ -100,21 +114,30 @@ export default function OfferDetailPage() {
   }
 
   if (loading) return <main className="max-w-4xl mx-auto p-6">Cargando…</main>;
-  if (err || !data) return <main className="max-w-4xl mx-auto p-6">{err ?? "No encontrada."}</main>;
+  if (err || !data)
+    return (
+      <main className="max-w-4xl mx-auto p-6">{err ?? "No encontrada."}</main>
+    );
 
   return (
     <main className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
       {/* Header */}
       <section className="rounded-2xl bg-[var(--card)] border border-[var(--border)] p-5 flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-2xl md:text-3xl font-extrabold break-words">{data.title}</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold break-words">
+            {data.title}
+          </h1>
           <p className="text-[var(--muted-ink)] mt-1 flex items-center gap-2">
             <span>🏢</span>
             <span className="truncate">{company}</span>
           </p>
         </div>
         <div className="hidden sm:block">
-          <img src="/generic.png" alt="Publicación" className="w-20 h-20 rounded-xl object-cover border border-[var(--border)]" />
+          <img
+            src="/generic.png"
+            alt="Publicación"
+            className="w-20 h-20 rounded-xl object-cover border border-[var(--border)]"
+          />
         </div>
       </section>
 
@@ -125,7 +148,11 @@ export default function OfferDetailPage() {
           <li>
             📅 <b>Postula hasta:</b>{" "}
             {data?.endDate
-              ? new Date(data.endDate).toLocaleDateString("es-CL", { day: "2-digit", month: "short", year: "numeric" })
+              ? new Date(data.endDate).toLocaleDateString("es-CL", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
               : "—"}
           </li>
 
@@ -133,10 +160,19 @@ export default function OfferDetailPage() {
             🕒 <b>Duración:</b>{" "}
             {data?.postDate && data?.endDate ? (
               <>
-                {new Date(data.postDate).toLocaleDateString("es-CL", { day: "2-digit", month: "short" })} –{" "}
-                {new Date(data.endDate).toLocaleDateString("es-CL", { day: "2-digit", month: "short" })}
+                {new Date(data.postDate).toLocaleDateString("es-CL", {
+                  day: "2-digit",
+                  month: "short",
+                })}{" "}
+                –{" "}
+                {new Date(data.endDate).toLocaleDateString("es-CL", {
+                  day: "2-digit",
+                  month: "short",
+                })}
               </>
-            ) : "—"}
+            ) : (
+              "—"
+            )}
           </li>
 
           <li>
@@ -148,11 +184,14 @@ export default function OfferDetailPage() {
         {data.description ? (
           <div className="prose max-w-none">
             <h3 className="font-bold mb-2">Descripción:</h3>
-            <p className="whitespace-pre-wrap text-[17px] leading-7">{data.description}</p>
+            <p className="whitespace-pre-wrap text-[17px] leading-7">
+              {data.description}
+            </p>
           </div>
         ) : (
           <div className="rounded-xl border border-yellow-300 bg-yellow-50/90 text-yellow-800 px-3 py-2 text-sm">
-            Inicia sesión como estudiante para ver la descripción completa y la remuneración.
+            Inicia sesión como estudiante para ver la descripción completa y la
+            remuneración.
           </div>
         )}
 
@@ -160,7 +199,9 @@ export default function OfferDetailPage() {
         <div className="pt-2">
           {offerType === "Trabajo" && (
             <div className="mb-4 space-y-3">
-              <label className="block text-sm font-medium">Carta de motivación (opcional)</label>
+              <label className="block text-sm font-medium">
+                Carta de motivación (opcional)
+              </label>
               <textarea
                 value={motivation}
                 onChange={(e) => setMotivation(e.target.value)}
@@ -174,11 +215,19 @@ export default function OfferDetailPage() {
                   onChange={(e) => setCvFile(e.target.files?.[0] ?? null)}
                   className="text-sm"
                 />
-                {cvFile && <span className="text-sm text-[var(--muted-ink)] truncate max-w-[220px]">{cvFile.name}</span>}
+                {cvFile && (
+                  <span className="text-sm text-[var(--muted-ink)] truncate max-w-[220px]">
+                    {cvFile.name}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-[var(--muted-ink)]">
-                Si no tienes CV cargado en tu perfil, puedes adjuntarlo aquí. También puedes gestionarlo en{" "}
-                <Link href="/profile" className="underline">tu perfil</Link>.
+                Si no tienes CV cargado en tu perfil, puedes adjuntarlo aquí.
+                También puedes gestionarlo en{" "}
+                <Link href="/profile" className="underline">
+                  tu perfil
+                </Link>
+                .
               </p>
             </div>
           )}
@@ -196,7 +245,8 @@ export default function OfferDetailPage() {
       </section>
 
       <div className="text-sm text-[var(--muted-ink)]">
-        Publicada: {published}{data.location ? ` · Ubicación: ${data.location}` : ""}
+        Publicada: {published}
+        {data.location ? ` · Ubicación: ${data.location}` : ""}
       </div>
     </main>
   );
