@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { getTokenFromCookie, buildLoginUrl } from "@/lib/auth";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button";
@@ -40,6 +41,62 @@ export default function Page() {
 
   useEffect(() => {
     let mounted = true;
+
+    // Check token and role before fetching profile
+    const token = getTokenFromCookie();
+    if (!token) {
+      // not logged in -> send to login
+      if (typeof window !== "undefined")
+        window.location.href = buildLoginUrl("/");
+      return;
+    }
+
+    // try decode payload to detect role
+    try {
+      const payloadBase64 = token.split(".")[1];
+      const json = JSON.parse(
+        decodeURIComponent(
+          atob(payloadBase64)
+            .split("")
+            .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+            .join("")
+        )
+      );
+
+      // possible role fields
+      let roles: string[] = [];
+      if (json.role) roles = Array.isArray(json.role) ? json.role : [json.role];
+      else if (json.roles)
+        roles = Array.isArray(json.roles) ? json.roles : [json.roles];
+      else {
+        const ROLE_URIS = [
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+        ];
+        for (const uri of ROLE_URIS) {
+          if (json[uri]) {
+            roles = Array.isArray(json[uri]) ? json[uri] : [json[uri]];
+            break;
+          }
+        }
+      }
+
+      const isAdmin =
+        roles.some((r: any) => String(r).toLowerCase().includes("admin")) ||
+        json.isSuperAdmin === true ||
+        json.superAdmin === true;
+
+      if (!isAdmin) {
+        if (typeof window !== "undefined") window.location.href = "/";
+        return;
+      }
+    } catch (e) {
+      // if token malformed, redirect to login
+      if (typeof window !== "undefined")
+        window.location.href = buildLoginUrl("/");
+      return;
+    }
+
     setLoading(true);
     fetch("/api/user/profile/admin")
       .then((r) => r.json())
