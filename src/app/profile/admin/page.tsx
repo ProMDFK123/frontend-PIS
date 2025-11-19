@@ -98,7 +98,7 @@ export default function Page() {
     }
 
     setLoading(true);
-    fetch("/api/user/profile/admin")
+    fetch("http://localhost:5185/api/user/profile/admin")
       .then((r) => r.json())
       .then((json) => {
         if (!mounted) return;

@@ -51,7 +51,7 @@ export default function Page() {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    fetch("/api/user/profile/student")
+    fetch("http://localhost:5185/api/user/profile/student")
       .then((r) => r.json())
       .then((json) => {
         if (!mounted) return;
