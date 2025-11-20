@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
-import { useGetPendingPublications } from "@/hooks/api/use-validation-service"; 
-import { ValidationType, ValidationItemFull } from "@/models/responses"; 
+import { useGetPendingPublications } from "public/src/hooks/api/use-validation-service"; 
+import { ValidationType, ValidationItemFull } from "public/src/models/responses"; 
 type SortType = "recientes" | "titulo";
 
 

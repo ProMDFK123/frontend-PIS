@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import api from "@/services/Service";
+import api from "public/src/services/Service";
 import Link from "next/link";
 
 type OfferDetail = {

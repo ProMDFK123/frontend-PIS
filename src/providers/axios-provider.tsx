@@ -2,7 +2,7 @@ import axios from "axios";
 import { getSession, signOut } from "next-auth/react";
 import { toast } from "sonner";
 
-import { isSessionExpired } from "@/lib";
+import { isSessionExpired } from "public/src/lib";
 
 export const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,

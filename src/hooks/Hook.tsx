@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "@/services/Service";
+import api from "public/src/services/Service";
 
 /**export const useFetch = <T>(endpoint: string) => {
   const [data, setData] = useState<T | null>(null);

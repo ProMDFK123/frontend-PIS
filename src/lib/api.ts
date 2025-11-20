@@ -1,6 +1,6 @@
 import { AxiosError } from "axios";
 
-import { ApiErrorResult, ErrorDetail } from "@/models/generics";
+import { ApiErrorResult, ErrorDetail } from "public/src/models/generics";
 
 export const handleApiError = (error: unknown): ApiErrorResult => {
   if (error instanceof AxiosError) {

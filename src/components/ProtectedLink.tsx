@@ -3,7 +3,7 @@
 import Link, { LinkProps } from "next/link";
 import { useRouter } from "next/navigation";
 import { MouseEvent } from "react";
-import { isLoggedIn, buildLoginUrl } from "@/lib/auth";
+import { isLoggedIn, buildLoginUrl } from "public/src/lib/auth";
 
 type Props = LinkProps & {
   children: React.ReactNode;

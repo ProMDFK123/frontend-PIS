@@ -3,9 +3,9 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { registerCompany } from "@/services/authService";
-import { CompanyRequestDto } from "@/services/dtos/authDto";
-import { formatRut } from "src/utils/Util"
+import { registerCompany } from "public/src/services/authService";
+import { CompanyRequestDto } from "public/src/services/dtos/authDto";
+import { formatRut } from "public/src/utils/Util"
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";

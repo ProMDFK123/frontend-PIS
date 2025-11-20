@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import api from "@/services/Service";
+import api from "public/src/services/Service";
 
 type BuySellDetail = {
   id: number;

@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { publicationService, OffererPublication } from '@/services/publicationService';
+import { publicationService, OffererPublication } from 'public/src/services/publicationService';
 import { AxiosError } from 'axios';
 import Cookies from 'js-cookie';
-import { buildLoginUrl } from '@/lib/auth';
+import { buildLoginUrl } from 'public/src/lib/auth';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 //=================================================================

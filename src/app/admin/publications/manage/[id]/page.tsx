@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import api from '@/services/Service';
+import api from 'public/src/services/Service';
 import { ChevronLeft } from 'lucide-react'; 
-import type { AdminDetail } from '@/types/admin-publications'; 
+import type { AdminDetail } from 'public/src/types/admin-publications'; 
 // Importamos mapBuySellDtoToDetail y mapOfferDtoToDetail para que no dé error TS
-import { mapOfferDtoToDetail, mapBuySellDtoToDetail } from '@/services/adapters/adapters';
+import { mapOfferDtoToDetail, mapBuySellDtoToDetail } from 'public/src/services/adapters/adapters';
 
 
 // --- Funciones Auxiliares ---

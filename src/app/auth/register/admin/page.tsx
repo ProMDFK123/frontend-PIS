@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { RegisterAdmin } from "@/services/authService";
-import type { AdminRequestDto } from "@/services/dtos/authDto";
-import { formatRut } from "src/utils/Util"
+import { RegisterAdmin } from "public/src/services/authService";
+import type { AdminRequestDto } from "public/src/services/dtos/authDto";
+import { formatRut } from "public/src/utils/Util"
 
 const PRIMARY_COLOR = "#2C3E90";
 

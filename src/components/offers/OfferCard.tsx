@@ -1,6 +1,6 @@
 // components/offers/OfferCard.tsx
 import Link from "next/link";
-import ProtectedLink from "@/components/ProtectedLink";
+import ProtectedLink from "public/src/components/ProtectedLink";
 
 export type Offer = {
   id: string;

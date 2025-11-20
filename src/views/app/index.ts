@@ -1,1 +1,1 @@
-export { default as ValidationView } from "@/views/app/admin/validation"; 
+export { default as ValidationView } from "public/src/views/app/admin/validation"; 

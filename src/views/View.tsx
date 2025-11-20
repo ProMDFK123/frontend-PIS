@@ -1,10 +1,10 @@
 "use client";
 
 import Navbar from "../components/shared/NavBar";
-import { Button } from "@/components/ui/Button";
+import { Button } from "public/src/components/ui/Button";
 //import { useFetch } from "@/hooks/Hook";
-import { formatDate } from "@/utils/Util";
-import { User } from "@/interfaces/Interface";
+import { formatDate } from "public/src/utils/Util";
+import { User } from "public/src/interfaces/Interface";
 
 /**export default function HomeView() {
   const { data, loading, error } = useFetch<User[]>("/users");

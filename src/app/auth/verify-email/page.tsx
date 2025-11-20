@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { verifyEmail, resendVerification } from "@/services/authService";
-import type { VerifyEmailDto, ResendVerificationDto } from "@/services/dtos/authDto";
+import { verifyEmail, resendVerification } from "public/src/services/authService";
+import type { VerifyEmailDto, ResendVerificationDto } from "public/src/services/dtos/authDto";
 
 export default function VerifyEmailPage() {
   const [form, setForm] = useState({

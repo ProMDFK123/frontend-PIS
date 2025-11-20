@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { handleApiError } from "@/lib"; 
-import { mapOfferDtoToValidate, mapBuySellDtoToValidate } from "@/lib"; 
-import { validationService } from "@/services/validationService";
-import { PendingOffersForAdmin, BuySellBasic } from "@/models/responses";
-import { ValidationItemFull } from "@/models/responses"; 
+import { handleApiError } from "public/src/lib"; 
+import { mapOfferDtoToValidate, mapBuySellDtoToValidate } from "public/src/lib"; 
+import { validationService } from "public/src/services/validationService";
+import { PendingOffersForAdmin, BuySellBasic } from "public/src/models/responses";
+import { ValidationItemFull } from "public/src/models/responses"; 
 
 export const useGetPendingPublications = () => {
     return useQuery<ValidationItemFull[], Error>({

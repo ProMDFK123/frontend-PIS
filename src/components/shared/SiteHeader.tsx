@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { cn } from "public/src/lib/utils";
 import { useEffect, useRef, useState } from "react";
-import { isLoggedIn, getUserFromToken, logoutAndRedirect } from "@/lib/auth";
+import { isLoggedIn, getUserFromToken, logoutAndRedirect } from "public/src/lib/auth";
 
 
 const baseLinks = [

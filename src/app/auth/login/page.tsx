@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import Cookies from "js-cookie";
-import { loginUser } from "@/services/authService";
-import type { LoginRequestDto } from "@/services/dtos/authDto";
+import { loginUser } from "public/src/services/authService";
+import type { LoginRequestDto } from "public/src/services/dtos/authDto";
 
 export default function LoginPage() {
     const router = useRouter();

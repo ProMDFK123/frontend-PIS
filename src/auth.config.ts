@@ -1,7 +1,7 @@
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import { extractUserFromJwt } from "@/lib";
+import { extractUserFromJwt } from "public/src/lib";
 
 export const authConfig = {
   providers: [

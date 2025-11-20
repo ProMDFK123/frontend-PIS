@@ -8,9 +8,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/card";
+} from "public/src/components/ui/dialog";
+import { Button } from "public/src/components/ui/Button";
+import { Card } from "public/src/components/ui/card";
 import { Trash2 } from "lucide-react";
 
 interface EvaluacionTrabajoModalProps {

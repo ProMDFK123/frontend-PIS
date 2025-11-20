@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { publicationService } from '@/services/publicationService';
+import { publicationService } from 'public/src/services/publicationService';
 import { AxiosError } from 'axios';
 import Cookies from 'js-cookie';
-import { buildLoginUrl } from '@/lib/auth';
+import { buildLoginUrl } from 'public/src/lib/auth';
 
 // Interfaz para el estado del formulario (usamos camelCase para el estado)
 interface FormData {

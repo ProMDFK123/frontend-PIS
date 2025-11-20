@@ -4,7 +4,7 @@ import {
     OfferForAdmin, 
     PendingOffersForAdmin, 
     BuySellBasic 
-} from "@/models/responses/publication";
+} from "public/src/models/responses/publication";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

@@ -1,7 +1,7 @@
 // src/services/Service.ts
 import axios from "axios";
 import Cookies from "js-cookie";
-import { buildLoginUrl } from "@/lib/auth";
+import { buildLoginUrl } from "public/src/lib/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5185/api";
 
