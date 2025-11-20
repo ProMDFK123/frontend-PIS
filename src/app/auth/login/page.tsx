@@ -50,7 +50,7 @@ export default function LoginPage() {
             const response = await loginUser(payload);
 
             if (!response.token) {
-                setError(response.message || "Usuario no registrado o contraseña incorrecta.");
+                setError("Usuario no registrado o contraseña incorrecta.");
                 return;
             }
 
