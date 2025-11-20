@@ -1,5 +1,5 @@
 'use client';
-
+//importaciones, que algunas puede que necesiten estar en hooks para separar la los renderizados
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { publicationService, OffererPublication } from '@/services/publicationService';
@@ -63,6 +63,7 @@ export default function TusPublicacionesPage() {
   // Estado para la paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const router = useRouter();
 
   // ✅ PASO 1: Hook de efecto para verificar auth y cargar datos (combinados)
   useEffect(() => {
@@ -74,6 +75,7 @@ export default function TusPublicacionesPage() {
         // Si no hay token, redirigir al login (mismo patrón que tu formulario)
         const currentPath = window.location.pathname + (window.location.search || '');
         window.location.href = buildLoginUrl(currentPath, 'login_required');
+        router.replace(buildLoginUrl(currentPath, 'login_required'));
         return; // Detenemos la ejecución
       }
 
@@ -92,6 +94,7 @@ export default function TusPublicacionesPage() {
             // El token es inválido o expiró, redirigir a login
             const currentPath = window.location.pathname + (window.location.search || '');
             window.location.href = buildLoginUrl(currentPath, 'session_expired');
+            router.replace(buildLoginUrl(currentPath, 'session_expired'));
           } else {
             // Otro error de servidor (404, 500, etc.)
             console.error('Error al cargar publicaciones:', err);
@@ -110,6 +113,7 @@ export default function TusPublicacionesPage() {
 
     loadData();
   }, []); // El array vacío asegura que esto se ejecute solo una vez
+  }, [router]); // Se añade router a las dependencias
 
 
   // ✅ PASO 2: Mostrar estado de carga (exactamente como en tu formulario)
