@@ -2,6 +2,8 @@
 
 import Cookies from "js-cookie";
 
+import { jwtDecode } from "jwt-decode";
+
 import { JwtClaims } from "@/models/generics";
 
 export function getTokenFromCookie(): string | null {
