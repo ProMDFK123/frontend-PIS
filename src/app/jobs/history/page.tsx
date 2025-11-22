@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import api from "@/services/Service";
 
 type JobApplication = {
@@ -9,7 +10,7 @@ type JobApplication = {
   studentEmail: string;
   offerId?: number | null;
   offerTitle: string;
-  status: "Pendiente" | "Accepted" | "Rejected" | string;
+  status: "Pendiente" | "Seleccionado" | "No seleccionado" | string;
   applicationDate: string;
   curriculumVitae?: string | null;
   motivationLetter?: string | null;
@@ -44,6 +45,14 @@ function StatusBadge({ value }: { value?: string | null }) {
       wrap: "bg-red-100 text-red-800 border-red-200",
       label: "Rechazada",
     },
+    seleccionado: {
+      wrap: "bg-green-100 text-green-800 border-green-200",
+      label: "Seleccionado",
+    },
+    "no seleccionado": {
+      wrap: "bg-red-100 text-red-800 border-red-200",
+      label: "No seleccionado",
+    },
   };
   const { wrap, label } = map[v] ?? map.pendiente;
 
@@ -58,12 +67,13 @@ function StatusBadge({ value }: { value?: string | null }) {
 
 function cardAccent(status?: string | null) {
   const v = (status ?? "Pendiente").toLowerCase();
-  if (v === "accepted") return "border-green-200 hover:ring-green-100/60";
-  if (v === "rejected") return "border-red-200 hover:ring-red-100/60";
+  if (v === "accepted" || v === "seleccionado") return "border-green-200 hover:ring-green-100/60";
+  if (v === "rejected" || v === "no seleccionado") return "border-red-200 hover:ring-red-100/60";
   return "border-yellow-200 hover:ring-yellow-100/60"; // pendiente
 }
 
 export default function JobsHistoryPage() {
+  const router = useRouter();
   const [items, setItems] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -132,8 +142,14 @@ export default function JobsHistoryPage() {
                     "bg-green-400",
                   (it.status ?? "Pendiente").toLowerCase() === "rejected" &&
                     "bg-red-400",
+                  (it.status ?? "Pendiente").toLowerCase() === "seleccionado" &&
+                    "bg-green-400",
+                  (it.status ?? "Pendiente").toLowerCase() === "no seleccionado" &&
+                    "bg-red-400",
                   (it.status ?? "Pendiente").toLowerCase() !== "accepted" &&
                     (it.status ?? "Pendiente").toLowerCase() !== "rejected" &&
+                    (it.status ?? "Pendiente").toLowerCase() !== "seleccionado" &&
+                    (it.status ?? "Pendiente").toLowerCase() !== "no seleccionado" &&
                     "bg-yellow-400",
                 ]
                   .filter(Boolean)
@@ -156,22 +172,32 @@ export default function JobsHistoryPage() {
                 Postulada el {toCLDate(it.applicationDate)}
               </div>
 
-              <div className="mt-3 flex flex-wrap gap-3 items-center">
-                {it.curriculumVitae && (
-                  <a
-                    href={it.curriculumVitae}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm underline hover:opacity-90"
-                  >
-                    Ver CV
-                  </a>
-                )}
-                {it.motivationLetter && (
-                  <p className="text-sm italic text-[var(--ink)]/80 line-clamp-2">
-                    “{it.motivationLetter}”
-                  </p>
-                )}
+              <div className="mt-3 flex flex-wrap gap-3 items-center justify-between">
+                <div className="flex flex-wrap gap-3">
+                  {it.curriculumVitae && (
+                    <a
+                      href={it.curriculumVitae}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm underline hover:opacity-90"
+                    >
+                      Ver CV
+                    </a>
+                  )}
+                  {it.motivationLetter && (
+                    <p className="text-sm italic text-[var(--ink)]/80 line-clamp-2">
+                      "{it.motivationLetter}"
+                    </p>
+                  )}
+                </div>
+
+                {/* BOTÓN VER DETALLES */}
+                <button
+                  onClick={() => router.push(`/jobs/history/${it.id}`)}
+                  className="px-4 py-2 bg-[var(--primary)] text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Ver detalles
+                </button>
               </div>
             </article>
           ))}

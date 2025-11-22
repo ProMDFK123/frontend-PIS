@@ -12,7 +12,7 @@ export async function loginUser(payload: LoginRequestDto | any) {
     rememberMe: payload.RememeberMe ?? payload.RememberMe ?? payload.rememberMe ?? false,
   };
 
-  const response = await api.post<LoginResponseDto>("/api/auth/login", body);
+  const response = await api.post<LoginResponseDto>("/auth/login", body);
   return mapLoginResponse(response.data);
 }
 
