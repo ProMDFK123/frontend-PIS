@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "public/src/components/ui/Button";
-import { Card } from "public/src/components/ui/card";
-import { cn } from "public/src/lib/utils";
-import EvaluacionTrabajoModal from "public/src/app/jobs/reports/details";
+import { Button } from "src/components/ui/Button";
+import { Card } from "src/components/ui/card";
+import { cn } from "src/lib/utils";
+import EvaluacionTrabajoModal from "src/app/jobs/reports/details";
 
 
 

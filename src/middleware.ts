@@ -1,96 +1,32 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-import { getPublicRouteFromAdmin, isTokenExpired } from "@/lib";
+export function middleware(req: NextRequest) {
+  const token = req.cookies.get("token")?.value || null;
+  const { pathname } = req.nextUrl;
 
-export async function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname;
+  const requiresAuth =
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/dashboard") ||
+    // proteger dinámicos de detalle:
+    (pathname.startsWith("/offers/") && pathname !== "/offers") ||
+    pathname.startsWith("/buysells/");
 
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
-
-  // Define public routes (add more as needed)
-  const publicRoutes = [
-    "/",
-    "/products",
-    "/auth/login",
-    "/auth/register",
-    "/auth/verify-email",
-    "/cart",
-  ];
-
-  const isPublicRoute =
-    publicRoutes.includes(path) || path.startsWith("/products");
-
-  const isAuthRoute = path.startsWith("/auth/");
-  const isAdminRoute = path.startsWith("/admin/");
-  const isOrderRoute =
-    path === "/checkout" || path === "/orders" || path.startsWith("/orders/");
-
-  // User is authenticated
-  if (token && !isTokenExpired(token)) {
-    // Get user role from token
-    const userRole = token.role as string | undefined;
-
-    // Redirect authenticated users away from auth routes
-    if (isAuthRoute) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-
-    // Redirect admin users away from order routes
-    if (isOrderRoute && userRole?.toLowerCase() === "admin") {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-
-    // Redirect non-admin users away from admin routes
-    if (isAdminRoute && userRole?.toLowerCase() !== "admin") {
-      const publicRoute = getPublicRouteFromAdmin(path);
-      return NextResponse.redirect(new URL(publicRoute, request.url));
-    }
-
-    // Allow access to other routes
-    return NextResponse.next();
+  if (requiresAuth && !token) {
+    const url = new URL("/auth/login", req.url);
+    url.searchParams.set("returnTo", pathname + (req.nextUrl.search || ""));
+    url.searchParams.set("msg", "login_required");
+    return NextResponse.redirect(url);
   }
 
-  // User is not authenticated
-  if (!isPublicRoute) {
-    // Redirect unauthenticated users trying to access admin routes to public equivalent if possible
-    if (isAdminRoute) {
-      // Get the public route equivalent
-      const publicRoute = getPublicRouteFromAdmin(path);
-
-      // Check if the public route is a valid redirect
-      const publicRoutesForRedirect = ["/", "/products"];
-      const canRedirectToPublic =
-        publicRoutesForRedirect.includes(publicRoute) ||
-        publicRoute.startsWith("/products");
-
-      // If the public route is a valid redirect, perform the redirect
-      if (canRedirectToPublic) {
-        return NextResponse.redirect(new URL(publicRoute, request.url));
-      }
-    }
-
-    // Redirect unauthenticated users to the home page if they try to access protected routes
-    return NextResponse.redirect(new URL("/", request.url));
+  // si intenta ir a /auth/login teniendo token => home
+  if (pathname === "/auth/login" && token) {
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // Allow access to public routes
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (images, etc.)
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/auth/login", "/profile/:path*", "/dashboard/:path*", "/offers/:path*", "/buysells/:path*"],
 };

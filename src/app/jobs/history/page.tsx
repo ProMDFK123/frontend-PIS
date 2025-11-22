@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import api from "public/src/services/Service";
+import api from "src/services/Service";
 
 type JobApplication = {
   id: number;

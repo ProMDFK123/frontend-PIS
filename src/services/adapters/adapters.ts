@@ -1,9 +1,9 @@
 // services/adapters/adapters.ts
-import { Offer } from "public/src/components/offers/OfferCard";
-import { OfferBasicDto, BuySellBasicDto } from "public/src/services/dtos/dto";
-import { OfferForAdmin } from "public/src/types/admin-publications";
-import { PendingOffersForAdminDto, OfferDetailForAdminDto, BuySellDetailForAdminDto } from "public/src/services/dtos/adminDto";
-import { AdminDetail, PublicationType } from "public/src/types/admin-publications";
+import { Offer } from "src/components/offers/OfferCard";
+import { OfferBasicDto, BuySellBasicDto } from "src/services/dtos/dto";
+import { OfferForAdmin } from "src/types/admin-publications";
+import { PendingOffersForAdminDto, OfferDetailForAdminDto, BuySellDetailForAdminDto } from "src/services/dtos/adminDto";
+import { AdminDetail, PublicationType } from "src/types/admin-publications";
 
 function toOfferType(t: OfferBasicDto["offerType"]): Offer["type"] {
   if (t === "Voluntariado" || t === 1) return "Voluntariado";

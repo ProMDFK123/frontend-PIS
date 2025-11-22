@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "public/src/components/ui/card";
-import { Button } from "public/src/components/ui/Button";
-import { Badge } from "public/src/components/ui/badge";
-import FeedbackModal from "public/src/app/jobs/reviews/employer/evaluation";
+import { Card, CardContent, CardHeader, CardTitle } from "src/components/ui/card";
+import { Button } from "src/components/ui/Button";
+import { Badge } from "src/components/ui/badge";
+import FeedbackModal from "src/app/jobs/reviews/employer/evaluation";
 
 import {
   Dialog,
@@ -13,8 +13,8 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "public/src/components/ui/dialog";
-import { Textarea } from "public/src/components/ui/textarea";
+} from "src/components/ui/dialog";
+import { Textarea } from "src/components/ui/textarea";
 import { Star } from "lucide-react";
 
 export default function JobsHistory() {

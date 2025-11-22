@@ -2,10 +2,10 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import api from 'public/src/services/Service';
+import api from 'src/services/Service';
 import { ChevronLeft } from 'lucide-react';
-import type { AdminDetail } from 'public/src/types/admin-publications'; 
-import { mapOfferDtoToDetail, mapBuySellDtoToDetail } from 'public/src/services/adapters/adapters';
+import type { AdminDetail } from 'src/types/admin-publications'; 
+import { mapOfferDtoToDetail, mapBuySellDtoToDetail } from 'src/services/adapters/adapters';
 
 
 // --- Funciones Auxiliares ---

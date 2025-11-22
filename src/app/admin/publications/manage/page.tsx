@@ -1,15 +1,15 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import FilterBar from "public/src/components/offers/FilterBar";
-import api from "public/src/services/Service";
+import FilterBar from "src/components/offers/FilterBar";
+import api from "src/services/Service";
 import Link from "next/link"; 
 
 // Importamos los DTOs, el tipo 'Offer' y los adaptadores de TARJETA
-import type { ApiListResponse, OfferBasicDto, BuySellBasicDto } from "public/src/services/dtos/dto";
-import type { Offer } from "public/src/components/offers/OfferCard"; 
-import { mapOfferDtoToCard, mapBuySellDtoToCard } from "public/src/services/adapters/adapters"; 
+import type { ApiListResponse, OfferBasicDto, BuySellBasicDto } from "src/services/dtos/dto";
+import type { Offer } from "src/components/offers/OfferCard"; 
+import { mapOfferDtoToCard, mapBuySellDtoToCard } from "src/services/adapters/adapters"; 
 
-import { ValidationType } from "public/src/types/admin-publications"; 
+import { ValidationType } from "src/types/admin-publications"; 
 
 // 🚨 CORRECCIÓN CLAVE: La función 'peso' ahora acepta number, null, o undefined 
 // y maneja los valores nulos antes de llamar a toLocaleString.

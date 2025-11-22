@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "public/src/components/ui/dialog";
-import { Button } from "public/src/components/ui/Button";
-import { Textarea } from "public/src/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "src/components/ui/dialog";
+import { Button } from "src/components/ui/Button";
+import { Textarea } from "src/components/ui/textarea";
 import { Star } from "lucide-react";
 
 

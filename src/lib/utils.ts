@@ -1,18 +1,11 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
 import { 
     OfferForAdmin, 
     PendingOffersForAdmin, 
     BuySellBasic 
 } from "@/models/responses/publication";
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
-
 function toOfferTypeForAdmin(o: PendingOffersForAdmin): OfferForAdmin["type"] {
     const typeValue = (o.type ?? 0); 
-    
     if (typeValue === 0 || typeValue === 1) { 
         return "Trabajo"; 
     }
@@ -46,4 +39,19 @@ export function getOfferTypeDisplay(type: OfferForAdmin["type"]) {
         text: "Oferta de Trabajo",
         className: "bg-blue-100 text-blue-800 hover:bg-blue-200"
     };
+}
+
+export function isTokenExpired(
+  token: { customExp?: number } | null | undefined
+): boolean {
+  if (!token || !token.customExp) return true;
+  const now = Math.floor(Date.now() / 1000);
+  return token.customExp < now;
+}
+
+export function getPublicRouteFromAdmin(adminPath: string): string {
+  if (adminPath === "/admin/publications/validate" || adminPath === "/admin/publications/manage") {
+    return "/offers";
+  }
+  return "/";
 }

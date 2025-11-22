@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { sendCode, verifyResetCode, resendCode } from "public/src/services/authService";
-import type { ResetPasswordDto, VerifyResetCodeDto } from "public/src/services/dtos/authDto";
+import { sendCode, verifyResetCode, resendCode } from "@/services/authService";
+import type { ResetPasswordDto, VerifyResetCodeDto } from "@/services/dtos/authDto";
 
 export default function ResetPasswordPage() {
   const [step, setStep] = useState<1 | 2>(1);
