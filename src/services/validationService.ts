@@ -1,9 +1,9 @@
-import { BaseApiService } from "public/src/services/base-api-service";
-import { ApiResponse } from "public/src/models/generics";
+import { BaseApiService } from "@/services/base-api-service";
+import { ApiResponse } from "@/models/generics";
 import type { 
     BuySellBasic, 
     PendingOffersForAdmin
-} from "public/src/models/responses";
+} from "src/models/responses";
 
 export class ValidationService extends BaseApiService {
   constructor() {

@@ -3,11 +3,11 @@ import { Suspense } from "react";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-import { Button, Card, CardContent } from "public/src/components/ui"; 
-import { handleApiError } from "public/src/lib"; 
+import { Button, Card, CardContent } from "@/components/ui"; 
+import { handleApiError } from "@/lib"; 
 
 import { useValidationView } from "./hooks/use-validation-view";
-import FilterBar from "./components/filter-bar";
+import FilterBar from "@/components/offers/FilterBar";
 import ValidationRowLink from "./components/validation-row-link"; 
 
 export default function ValidationView() {

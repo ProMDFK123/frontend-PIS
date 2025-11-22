@@ -21,18 +21,10 @@ export function getUserFromToken():
   const token = getTokenFromCookie();
   if (!token) return null;
   try {
-    const payloadBase64 = token.split(".")[1];
-    const json = JSON.parse(
-      decodeURIComponent(
-        atob(payloadBase64)
-          .split("")
-          .map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-          .join("")
-      )
-    );
+    const json = extractUserFromJwt(token);
+    if (!json) return null;
 
     // Claims comunes en ASP.NET
-    const NAME_URI = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
     const GIVEN_URI = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname";
     const SURNAME_URI = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname";
     const EMAIL_URI = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
@@ -40,11 +32,7 @@ export function getUserFromToken():
     const given = json[GIVEN_URI] || json.given_name || undefined;
     const surname = json[SURNAME_URI] || json.family_name || undefined;
 
-    const rawName =
-      json.name ||
-      json.unique_name ||
-      json[NAME_URI] ||
-      (given && surname ? `${given} ${surname}` : given || undefined);
+    const rawName = json.name || json.unique_name || (given && surname ? `${given} ${surname}` : given || undefined);
 
     const email = json.email || json.emails || json[EMAIL_URI] || undefined;
     const sub = json.sub || undefined;
@@ -69,11 +57,13 @@ export function buildLoginUrl(returnTo: string = "/", msg?: string): string {
   return `/auth/login?${q.toString()}`;
 }
 
-export function extractUserFromJwt(token: string) {
+export function extractUserFromJwt(token: string): JwtClaims | null {
   try {
-    const decoded = jwtDecode<JwtClaims>(token);
+    // La importación dinámica evita errores en el servidor (Server-Side Rendering)
+    const jwtDecode = require("jwt-decode") as (token: string) => JwtClaims;
+    return jwtDecode(token);
   } catch (error) {
-    throw error;
+    return null;
   }
 }
 

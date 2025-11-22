@@ -1,12 +1,12 @@
 "use client";
 
 import Navbar from "../components/shared/NavBar";
-import { Button } from "public/src/components/ui/Button";
+import { Button } from "src/components/ui";
 //import { useFetch } from "@/hooks/Hook";
-import { formatDate } from "public/src/utils/Util";
-import { User } from "public/src/interfaces/Interface";
-
-/**export default function HomeView() {
+import { formatDate } from "src/utils/Util";
+import { User } from "src/interfaces/Interface";
+/**
+export default function HomeView() {
   const { data, loading, error } = useFetch<User[]>("/users");
 
   return (
@@ -36,4 +36,4 @@ import { User } from "public/src/interfaces/Interface";
     </div>
   );
 }
-*/
+  */

@@ -1,12 +1,12 @@
 // app/offers/page.tsx
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import FilterBar from "public/src/components/offers/FilterBar";
-import OfferCard, { Offer } from "public/src/components/offers/OfferCard";
-import api from "public/src/services/Service";
-import type { ApiListResponse, OfferBasicDto, BuySellBasicDto } from "public/src/services/dtos/dto";
-import { mapOfferDtoToCard, mapBuySellDtoToCard } from "public/src/services/adapters/adapters";
-import { isLoggedIn } from "public/src/lib/auth";
+import FilterBar from "@/components/offers/FilterBar";
+import OfferCard, { Offer } from "@/components/offers/OfferCard";
+import api from "@/services/Service";
+import type { ApiListResponse, OfferBasicDto, BuySellBasicDto } from "@/services/dtos/dto";
+import { mapOfferDtoToCard, mapBuySellDtoToCard } from "@/services/adapters/adapters";
+import { isLoggedIn } from "@/lib/auth";
 import Link from "next/link";
 
 const SEED: Offer[] = [ /* ... */ ];

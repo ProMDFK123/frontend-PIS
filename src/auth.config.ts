@@ -1,7 +1,7 @@
-import NextAuth, { type NextAuthConfig } from "next-auth";
+import NextAuth, { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import { extractUserFromJwt } from "public/src/lib";
+import { extractUserFromJwt } from "src/lib";
 
 export const authConfig = {
   providers: [
@@ -72,6 +72,6 @@ export const authConfig = {
     maxAge: 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
-} satisfies NextAuthConfig;
+} satisfies NextAuthOptions;
 
 export const { handlers } = NextAuth(authConfig);

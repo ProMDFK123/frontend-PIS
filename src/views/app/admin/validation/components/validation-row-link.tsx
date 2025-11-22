@@ -1,9 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
-import { Card, Badge, CardContent } from "public/src/components/ui"; 
-import { cn } from 'public/src/lib'; 
-import { getOfferTypeDisplay } from 'public/src/lib'; 
-import { OfferForAdmin, ValidationItemFull } from 'public/src/models/responses/publication'; 
+import { Card, Badge, CardContent } from "@/components/ui"; 
+import { cn } from 'src/lib'; 
+import { getOfferTypeDisplay } from '@/lib'; 
+import { OfferForAdmin, ValidationItemFull } from '@/models/responses/publication'; 
 
 interface ValidationRowLinkProps {
     itemId: string;
