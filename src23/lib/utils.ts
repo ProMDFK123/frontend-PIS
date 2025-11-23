@@ -2,7 +2,7 @@ import {
     OfferForAdmin, 
     PendingOffersForAdmin, 
     BuySellBasic 
-} from "@/models/responses/publication";
+} from "@/models/responses";
 
 function toOfferTypeForAdmin(o: PendingOffersForAdmin): OfferForAdmin["type"] {
     const typeValue = (o.type ?? 0); 
