@@ -4,5 +4,6 @@ export {
   type BuySellDetailForAdmin,
   type BuySellBasic,
   type ValidationItemFull,
-  type ValidationType
+  type ValidationType,
+  type PublicationResponse,
 } from "./publication";

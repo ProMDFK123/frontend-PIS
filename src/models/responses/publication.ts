@@ -53,3 +53,8 @@ export interface ValidationItemFull {
     id: string; 
     item: OfferForAdmin;
 }
+
+  export interface PublicationResponse {
+  message: string;
+  data: string; // e.g., "Oferta ID: 14
+  }
