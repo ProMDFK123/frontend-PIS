@@ -1,0 +1,28 @@
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import SiteHeader from "src/components/shared/SiteHeader";
+import { ReactQueryProvider } from "src/providers"; 
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+
+export const metadata: Metadata = {
+  title: "Bolsa FEUCN",
+  description: "Bolsa de trabajo y servicios para estudiantes UCN",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="es">
+      <body className={`${inter.variable} font-sans antialiased bg-[var(--bg)] text-[var(--ink)]`}>
+        <ReactQueryProvider>
+          <SiteHeader />
+          <main> 
+            {children}
+          </main>
+        </ReactQueryProvider>
+      </body>
+    </html>
+  );
+}
+

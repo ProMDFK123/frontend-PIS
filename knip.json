@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "src/**/*.{js,ts,jsx,tsx}",
+    "next.config.*",
+    "tailwind.config.*",
+    "postcss.config.*"
+  ],
+  "project": ["src/**/*.{js,ts,jsx,tsx}", "!src/**/*.d.ts"],
+  "ignoreDependencies": ["eslint-config-next", "tw-animate-css", "tailwindcss"],
+  "ignore": ["src/components/ui/button.tsx", "src/components/ui/carousel.tsx"],
+  "ignoreExportsUsedInFile": true,
+  "includeEntryExports": true,
+  "workspaces": {
+    ".": {
+      "entry": ["src/app/**/*.{js,ts,jsx,tsx}", "next.config.*"],
+      "project": ["src/**/*.{js,ts,jsx,tsx}", "!src/**/*.d.ts"]
+    }
+  }
+}
