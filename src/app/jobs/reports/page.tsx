@@ -3,10 +3,8 @@
 import { useState } from "react";
 import { Button } from "src/components/ui/Button";
 import { Card } from "src/components/ui/card";
-import { cn } from "src/lib/utils";
+import { cn } from "src/lib";
 import EvaluacionTrabajoModal from "src/app/jobs/reports/details";
-
-
 
 export default function JobsHistory() {
   const [filtro, setFiltro] = useState<"todos" | "bajas">("todos");
@@ -120,13 +118,17 @@ export default function JobsHistory() {
               </div>
 
               <div className="mt-4">
-                <Button onClick={() => setOpen(true)}
+                <Button
+                  onClick={() => setOpen(true)}
                   variant="outline"
                   className="w-full border-purple-300 text-purple-600 hover:bg-purple-50"
                 >
                   Ver detalles
                 </Button>
-                <EvaluacionTrabajoModal open={open} onClose={() => setOpen(false)} />
+                <EvaluacionTrabajoModal
+                  open={open}
+                  onClose={() => setOpen(false)}
+                />
               </div>
             </Card>
           ))}
