@@ -1,8 +1,15 @@
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: any[]) {
+  return twMerge(clsx(inputs));
+}
+
 import { 
     OfferForAdmin, 
     PendingOffersForAdmin, 
     BuySellBasic 
-} from "@/models/responses";
+} from "@/models/responses/publication";
 
 function toOfferTypeForAdmin(o: PendingOffersForAdmin): OfferForAdmin["type"] {
     const typeValue = (o.type ?? 0); 

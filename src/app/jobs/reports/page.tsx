@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "src/components/ui/Button";
 import { Card } from "src/components/ui/card";
 import { cn } from "src/lib/utils";
-import EvaluacionTrabajoModal from "src2/app/jobs/reports/details";
+import EvaluacionTrabajoModal from "src/app/jobs/reports/details";
 
 
 
