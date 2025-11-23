@@ -6,10 +6,6 @@ import { jwtDecode } from "jwt-decode";
 
 import { JwtClaims } from "@/models/generics";
 
-import NextAuth from "next-auth";
-
-import { authConfig } from "@/auth.config";
-
 export function getTokenFromCookie(): string | null {
   if (typeof document === "undefined") return null;
   return Cookies.get("token") ?? null;
@@ -133,9 +129,10 @@ export function isSessionExpired(
   return expired;
 }
 
-export const { 
-    handlers, 
-    auth, 
-    signIn, 
-    signOut 
-} = NextAuth(authConfig);
+export function isTokenExpired(
+  token: { customExp?: number } | null | undefined
+): boolean {
+  if (!token || !token.customExp) return true;
+  const now = Math.floor(Date.now() / 1000);
+  return token.customExp < now;
+}

@@ -41,14 +41,6 @@ export function getOfferTypeDisplay(type: OfferForAdmin["type"]) {
     };
 }
 
-export function isTokenExpired(
-  token: { customExp?: number } | null | undefined
-): boolean {
-  if (!token || !token.customExp) return true;
-  const now = Math.floor(Date.now() / 1000);
-  return token.customExp < now;
-}
-
 export function getPublicRouteFromAdmin(adminPath: string): string {
   if (adminPath === "/admin/publications/validate" || adminPath === "/admin/publications/manage") {
     return "/offers";

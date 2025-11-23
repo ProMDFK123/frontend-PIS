@@ -6,6 +6,7 @@ export {
   buildLoginUrl,
   extractUserFromJwt,
   isSessionExpired,
+  isTokenExpired,
 } from "./auth";
 export { cn } from "./tailwind";
 export { handleApiError } from "./api";
@@ -14,5 +15,4 @@ export {
   mapOfferDtoToValidate,
   getOfferTypeDisplay,
   getPublicRouteFromAdmin,
-  isTokenExpired,
 } from "./utils";
