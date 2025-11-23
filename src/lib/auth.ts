@@ -23,9 +23,12 @@ export function getUserFromToken(): {
   name?: string;
   email?: string;
   sub?: string;
+  role?: string;
+  userType?: string;
 } | null {
   const token = getTokenFromCookie();
   if (!token) return null;
+
   try {
     const payloadBase64 = token.split(".")[1];
     const json = JSON.parse(
@@ -37,33 +40,26 @@ export function getUserFromToken(): {
       )
     );
 
-    // Claims comunes en ASP.NET
     const NAME_URI =
       "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
-    const GIVEN_URI =
-      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname";
-    const SURNAME_URI =
-      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname";
     const EMAIL_URI =
       "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
+    const ROLE_URI =
+      "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
 
-    const given = json[GIVEN_URI] || json.given_name || undefined;
-    const surname = json[SURNAME_URI] || json.family_name || undefined;
+    return {
+      name:
+        json.name ||
+        json.unique_name ||
+        json[NAME_URI] ||
+        (json.email ? String(json.email).split("@")[0] : undefined),
 
-    const rawName =
-      json.name ||
-      json.unique_name ||
-      json[NAME_URI] ||
-      (given && surname ? `${given} ${surname}` : given || undefined);
+      email: json.email || json[EMAIL_URI],
+      sub: json.sub,
 
-    const email = json.email || json.emails || json[EMAIL_URI] || undefined;
-    const sub = json.sub || undefined;
-
-    // nombre que mostramos en la UI
-    const displayName =
-      rawName || (email ? String(email).split("@")[0] : undefined);
-
-    return { name: displayName, email, sub };
+      role: json[ROLE_URI],
+      userType: json.userType,
+    };
   } catch {
     return null;
   }
