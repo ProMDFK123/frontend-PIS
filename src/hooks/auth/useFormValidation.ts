@@ -16,8 +16,15 @@ export function useFormValidation<T extends Record<string, any>>(initialData: T,
     };
 
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
+        const { name, type } = e.target;
         const fieldName = name as keyof T;
+
+        let value: any;
+        if (type == "checkbox") {
+            value = (e.target as HTMLInputElement).checked;
+        } else {
+            value = e.target.value;
+        }
 
         setFormData((prev) => ({ ...prev, [fieldName]: value }));
 
