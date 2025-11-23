@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { formatRut } from "src/utils/Util";
+import Cookies from "js-cookie";
 
 type ProfileData = {
   userName?: string;
@@ -98,7 +99,8 @@ export default function Page() {
     }
 
     setLoading(true);
-    fetch("http://localhost:5185/api/user/profile/admin")
+
+    fetch("http://localhost:5185/api/user/profile/admin", {headers: {Authorization: `Bearer ${token}`,},})
       .then((r) => r.json())
       .then((json) => {
         if (!mounted) return;
@@ -227,14 +229,14 @@ export default function Page() {
                     setStatus({ type: "", text: "" });
                   }
                 }}
-                className="flex-1 text-white bg-[var(--primary)]"
+                className="flex-1 text-white bg-(--primary)"
                 variant={editing ? "secondary" : "secondary"}
                 disabled={saving}
               >
                 {editing ? (saving ? "Guardando..." : "Guardar") : "Editar"}
               </Button>
 
-              <LogoutButton className="flex-1 text-white bg-[var(--primary)]">
+              <LogoutButton className="flex-1 text-white bg-(--primary)">
                 Salir
               </LogoutButton>
             </div>

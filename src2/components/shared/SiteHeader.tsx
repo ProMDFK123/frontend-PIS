@@ -102,7 +102,7 @@ export default function SiteHeader() {
                     className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
                     role="menuitem"
                   >
-                    Editar perfil
+                    Ver perfil
                   </Link>
                   <Link
                     href="/jobs/history"
