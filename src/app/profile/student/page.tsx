@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { formatRut } from "src/utils/Util";
+import Cookies from "js-cookie";
+import { getTokenFromCookie } from "@/lib";
 
 type ProfileData = {
   userName?: string;
@@ -51,7 +53,10 @@ export default function Page() {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    fetch("http://localhost:5185/api/user/profile/student")
+
+    const token = getTokenFromCookie();
+
+    fetch("http://localhost:5185/api/user/profile/student", {headers: {Authorization: `Bearer ${token}`,},})
       .then((r) => r.json())
       .then((json) => {
         if (!mounted) return;
@@ -257,13 +262,13 @@ export default function Page() {
                     setStatus({ type: "", text: "" });
                   }
                 }}
-                className="flex-1 text-white bg-[var(--primary)]"
+                className="flex-1 text-white bg-(--primary)"
                 disabled={saving}
               >
                 {editing ? (saving ? "Guardando..." : "Guardar") : "Editar"}
               </Button>
 
-              <LogoutButton className="flex-1 text-white bg-[var(--primary)]">
+              <LogoutButton className="flex-1 text-white bg-(--primary)">
                 Salir
               </LogoutButton>
             </div>
@@ -367,7 +372,7 @@ export default function Page() {
         <h2 className="text-lg font-medium mb-3">Curriculum Vitae</h2>
         <div className="flex items-center gap-4">
           <Button
-            className="bg-[var(--primary)] text-white"
+            className="bg-(--primary) text-white"
             onClick={() => fileRef.current?.click()}
           >
             Sube tu curriculum Vitae
