@@ -24,4 +24,5 @@ export {
   formatDate,
   thousandSeparatorPipe,
   isValidId,
+  getRoleFromToken,
 } from "./utils";

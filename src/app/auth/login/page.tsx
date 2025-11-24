@@ -33,7 +33,7 @@ function LoginForm() {
         console.log("[Role] response:", role);
         const decodedReturn = rawReturnTo ? decodeURIComponent(rawReturnTo) : "";
         const safeReturnTo = decodedReturn && decodedReturn.startsWith("/") ? decodedReturn : "";
-        const finalRedirect = safeReturnTo || (role === "Offerent" ? "/offerer" : role === "admin" ? "/admin" : "/offers");
+        const finalRedirect = safeReturnTo || (role === "Offerent" ? "/offerer" : role === "Admin" ? "/admin/publications" : "/offers");
         router.replace(finalRedirect);
       } catch (e) {
         router.replace("/offers");
@@ -98,7 +98,7 @@ function LoginForm() {
 
       // Si se proporcionó un returnTo válido lo usamos, si no elegimos según role
       let finalRedirect = safeReturnTo || 
-        (role === "offerer" ? "/offerer" : role === "admin" ? "/admin" : "/offers");
+        (role === "offerer" ? "/offerer" : role === "Admin" ? "/admin/publications" : "/offers");
 
       console.log(response.message || "Inicio de sesión exitoso.");
       router.replace(finalRedirect);

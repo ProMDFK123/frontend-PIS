@@ -1,3 +1,6 @@
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+
 export function thousandSeparatorPipe(num: number): string {
   return num
     .toFixed(0)
@@ -17,3 +20,17 @@ export function formatDate(date: string): string {
 export const isValidId = (id: string): boolean => {
   return /^[1-9]\d*$/.test(id);
 };
+
+const ROLE_CLAIM = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+
+export function getRoleFromToken() {
+  const token = Cookies.get("token");
+  if (!token) return null;
+  try {
+    const decodedToken: any = jwtDecode(token);
+    const userRole = decodedToken[ROLE_CLAIM]; 
+    return typeof userRole === 'string' ? userRole.trim() : null;
+  } catch (e) {
+    return null;
+  }
+}
