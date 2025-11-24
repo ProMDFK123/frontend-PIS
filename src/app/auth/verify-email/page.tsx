@@ -102,7 +102,6 @@ export default function VerifyEmailPage() {
           </button>
         </form>
 
-        {/* Reenviar código */}
         <div className="mt-4 text-center">
           <button
             onClick={handleResendCode}
@@ -113,7 +112,6 @@ export default function VerifyEmailPage() {
           </button>
         </div>
 
-        {/* Volver */}
         <div className="mt-6 text-center">
           <a href="/" className="text-gray-500 hover:underline text-sm">
             ← Volver

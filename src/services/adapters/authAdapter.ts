@@ -14,8 +14,29 @@ import {
   VerifyEmailResponseDto 
 } from "../dtos/authDto";
 
-//Interfaces
-export interface StudentForm{
+// Register Adapters
+// Admin
+export function mapAdminResponse(dto: AdminResponseDto) {
+  return {
+    success: true,
+    message: dto.data || dto.message,
+  };
+}
+
+// Company
+export function mapCompanyResponse(dto: CompanyResponsetDto | any) {
+  return {
+    message: dto.data || dto.message || dto.status || "Registro completado con éxito",
+  };
+}
+
+// Individual
+export function mapIndividualResponse(dto: IndividualResponseDto){
+    return {message: dto.message};
+}
+// Student
+// Interface
+interface StudentForm{
     nombre: string;
     apellido: string;
     email: string;
@@ -136,44 +157,35 @@ export const StudentAdapter = {
       Disability: formData.discapacidad,
     };
   },
-  fromResponse(dto: StudentResponseDto): { message: string } {
-    return { message: dto.message ?? "Registro de estudiante exitoso" };
-  },
 };
+
+// Response Adapter
+export function mapStudentResponse(dto: IndividualResponseDto){
+    return {message: dto.message};
+}
 
 // Email Verification Adapters
 // Verify-Email
-export const EmailVerificationAdapter = {
-  // Verify
-  fromVerifyResponse(dto: VerifyEmailResponseDto): { message: string; info: any | null } {
-    return {
-      message: dto.message ?? "Email verificado exitosamente",
-      info: dto.data ?? null,
+export function mapVerifyEmailResponse(dto: VerifyEmailResponseDto){
+    return{
+        message: dto.message,
+        info: dto.data ?? null,
     };
-  },
-  // Resend
-  fromResendResponse(dto: ResendVerificationResponseDto): { message: string; info: any | null } {
-    return {
-      message: dto.message ?? "Email de verificación reenviado exitosamente",
-      info: dto.data ?? null,
+}
+// Resend-Verification
+export function mapResendVerificationResponse(dto: ResendVerificationResponseDto){
+    return{
+        message: dto.message,
+        info: dto.data ?? null,
     };
-  },
-};
+}
 
 // Reset Password Adapters
-export const PasswordResetAdapter = {
-  // Reset
-  fromResetResponse(dto: VerifyEmailResponseDto): { message: string; info: any | null } {
-    return {
-      message: dto.message ?? "Contraseña restablecida exitosamente",
-      info: dto.data ?? null,
-    };
-  },
-  // Resend
-  fromVerificationResponse(dto: ResendVerificationResponseDto): { message: string; info: any | null } {
-    return {
-      message: dto.message ?? "Código de verificación enviado exitosamente",
-      info: dto.data ?? null,
-    };
-  }
-};
+// Reset
+export function mapResetPaswordResponse(dto: VerifyEmailResponseDto){
+    return{message: dto.message,};
+}
+// Verification
+export function mapResetVerificationResponse(dto: ResendVerificationResponseDto){
+    return{message: dto.message,};
+}
