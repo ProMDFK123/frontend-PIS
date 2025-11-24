@@ -12,4 +12,5 @@ export {
   type AdminDetail,
   type UseAdminDetailResult,
   type PublicationResponse,
+  type CreatePublicationData
 } from "./publication";

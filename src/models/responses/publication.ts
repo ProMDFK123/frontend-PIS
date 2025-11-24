@@ -86,3 +86,17 @@ export interface PublicationResponse {
   message: string;
   data: string; // e.g., "Oferta ID: 14
   }
+
+export interface CreatePublicationData {
+  Title: string;
+  Description: string;
+  EndDate?: string; // Fecha de término de la oferta/pasantía
+  DeadlineDate?: string; // Fecha límite para postular
+  Remuneration?: number;
+  OfferType: number; // 0 para Trabajo, 1 para Voluntariado/Pasantía
+  Location?: string;
+  Requirements?: string;
+  ContactInfo?: string;
+  ImagesURL: string[];
+  IsCvRequired: boolean;
+}
