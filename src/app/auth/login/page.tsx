@@ -220,17 +220,84 @@ function LoginForm() {
 }
 
 export default function LoginPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#0d8ef2] px-4">
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-xl w-[360px] flex flex-col items-center">
-            <div className="text-white">Cargando...</div>
-          </div>
-        </div>
-      }
-    >
-      <LoginForm />
-    </Suspense>
-  );
+    const router = useRouter();
+    const sp = useSearchParams();
+    const returnTo = sp?.get("returnTo") || "/offers";
+    const msg = sp?.get("msg");
+
+    const [form, setForm] = useState({
+        correo: "",
+        password: "",
+        rememberMe: false,
+    });
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    // Redirección automática si ya hay token
+    useEffect(() => {
+        const token = Cookies.get("token");
+        if (token) if (token) router.replace(returnTo);     //  vuelve a la ruta original si ya hay token
+    }, [router, returnTo]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value, type, checked } = e.target;
+        setForm((prev) => ({
+            ...prev,
+            [name]: type === "checkbox" ? checked : value,
+        }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+        setLoading(true);
+
+        const payload: LoginRequestDto = {
+            Email: form.correo,
+            Password: form.password,
+            RememberMe: form.rememberMe,
+        };
+
+        try {
+            const response = await loginUser(payload);
+
+            if (!response.token) {
+                setError("Usuario no registrado o contraseña incorrecta.");
+                return;
+            }
+
+            // Guardar JWT en cookies
+            Cookies.set("token", response.token, { expires: form.rememberMe ? 7 : undefined });
+
+            console.log(response.message || "Inicio de sesión exitoso.");
+            router.replace(returnTo); // regresar a la página que quiso ver
+        } catch (error: any) {
+            console.error("Error en el login:", error);
+
+            const backendError = error?.response?.data;
+
+            const errorMessage =
+                backendError?.details ||
+                backendError?.message ||
+                "Credenciales inválidas. Por favor, revisa tu correo y contraseña.";
+
+            setError(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Suspense
+          fallback={
+            <div className="min-h-screen flex items-center justify-center bg-[#0d8ef2] px-4">
+              <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-xl w-[360px] flex flex-col items-center">
+                <div className="text-white">Cargando...</div>
+              </div>
+            </div>
+          }
+        >
+          <LoginForm />
+        </Suspense>
+    );
 }

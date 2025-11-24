@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from 'src/services/Service';
 import { ChevronLeft } from 'lucide-react'; 
-import type { AdminDetail } from 'src/types/admin-publications'; 
+import type { AdminDetail } from 'src2/types/admin-publications'; 
 // Importamos mapBuySellDtoToDetail y mapOfferDtoToDetail para que no dé error TS
 import { mapOfferDtoToDetail, mapBuySellDtoToDetail } from 'src/services/adapters/adapters';
 

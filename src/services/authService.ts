@@ -44,7 +44,7 @@ export async function registerStudent(payload: StudentRequestDto) {
 
 // Email Verification
 export async function verifyEmail(payload: VerifyEmailDto | any){
-  const response = await api.post<VerifyEmailResponseDto>("/api/auth/verify-email", payload);
+  const response = await api.post<VerifyEmailResponseDto>("/auth/verify-email", payload);
   return mapVerifyEmailResponse(response.data);
 }
 export async function resendVerification(payload: ResendVerificationDto | any) {

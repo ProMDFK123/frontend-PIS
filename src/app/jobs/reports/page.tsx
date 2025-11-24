@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
-import axios from "axios";
+import api from "@/services/Service";
 
 interface ReviewDTO {
   idReview: number;
-  ratingForStudent?: number;
-  commentForStudent?: string;
-  ratingForOfferor?: number;
-  commentForOfferor?: string;
+  ratingForStudent?: number | null;
+  commentForStudent?: string | null;
+  ratingForOfferor?: number | null;
+  commentForOfferor?: string | null;
   atTime: boolean;
   goodPresentation: boolean;
   reviewWindowEndDate: string;
@@ -44,33 +44,47 @@ export default function AdminReviewsPage() {
     try {
       const claims: any = jwtDecode(token);
       const role =
-        claims[
-          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-        ];
+        claims["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
+        claims["role"] ||
+        claims["roles"];
 
-      if (role !== "Admin") {
+      if (role !== "Admin" && !(Array.isArray(role) && role.includes("Admin"))) {
         setError("No tienes permisos para ver esta sección.");
         setLoading(false);
         return;
       }
-    } catch {
+    } catch (e) {
       setError("Token inválido.");
       setLoading(false);
       return;
     }
 
     const fetchReviews = async () => {
-      console.log(token);
       try {
-        const res = await axios.get("http://localhost:5185/api/Review/Admin/GetAllReviews", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        // use centralized axios instance which already attaches the token cookie
+        const res = await api.get("/Review/Admin/system-reviews", { headers: { "X-Skip-Redirect": "1" } });
+        // backend may return { data: [...] } or directly an array
+        const payload = res.data ?? null;
+        const all: any[] = (payload && (payload.data ?? payload)) || [];
 
-        setReviews(res.data);
-        console.log("📌 DATOS RECIBIDOS DEL BACK:", res.data);  // <<<<<< AQUI
+        // normalize keys from backend (PascalCase / camelCase) to frontend camelCase
+        const mapped: ReviewDTO[] = all.map((r: any) => ({
+          idReview: r.idReview ?? r.id ?? r.IdReview ?? 0,
+          ratingForStudent: r.ratingForStudent ?? r.RatingForStudent ?? null,
+          commentForStudent: r.commentForStudent ?? r.CommentForStudent ?? null,
+          ratingForOfferor: r.ratingForOfferor ?? r.RatingForOfferor ?? null,
+          commentForOfferor: r.commentForOfferor ?? r.CommentForOfferor ?? null,
+          atTime: r.atTime ?? r.AtTime ?? false,
+          goodPresentation: r.goodPresentation ?? r.GoodPresentation ?? false,
+          reviewWindowEndDate: r.reviewWindowEndDate ?? r.ReviewWindowEndDate ?? "",
+          idStudent: r.idStudent ?? r.IdStudent ?? 0,
+          idOfferor: r.idOfferor ?? r.IdOfferor ?? 0,
+          idPublication: r.idPublication ?? r.IdPublication ?? 0,
+          hasReviewForOfferorBeenDeleted: !!(r.hasReviewForOfferorBeenDeleted ?? r.HasReviewForOfferorBeenDeleted),
+          hasReviewForStudentBeenDeleted: !!(r.hasReviewForStudentBeenDeleted ?? r.HasReviewForStudentBeenDeleted),
+        }));
+
+        setReviews(mapped);
       } catch (err) {
         console.error(err);
         setError("Error al cargar las reseñas.");

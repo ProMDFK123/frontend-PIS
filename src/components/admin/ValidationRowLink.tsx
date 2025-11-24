@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 // Asumo que OfferForAdmin está importada de '@/types/admin-publications'
-import { OfferForAdmin } from 'src/types/admin-publications'; 
+import { OfferForAdmin } from 'src2/types/admin-publications'; 
 
 interface ValidationRowLinkProps {
     itemId: string;

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { RegisterAdmin } from "@/services/authService";
 import type { AdminRequestDto } from "@/services/dtos/authDto";
-import { formatRut } from "@/utils/Util"
+import { formatRut } from "src2/utils/Util"
 
 const PRIMARY_COLOR = "#2C3E90";
 

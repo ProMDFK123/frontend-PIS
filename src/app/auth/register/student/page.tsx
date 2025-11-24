@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { registerStudent } from "@/services/authService";
 import { StudentAdapter } from "@/services/adapters/authAdapter";
-import { formatRut } from "@/utils/Util"
+import { formatRut } from "src2/utils/Util"
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(64, 64, 48, 0.4)";

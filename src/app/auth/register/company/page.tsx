@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { registerCompany } from "@/services/authService";
 import { CompanyRequestDto } from "@/services/dtos/authDto";
-import { formatRut } from "@/utils/Util"
+import { formatRut } from "src2/utils/Util"
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";

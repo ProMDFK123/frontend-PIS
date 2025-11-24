@@ -9,7 +9,7 @@ import type { ApiListResponse, OfferBasicDto, BuySellBasicDto } from "src/servic
 import type { Offer } from "src/components/offers/OfferCard"; 
 import { mapOfferDtoToCard, mapBuySellDtoToCard } from "src/services/adapters/adapters"; 
 
-import { ValidationType } from "src/types/admin-publications"; 
+import { ValidationType } from "src2/types/admin-publications"; 
 
 // 🚨 CORRECCIÓN CLAVE: La función 'peso' ahora acepta number, null, o undefined 
 // y maneja los valores nulos antes de llamar a toLocaleString.
