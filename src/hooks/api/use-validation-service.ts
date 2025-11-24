@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-import { handleApiError } from "@/lib"; 
-import { mapOfferDtoToValidate, mapBuySellDtoToValidate } from "@/lib"; 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ValidationActionVariables } from "@/models/requests";
+import { useParams } from 'next/navigation';
+import { mapOfferDtoToValidate, mapBuySellDtoToValidate, mapBuySellToDetail, mapOfferToDetail, handleApiError } from "@/lib";
 import { validationService } from "@/services/validationService";
-import { PendingOffersForAdmin, BuySellBasic } from "@/models/responses";
-import { ValidationItemFull } from "@/models/responses"; 
+import { PendingOffersForAdmin, BuySellBasic, AdminDetail, UseAdminDetailResult, ValidationItemFull } from "@/models/responses";
+import { AxiosError } from "axios";
 
 export const useGetPendingPublications = () => {
     return useQuery<ValidationItemFull[], Error>({
@@ -16,19 +17,21 @@ export const useGetPendingPublications = () => {
                 ]);
                 const offersData = offersRes.data.data;
                 const buysellsData = buysellsRes.data.data;
+                
                 const mappedOffers = offersData
                     .filter(o => o && o.id)
                     .map(o => ({
-                        id: String(o.id), 
-                        item: mapOfferDtoToValidate(o), 
+                        id: String(o.id),
+                        item: mapOfferDtoToValidate(o),
                     })) as ValidationItemFull[];
                 
                 const mappedBuys = buysellsData
                     .filter(b => b && b.id)
                     .map(b => ({
-                        id: `bs-${String(b.id)}`,
+                        id: `bs-${String(b.id)}`, 
                         item: mapBuySellDtoToValidate(b),
                     })) as ValidationItemFull[];
+                
                 return [...mappedOffers, ...mappedBuys];
 
             } catch (error) {
@@ -37,5 +40,72 @@ export const useGetPendingPublications = () => {
             }
         },
         initialData: [],
+    });
+};
+
+export const useGetAdminPublicationDetailQuery = (id: string | undefined) => {
+    return useQuery<AdminDetail, Error>({
+        queryKey: ["admin", "publication", id],
+        queryFn: async () => {
+            if (!id || id === 'undefined') throw new Error("ID de publicación no válido.");
+
+            const isBuySellPrefixed = id.startsWith('bs-');
+            const entityId = isBuySellPrefixed ? id.split('-')[1] : id;
+
+            // 1. Si tiene prefijo 'bs-', vamos directo a buysells
+            if (isBuySellPrefixed) {
+                const response = await validationService.getPublicationDetail("buysells", entityId);
+                const detailDto = response.data?.data ?? response.data;
+                if (!detailDto) throw new Error("Respuesta de API vacía o malformada.");
+                return { ...mapBuySellToDetail(detailDto), id };
+            }
+
+            // 2. Si NO tiene prefijo, intentamos primero como Offer, luego como BuySell (Fallback)
+            try {
+                // Intentar como Oferta de Trabajo (Offer)
+                const response = await validationService.getPublicationDetail("offers", entityId);
+                const detailDto = response.data?.data ?? response.data;
+                if (!detailDto) throw new Error("Respuesta de API vacía o malformada.");
+                
+                return { ...mapOfferToDetail(detailDto), id };
+
+            } catch (error) {
+                if (error instanceof AxiosError && error.response?.status === 404) {
+                    try {
+                        const response = await validationService.getPublicationDetail("buysells", entityId);
+                        const detailDto = response.data?.data ?? response.data;
+                        if (!detailDto) throw new Error("Respuesta de API vacía o malformada.");
+                        
+                        // Éxito como BuySell
+                        return { ...mapBuySellToDetail(detailDto), id };
+                    } catch (innerError) {
+                        // Si falla la segunda vez, es un 404 real.
+                        const apiError = handleApiError(innerError);
+                        throw new Error(apiError.details || `Publicación con ID ${entityId} no encontrada.`);
+                    }
+                }
+                
+                // Re-lanzar otros errores (ej: 500, network error, etc.)
+                const apiError = handleApiError(error);
+                throw new Error(apiError.details || apiError.message);
+            }
+        },
+        enabled: !!id,
+        staleTime: 5 * 60 * 1000,
+    });
+};
+export const useValidationActionMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation<any, Error, ValidationActionVariables, void>({
+        mutationFn: ({ id, action }) => {
+            const isBuySell = id.startsWith('bs-');
+            const entityId = isBuySell ? id.split('-')[1] : id;
+            const typePath: "buysells" | "offers" = isBuySell ? "buysells" : "offers";
+            return validationService.handleValidationAction(typePath, entityId, action);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin", "validation", "pending"] });
+        },
     });
 };

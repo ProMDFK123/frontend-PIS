@@ -1,6 +1,6 @@
 import { ValidationView } from "@/views/app"; 
 export const metadata = {
-  title: "Validación de Ofertas - Admin",
+  title: "Validar Publicaciones",
   description: "Panel de revisión y aprobación de publicaciones pendientes.",
 };
 

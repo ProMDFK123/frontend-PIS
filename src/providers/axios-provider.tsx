@@ -16,21 +16,47 @@ export const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(async config => {
   // Try to get the session only on the client side
   if (typeof window !== "undefined") {
-    const session = await getSession();
-    const token = session?.accessToken;
+    try {
+      const session = await getSession();
+      // debug: ver session
+      // eslint-disable-next-line no-console
+      console.debug("getSession()", session);
 
-    // If there is a session, check if it's expired
-    if (session && isSessionExpired(session)) {
-      toast.error("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
-      await signOut({ redirect: false });
-      return Promise.reject(new Error("Token expired"));
-    }
+      let token = session?.accessToken as string | undefined;
 
-    // If there is an active session, always add the authorization token
-    if (token) {
-      config.headers = config.headers ?? {};
-      (config.headers as Record<string, string>)["Authorization"] =
-        `Bearer ${token}`;
+      // fallback: localStorage
+      if (!token) {
+        token = localStorage.getItem("accessToken") || localStorage.getItem("token") || undefined;
+      }
+
+      // fallback: cookie named "token"
+      if (!token) {
+        const cookieToken = document.cookie
+          .split("; ")
+          .find((c) => c.startsWith("token="))
+          ?.split("=")[1];
+        if (cookieToken) token = decodeURIComponent(cookieToken);
+      }
+
+      if (token) {
+        // eslint-disable-next-line no-console
+        console.debug("Using token (partial):", `${token.slice(0,8)}...${token.slice(-8)}`);
+        config.headers = config.headers ?? {};
+        (config.headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn("No token available for request to", config.url);
+      }
+
+      if (session && isSessionExpired(session)) {
+        toast.error("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
+        await signOut({ redirect: false });
+        return Promise.reject(new Error("Token expired"));
+      }
+    } catch (e) {
+      // No bloquear peticiones si getSession falla
+      // eslint-disable-next-line no-console
+      console.warn("getSession failed (continuing without token):", e);
     }
   }
 

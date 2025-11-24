@@ -1,3 +1,5 @@
+import { formatDate } from './../utils/Util';
+import { mapBuySellDtoToDetail } from 'src/services/adapters/adapters';
 export {
   getTokenFromCookie,
   isLoggedIn,
@@ -6,6 +8,7 @@ export {
   buildLoginUrl,
   extractUserFromJwt,
   isSessionExpired,
+  isTokenExpired,
 } from "./auth";
 export { cn } from "./tailwind";
 export { handleApiError } from "./api";
@@ -14,5 +17,12 @@ export {
   mapOfferDtoToValidate,
   getOfferTypeDisplay,
   getPublicRouteFromAdmin,
-  isTokenExpired,
+  mapOfferToDetail,
+  mapBuySellToDetail,
+} from "./publication";
+export {
+  formatDate,
+  thousandSeparatorPipe,
+  isValidId,
+  getRoleFromToken,
 } from "./utils";

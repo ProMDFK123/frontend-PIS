@@ -2,14 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib";
 import { useEffect, useRef, useState } from "react";
-import { isLoggedIn, getUserFromToken, getTokenFromCookie, extractUserFromJwt, logoutAndRedirect } from "@/lib/auth";
+import { isLoggedIn, getUserFromToken, logoutAndRedirect, getRoleFromToken, cn } from "@/lib"; 
 
-
-const baseLinks = [
+const userLinks = [
   { href: "/", label: "Inicio" },
   { href: "/offers", label: "Explorar" },
+];
+
+const adminNavLinks = [
+  { href: "/admin/publications", label: "Inicio" },
+  { href: "/admin/publications/validate", label: "Validar" },
+  { href: "/admin/publications/manage", label: "Administrar" },
+];
+
+const baseDropdownItems = [
+  { href: "/profile", label: "Editar perfil" },
+  { href: "/jobs/history", label: "Historial de postulaciones" },
+  { href: "/offers/history", label: "Historial de trabajos" },
+];
+
+const adminDropdownItems = [
+  { href: "/admin/users", label: "Gestión de Usuarios" },
 ];
 
 function UserAvatar({ name }: { name?: string }) {
@@ -29,27 +43,19 @@ function UserAvatar({ name }: { name?: string }) {
 
 export default function SiteHeader() {
   const pathname = usePathname();
-  const [auth, setAuth] = useState({ logged: false, name: "Usuario", role: null as string | null, });
+  const [auth, setAuth] = useState<{ logged: boolean, name: string, role: string | null }>({ logged: false, name: "Usuario", role: null }); 
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const logged = isLoggedIn();
-    const token = getTokenFromCookie();
-    let info = null;
-    try {
-      info = token ? extractUserFromJwt(token) : null;
-    } catch {
-    // token expirado → cerrar sesión automáticamente
-    logoutAndRedirect("/auth/login");
-    return;
-}
-    
+    const info = getUserFromToken();
+    const userRole = getRoleFromToken();
     setAuth({
-  logged,
-  name: info?.email?.split("@")[0] ?? "Usuario",
-  role: info?.role ?? null,
-});
+      logged,
+      name: info?.name || info?.email || "Usuario", 
+      role: userRole
+    });
   }, [pathname]);
 
   useEffect(() => {
@@ -61,12 +67,13 @@ export default function SiteHeader() {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [open]);
 
-  const reviewHistoryRoute =
-  auth.role === "Admin"
-    ? "/jobs/reports"
-    : auth.role === "Offeror"
-    ? "/jobs/reviews/employer"
-    : "/jobs/reviews/student"; // estudiante por defecto
+  const isAdmin = auth.role === "Admin"; 
+  
+  const mainLinks = isAdmin ? adminNavLinks : userLinks;
+  
+  const dropdownItems = isAdmin 
+    ? [...adminDropdownItems, ...baseDropdownItems]
+    : baseDropdownItems; 
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--card)]/85 backdrop-blur">
@@ -78,13 +85,13 @@ export default function SiteHeader() {
         </Link>
 
         <div className="flex items-center gap-2">
-          {baseLinks.map((l) => (
+          {/* RENDERIZADO DE ENLACES PRINCIPALES ADAPTADO AL ROL */}
+          {mainLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               className={cn(
                 "rounded-xl px-4 py-2 text-[var(--ink)]/85 hover:bg-[var(--chip)] transition",
-                // marcamos activo solo si coincide exacto o si estamos en /offers y el link es /offers
                 pathname === l.href && "bg-[var(--chip)] text-[var(--ink)]"
               )}
             >
@@ -93,7 +100,7 @@ export default function SiteHeader() {
           ))}
 
           {!auth.logged ? (
-            <Link
+            <Link 
               href="/auth/login"
               className="rounded-xl px-4 py-2 font-semibold text-white bg-[var(--primary)] hover:opacity-95 transition"
             >
@@ -109,41 +116,28 @@ export default function SiteHeader() {
               >
                 <UserAvatar name={auth.name} />
                 <svg width="16" height="16" viewBox="0 0 20 20" className="text-[var(--ink)]/70">
-                  <path d="M5 7l5 5 5-5" fill="currentColor" />
-                </svg>
+                  <path d="M5 7l5 5 5-5" fill="currentColor" />
+                </svg>
               </button>
               {open && (
                 <div
                   role="menu"
                   className="absolute right-0 mt-2 w-56 rounded-xl border border-[var(--border)] bg-white shadow-lg overflow-hidden"
                 >
-                  <Link
-                    href="/profile"
-                    className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
-                    role="menuitem"
-                  >
-                    Editar perfil
-                  </Link>
-                  <Link
-                    href="/jobs/history"
-                    className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
-                    role="menuitem"
-                  >
-                    Historial de postulaciones
-                  </Link>
-                  <Link
-                    href="/offers/history"
-                    className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
-                    role="menuitem"
-                  >
-                    Historial de trabajos
-                  </Link>
-                  <Link href={reviewHistoryRoute}
+                  
+                  {/* RENDERIZADO DE ÍTEMS DEL DROPDOWN ADAPTABLE */}
+                  {dropdownItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
                       className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
                       role="menuitem"
-                  >
-                   Historial de reseñas
-                  </Link>
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  
+                  {/* Botón Cerrar Sesión */}
                   <button
                     onClick={() => logoutAndRedirect("/")}
                     className="w-full text-left px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"

@@ -3,23 +3,23 @@ import { Suspense } from "react";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-import { Button, Card, CardContent } from "@/components/ui"; 
-import { handleApiError } from "@/lib"; 
+import { Button, Card, CardContent } from "@/components/ui";
+import { handleApiError } from "@/lib";
 
 import { useValidationView } from "./hooks/use-validation-view";
 import FilterBar from "@/components/offers/FilterBar";
-import ValidationRowLink from "./components/validation-row-link"; 
+import ValidationRowLink from "./components/validation-row-link";
 
 export default function ValidationView() {
-    const { 
-        pendingPublications, 
-        totalCount, 
-        isLoading, 
-        error, 
+    const {
+        pendingPublications,
+        totalCount,
+        isLoading,
+        error,
         hasOffers,
-        filters, 
-        actions 
-    } = useValidationView(); 
+        filters,
+        actions
+    } = useValidationView();
 
     const apiErrorDetails = error ? handleApiError(error).details : null;
 
@@ -52,7 +52,6 @@ export default function ValidationView() {
                 </Card>
             );
         }
-        
         return (
             <section className="mt-8 grid gap-2">
                 {pendingPublications.map((o) => (
@@ -71,14 +70,14 @@ export default function ValidationView() {
             <div className="flex flex-col min-h-screen">
                 <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     <header className="mb-6">
-                        <Link href="/admin/products"> 
+                        <Link href="/admin/publications"> 
                             <Button variant="outline" className="mb-4 cursor-pointer">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver a la administración
                             </Button>
                         </Link>
                         <h1 className="text-3xl md:text-4xl font-extrabold text-primary">
-                            Validación de Ofertas
+                            Validar Publicaciones
                         </h1>
                         <p className="text-muted-foreground mt-1">
                             {totalCount} publicaciones por revisar.
@@ -93,7 +92,6 @@ export default function ValidationView() {
                         sort={filters.sort as any} 
                         setSort={actions.setSort as any}
                     />
-                    
                     {renderContent()}
 
                 </main>
@@ -101,3 +99,5 @@ export default function ValidationView() {
         </Suspense>
     );
 }
+
+

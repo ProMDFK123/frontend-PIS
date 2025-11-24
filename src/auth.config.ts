@@ -1,7 +1,7 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import { extractUserFromJwt } from "@/lib";
+import { extractUserFromJwt } from "@/lib/auth";
 
 export const authConfig = {
   providers: [
@@ -74,4 +74,4 @@ export const authConfig = {
   secret: process.env.NEXTAUTH_SECRET,
 } satisfies NextAuthOptions;
 
-export const { handlers } = NextAuth(authConfig);
+export const handlers = NextAuth(authConfig);
