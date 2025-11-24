@@ -5,5 +5,6 @@ export {
   type JwtClaims
 } from "./api";
 export {
-  type FormData
+  type FormData,
+  type OffererPublication
 } from "./offerer";

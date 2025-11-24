@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { AxiosError } from 'axios';
-import { publicationService } from 'src/services/publicationService';
+import { OffererPublicationService } from 'src/services/offererPublicationService';
 import { buildLoginUrl } from 'src/lib/auth';
 import { FormData } from 'src/models/generics';
 
@@ -102,7 +102,7 @@ export const usePublicationForm = () => {
     try {
       const remunerationValue = formData.offerType === '1' ? 0 : (formData.remuneration ? parseFloat(formData.remuneration) : 0);
 
-      await publicationService.create({
+      await OffererPublicationService.create({
         Title: formData.title,
         Description: formData.description,
         OfferType: parseInt(formData.offerType, 10),

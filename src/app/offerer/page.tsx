@@ -1,4 +1,4 @@
-import PublicationFormView from 'src/views/PublicationFormView';
+import {PublicationFormView } from '@/views/app';
 
 export default function CreatePublicationPage() {
   return <PublicationFormView />;

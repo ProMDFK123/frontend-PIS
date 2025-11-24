@@ -6,4 +6,5 @@ export {
   type ValidationItemFull,
   type ValidationType,
   type PublicationResponse,
+  type CreatePublicationData
 } from "./publication";
