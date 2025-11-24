@@ -1,136 +1,167 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib";
+import { useEffect, useRef, useState } from "react";
+import { isLoggedIn, getUserFromToken, logoutAndRedirect } from "@/lib/auth";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 
-type DecodedToken = {
-  exp: number;
-  userType?: string;
-  role?: string;
-  email?: string;
-};
 
 const baseLinks = [
   { href: "/", label: "Inicio" },
   { href: "/offers", label: "Explorar" },
 ];
 
+const [userType, setUserType] = useState<string | null>(null);
+
+const getProfileUrl = () => {
+  switch (userType) {
+    case "Admin":
+      return "/profile/admin";
+    case "Student":
+      return "/profile/student";
+    case "Company":
+      return "/profile/company";
+    case "Individual":
+      return "/profile/individual";
+    default:
+      return "/profile";
+  }
+};
+
+function UserAvatar({ name }: { name?: string }) {
+  const initials =
+    name?.trim()?.split(/\s+/).slice(0, 2).map(n => n[0]?.toUpperCase()).join("") || "U";
+  return (
+    <div className="flex items-center gap-2">
+      <div className="size-8 rounded-full bg-[var(--chip)] grid place-items-center text-[var(--ink)]/80 text-sm font-bold">
+        {initials}
+      </div>
+      <span className="hidden sm:inline text-[var(--ink)]/90 font-medium">
+        {name ?? "Usuario"}
+      </span>
+    </div>
+  );
+}
+
 export default function SiteHeader() {
   const pathname = usePathname();
-  const router = useRouter();
+  const [auth, setAuth] = useState({ logged: false, name: "Usuario" });
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userType, setUserType] = useState<string | null>(null);
+  useEffect(() => {
+    const logged = isLoggedIn();
+    const info = getUserFromToken();
+    setAuth({ logged, name: info?.name || info?.email || "Usuario" });
+  }, [pathname]);
+
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
 
   useEffect(() => {
     const token = Cookies.get("token");
 
-    if (!token) {
-      setIsLoggedIn(false);
-      setUserType(null);
-      return;
-    }
+    if (!token) return;
 
     try {
-      const decoded = jwtDecode<DecodedToken>(token);
-
-      const now = Math.floor(Date.now() / 1000);
-
-      if (decoded.exp < now) {
-        Cookies.remove("token");
-        setIsLoggedIn(false);
-        setUserType(null);
-        router.push("/account/login");
-        return;
-      }
-
-      setIsLoggedIn(true);
+      const decoded = jwtDecode<{ userType?: string }>(token);
       setUserType(decoded.userType ?? null);
-
-    } catch (err) {
-      console.error("Error decodificando token:", err);
-      setIsLoggedIn(false);
-      setUserType(null);
+    } catch (error) {
+      console.error("Error decodificando token:", error);
     }
   }, []);
 
-  const logout = () => {
-    Cookies.remove("token");
-    setIsLoggedIn(false);
-    setUserType(null);
-    router.push("/account/login");
-  };
-
-  // 🔷 Obtener ruta correcta según el tipo de usuario
-  const getProfileUrl = () => {
-    switch (userType) {
-      case "Admin": return "/profile/admin";
-      case "Student": return "/profile/student";
-      case "Company": return "/profile/company";
-      case "Individual": return "/profile/individual";
-      default: return "/profile";
-    }
-  };
-
   return (
-    <header className="w-full flex items-center justify-between px-6 py-4 shadow">
-      {/* Logo */}
-      <div className="text-xl font-bold">
-        <Link href="/">Mi App</Link>
-      </div>
+    <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--card)]/85 backdrop-blur">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+        {/* Logo / marca */}
+        <Link href="/" className="font-extrabold text-lg">
+          <span className="text-[var(--ink)]">Bolsa</span>
+          <span className="ml-1 rounded-md bg-[var(--primary)] px-2 py-1 text-white">FEUCN</span>
+        </Link>
 
-      {/* Links */}
-      <nav className="flex gap-6">
-        {baseLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={
-              pathname === link.href
-                ? "font-semibold text-blue-600"
-                : "text-gray-700"
-            }
-          >
-            {link.label}
-          </Link>
-        ))}
-
-        {isLoggedIn ? (
-          <>
-            {/* 🔵 Ir al perfil según el userType */}
+        <div className="flex items-center gap-2">
+          {baseLinks.map((l) => (
             <Link
-              href={getProfileUrl()}
-              className={
-                pathname.startsWith("/profile")
-                  ? "font-semibold text-blue-600"
-                  : "text-gray-700"
-              }
+              key={l.href}
+              href={l.href}
+              className={cn(
+                "rounded-xl px-4 py-2 text-[var(--ink)]/85 hover:bg-[var(--chip)] transition",
+                // marcamos activo solo si coincide exacto o si estamos en /offers y el link es /offers
+                pathname === l.href && "bg-[var(--chip)] text-[var(--ink)]"
+              )}
             >
-              Perfil
+              {l.label}
             </Link>
+          ))}
 
-            <button
-              className="text-red-600 font-medium"
-              onClick={logout}
+          {!auth.logged ? (
+            <Link
+              href="/auth/login"
+              className="rounded-xl px-4 py-2 font-semibold text-white bg-[var(--primary)] hover:opacity-95 transition"
             >
-              Cerrar sesión
-            </button>
-          </>
-        ) : (
-          <Link
-            href="/account/login"
-            className={
-              pathname === "/account/login"
-                ? "font-semibold text-blue-600"
-                : "text-gray-700"
-            }
-          >
-            Iniciar Sesión
-          </Link>
-        )}
+              Ingresar
+            </Link>
+          ) : (
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setOpen((v) => !v)}
+                className="rounded-xl px-2 py-1 hover:bg-[var(--chip)] transition flex items-center gap-2"
+                aria-haspopup="menu"
+                aria-expanded={open}
+              >
+                <UserAvatar name={auth.name} />
+                <svg width="16" height="16" viewBox="0 0 20 20" className="text-[var(--ink)]/70">
+                  <path d="M5 7l5 5 5-5" fill="currentColor" />
+                </svg>
+              </button>
+              {open && (
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-2 w-56 rounded-xl border border-[var(--border)] bg-white shadow-lg overflow-hidden"
+                >
+                  <Link
+                    href={getProfileUrl()}
+                    className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
+                    role="menuitem"
+                  >
+                    Perfil
+                  </Link>
+                  <Link
+                    href="/jobs/history"
+                    className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
+                    role="menuitem"
+                  >
+                    Historial de postulaciones
+                  </Link>
+                  <Link
+                    href="/offers/history"
+                    className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
+                    role="menuitem"
+                  >
+                    Historial de trabajos
+                  </Link>
+                  <button
+                    onClick={() => logoutAndRedirect("/")}
+                    className="w-full text-left px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
+                    role="menuitem"
+                  >
+                    Cerrar sesión
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </nav>
     </header>
   );
