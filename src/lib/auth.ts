@@ -1,13 +1,9 @@
 // frontend-PIS/src/lib/auth.ts
 
 import Cookies from "js-cookie";
-
 import { jwtDecode } from "jwt-decode";
-
 import { JwtClaims } from "@/models/generics";
-
 import NextAuth from "next-auth";
-
 import { authConfig } from "@/auth.config";
 
 export function getTokenFromCookie(): string | null {
@@ -24,6 +20,7 @@ export function getUserFromToken(): {
   email?: string;
   sub?: string;
   role?: string;
+  userName?: string;
   userType?: string;
 } | null {
   const token = getTokenFromCookie();
@@ -65,12 +62,14 @@ export function getUserFromToken(): {
   }
 }
 
-export function extractUserFromJwt(token: string) {
+export function extractUserFromJwt() {
   try {
+    const token = getTokenFromCookie();
+    if (!token) return null;
     const decoded = jwtDecode<JwtClaims>(token);
 
     if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
-      throw new Error("Token JWT expirado");
+      return null; // temporary
     }
 
     const user = {
@@ -84,6 +83,8 @@ export function extractUserFromJwt(token: string) {
       role: decoded[
         "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
       ],
+      userName: decoded["userName"],
+      userType: decoded["userType"],
       exp: decoded.exp,
     };
 
@@ -107,6 +108,17 @@ export function buildLoginUrl(returnTo: string = "/", msg?: string): string {
   if (msg) q.set("msg", msg);
   return `/auth/login?${q.toString()}`;
 }
+
+export function getProfileRoute(userType?: string): string {
+  const typeMap: Record<string, string> = {
+    "Estudiante": "/profile/student",
+    "Particular": "/profile/individual",
+    "Empresa": "/profile/company",
+    "Administrador": "/profile/admin",
+
+  };
+  return typeMap[userType || ""] || "/profile";
+};
 
 /**
 export function extractUserFromJwt(token: string) {
