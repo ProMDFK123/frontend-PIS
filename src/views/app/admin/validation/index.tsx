@@ -70,7 +70,7 @@ export default function ValidationView() {
             <div className="flex flex-col min-h-screen">
                 <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     <header className="mb-6">
-                        <Link href="/admin/products"> 
+                        <Link href="/admin/publications"> 
                             <Button variant="outline" className="mb-4 cursor-pointer">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver a la administración
