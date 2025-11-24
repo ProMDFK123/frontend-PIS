@@ -47,7 +47,6 @@ function money(n?: number | null) {
 export default function OfferDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  
 
   const [data, setData] = useState<OfferDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -96,7 +95,7 @@ export default function OfferDetailPage() {
     const timer = setTimeout(() => {
       setBannerVisible(false); // empieza a salir
       setTimeout(() => {
-        setBanner(null);       // se desmonta después de la animación
+        setBanner(null); // se desmonta después de la animación
       }, 200);
     }, 3500); // tiempo que queda visible
 
@@ -108,19 +107,19 @@ export default function OfferDetailPage() {
     setTimeout(() => setBanner(null), 200);
   }
   useEffect(() => {
-      if (!showCelebration) return;
+    if (!showCelebration) return;
 
-      setCelebrationVisible(true); // entra
+    setCelebrationVisible(true); // entra
 
-      const timer = setTimeout(() => {
-        setCelebrationVisible(false); // empieza a salir
-        setTimeout(() => {
-          setShowCelebration(false);  // se desmonta después
-        }, 200);
-      }, 1800); // tiempo visible
+    const timer = setTimeout(() => {
+      setCelebrationVisible(false); // empieza a salir
+      setTimeout(() => {
+        setShowCelebration(false); // se desmonta después
+      }, 200);
+    }, 1800); // tiempo visible
 
-      return () => clearTimeout(timer);
-    }, [showCelebration]);
+    return () => clearTimeout(timer);
+  }, [showCelebration]);
 
   const offerType = useMemo(
     () => parseType(data?.offerType),
@@ -168,7 +167,9 @@ export default function OfferDetailPage() {
         e?.message ||
         "No se pudo postular. Intenta más tarde.";
 
-      const alreadyApplied = /ya has postulado/i.test(raw);
+      // Verificar si es error 409 (Conflict) o mensaje de "ya has postulado"
+      const is409 = e?.response?.status === 409;
+      const alreadyApplied = is409 || /ya has postulado/i.test(raw);
 
       if (alreadyApplied) {
         setHasApplied(true);
@@ -190,10 +191,10 @@ export default function OfferDetailPage() {
     }
   }
   useEffect(() => {
-  if (!showCelebration) return;
-  const t = setTimeout(() => setShowCelebration(false), 2500);
-  return () => clearTimeout(t);
-}, [showCelebration]);
+    if (!showCelebration) return;
+    const t = setTimeout(() => setShowCelebration(false), 2500);
+    return () => clearTimeout(t);
+  }, [showCelebration]);
 
   if (loading) return <main className="max-w-4xl mx-auto p-6">Cargando…</main>;
   if (err || !data)
@@ -207,7 +208,11 @@ export default function OfferDetailPage() {
       {banner && (
         <div
           className={`fixed top-4 right-4 z-50 w-full max-w-sm px-4 transition-all duration-800 ease-out
-            ${bannerVisible ? "translate-y-0 opacity-100" : "-translate-y-3 opacity-0"}`}
+            ${
+              bannerVisible
+                ? "translate-y-0 opacity-100"
+                : "-translate-y-3 opacity-0"
+            }`}
         >
           <div
             className={`rounded-2xl border shadow-lg px-4 py-3 text-sm bg-[var(--card)] ${
@@ -245,12 +250,16 @@ export default function OfferDetailPage() {
           </div>
         </div>
       )}
-    
+
       {/* Popup de celebración liviano */}
       {showCelebration && (
         <div
           className={`fixed left-1/2 top-120 z-40 -translate-x-1/2 transition-all duration-800 ease-out
-            ${celebrationVisible ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"}`}
+            ${
+              celebrationVisible
+                ? "translate-y-0 opacity-100"
+                : "translate-y-3 opacity-0"
+            }`}
         >
           <div className="flex items-center gap-2 rounded-full bg-[var(--primary)] text-white px-4 py-2 shadow-lg">
             <span className="text-lg">🎉</span>
@@ -258,7 +267,6 @@ export default function OfferDetailPage() {
           </div>
         </div>
       )}
-                  
 
       {/* Header */}
       <section className="rounded-2xl bg-[var(--card)] border border-[var(--border)] p-5 flex items-center justify-between gap-4">
@@ -385,11 +393,7 @@ export default function OfferDetailPage() {
                 : "bg-[var(--primary)] text-white"
             }`}
           >
-            {applyLoading
-              ? "Enviando…"
-              : hasApplied
-              ? "Postulado"
-              : "Postular"}
+            {applyLoading ? "Enviando…" : hasApplied ? "Postulado" : "Postular"}
           </button>
         </div>
       </section>
@@ -398,7 +402,6 @@ export default function OfferDetailPage() {
         Publicada: {published}
         {data.location ? ` · Ubicación: ${data.location}` : ""}
       </div>
-
     </main>
   );
 }
