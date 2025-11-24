@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import api from "src/services/Service";
+import { useRouter } from "next/navigation";
+import api from "@/services/Service";
 
 type JobApplication = {
   id: number;
@@ -9,7 +10,7 @@ type JobApplication = {
   studentEmail: string;
   offerId?: number | null;
   offerTitle: string;
-  status: "Pendiente" | "Accepted" | "Rejected" | string;
+  status: "Pendiente" | "Aceptada" | "Rechazada" | string;
   applicationDate: string;
   curriculumVitae?: string | null;
   motivationLetter?: string | null;
@@ -36,19 +37,21 @@ function StatusBadge({ value }: { value?: string | null }) {
       wrap: "bg-yellow-100 text-yellow-800 border-yellow-200",
       label: "Pendiente",
     },
-    accepted: {
+    aceptada: {
       wrap: "bg-green-100 text-green-800 border-green-200",
       label: "Aceptada",
     },
-    rejected: {
+    rechazada: {
       wrap: "bg-red-100 text-red-800 border-red-200",
       label: "Rechazada",
-    },
+    }
   };
   const { wrap, label } = map[v] ?? map.pendiente;
 
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm border ${wrap}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm border ${wrap}`}
+    >
       {label}
     </span>
   );
@@ -56,12 +59,13 @@ function StatusBadge({ value }: { value?: string | null }) {
 
 function cardAccent(status?: string | null) {
   const v = (status ?? "Pendiente").toLowerCase();
-  if (v === "accepted") return "border-green-200 hover:ring-green-100/60";
-  if (v === "rejected") return "border-red-200 hover:ring-red-100/60";
+  if (v === "aceptada") return "border-green-200 hover:ring-green-100/60";
+  if (v === "rechazada") return "border-red-200 hover:ring-red-100/60";
   return "border-yellow-200 hover:ring-yellow-100/60"; // pendiente
 }
 
 export default function JobsHistoryPage() {
+  const router = useRouter();
   const [items, setItems] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,16 +74,22 @@ export default function JobsHistoryPage() {
     let mounted = true;
     (async () => {
       try {
-        const res = await api.get<ApiResponse>("/api/job-applications/my-applications");
+        const res = await api.get<ApiResponse>(
+          "/job-applications/my-applications"
+        );
         if (mounted) setItems(res.data?.data ?? []);
       } catch (e) {
         console.error(e);
-        setError("No pudimos cargar tus postulaciones. Inicia sesión nuevamente si el problema persiste.");
+        setError(
+          "No pudimos cargar tus postulaciones. Inicia sesión nuevamente si el problema persiste."
+        );
       } finally {
         if (mounted) setLoading(false);
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   if (loading) return <main className="max-w-4xl mx-auto p-6">Cargando…</main>;
@@ -87,8 +97,12 @@ export default function JobsHistoryPage() {
   return (
     <main className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
       <header>
-        <h1 className="text-3xl md:text-4xl font-extrabold">Historial de postulaciones</h1>
-        <p className="text-[var(--muted-ink)] mt-2">Aquí puedes revisar todas las postulaciones que has enviado.</p>
+        <h1 className="text-3xl md:text-4xl font-extrabold">
+          Historial de postulaciones
+        </h1>
+        <p className="text-[var(--muted-ink)] mt-2">
+          Aquí puedes revisar todas las postulaciones que has enviado.
+        </p>
         {error && (
           <div className="mt-3 rounded-xl bg-red-50 text-red-700 px-3 py-2 text-sm">
             {error}
@@ -116,17 +130,20 @@ export default function JobsHistoryPage() {
                 aria-hidden="true"
                 className={[
                   "absolute inset-y-0 left-0 w-1",
-                  (it.status ?? "Pendiente").toLowerCase() === "accepted" && "bg-green-400",
-                  (it.status ?? "Pendiente").toLowerCase() === "rejected" && "bg-red-400",
-                  (it.status ?? "Pendiente").toLowerCase() !== "accepted" &&
-                    (it.status ?? "Pendiente").toLowerCase() !== "rejected" &&
-                    "bg-yellow-400",
-                ].filter(Boolean).join(" ")}
+                  (it.status ?? "Pendiente").toLowerCase() === "aceptada" &&  
+                  "bg-green-400",
+                (it.status ?? "Pendiente").toLowerCase() === "rechazada" &&  
+                  "bg-red-400",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
               />
 
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <h3 className="font-bold text-[17px] truncate">{it.offerTitle}</h3>
+                  <h3 className="font-bold text-[17px] truncate">
+                    {it.offerTitle}
+                  </h3>
                   <div className="text-sm text-[var(--muted-ink)] mt-0.5">
                     Enviada por {it.studentName}
                   </div>
@@ -138,22 +155,32 @@ export default function JobsHistoryPage() {
                 Postulada el {toCLDate(it.applicationDate)}
               </div>
 
-              <div className="mt-3 flex flex-wrap gap-3 items-center">
-                {it.curriculumVitae && (
-                  <a
-                    href={it.curriculumVitae}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm underline hover:opacity-90"
-                  >
-                    Ver CV
-                  </a>
-                )}
-                {it.motivationLetter && (
-                  <p className="text-sm italic text-[var(--ink)]/80 line-clamp-2">
-                    “{it.motivationLetter}”
-                  </p>
-                )}
+              <div className="mt-3 flex flex-wrap gap-3 items-center justify-between">
+                <div className="flex flex-wrap gap-3">
+                  {it.curriculumVitae && (
+                    <a
+                      href={it.curriculumVitae}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm underline hover:opacity-90"
+                    >
+                      Ver CV
+                    </a>
+                  )}
+                  {it.motivationLetter && (
+                    <p className="text-sm italic text-[var(--ink)]/80 line-clamp-2">
+                      "{it.motivationLetter}"
+                    </p>
+                  )}
+                </div>
+
+                {/* BOTÓN VER DETALLES */}
+                <button
+                  onClick={() => router.push(`/jobs/history/${it.id}`)}
+                  className="px-4 py-2 bg-[var(--primary)] text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Ver detalles
+                </button>
               </div>
             </article>
           ))}
