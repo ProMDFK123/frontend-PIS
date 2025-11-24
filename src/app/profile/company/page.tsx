@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { formatRut } from "src/utils/Util";
 import { getTokenFromCookie } from "@/lib";
+import StarsRating from "@/components/profile/RatingStar";
 
 type CompanyProfile = {
   companyName?: string;
@@ -113,9 +114,9 @@ export default function Page() {
 
     try {
       setSaving(true);
-      const res = await fetch("/api/user/profile/company", {
+      const res = await fetch("http://localhost:5185/api/user/profile/company", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getTokenFromCookie()}` },
         body: JSON.stringify(payload),
       });
 
@@ -209,7 +210,7 @@ export default function Page() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Nombre comercial
+                  Nombre empresa
                 </label>
                 {editing ? (
                   <Input
@@ -273,15 +274,13 @@ export default function Page() {
               <div>
                 <label className="block text-sm font-medium mb-1">Rating</label>
                 {editing ? (
-                  <Input
-                    name="rating"
-                    type="number"
+                  <StarsRating
                     value={form.rating}
-                    onChange={handleChange}
-                    min={0}
+                    editable
+                    onChange={(v) => setForm((p) => ({ ...p, rating: v }))}
                   />
                 ) : (
-                  <Textarea value={data.rating?.toString() ?? ""} readOnly />
+                  <StarsRating value={data.rating ?? 0} />
                 )}
               </div>
 
