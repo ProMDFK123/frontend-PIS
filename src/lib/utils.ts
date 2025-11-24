@@ -1,52 +1,19 @@
-import {
-  OfferForAdmin,
-  PendingOffersForAdmin,
-  BuySellBasic,
-} from "@/models/responses/publication";
-
-function toOfferTypeForAdmin(o: PendingOffersForAdmin): OfferForAdmin["type"] {
-  const typeValue = o.type ?? 0;
-  if (typeValue === 0 || typeValue === 1) {
-    return "Trabajo";
-  }
-  return "Trabajo";
+export function thousandSeparatorPipe(num: number): string {
+  return num
+    .toFixed(0)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
-export function mapOfferDtoToValidate(o: PendingOffersForAdmin): OfferForAdmin {
-  return {
-    id: String(o.id),
-    title: o.title,
-    type: toOfferTypeForAdmin(o),
-  };
+export function formatDate(date: string): string {
+  const parsedDate = new Date(date);
+  const day = String(parsedDate.getDate()).padStart(2, "0");
+  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+  const year = parsedDate.getFullYear();
+
+  return `${day}/${month}/${year}`;
 }
 
-export function mapBuySellDtoToValidate(b: BuySellBasic): OfferForAdmin {
-  return {
-    id: `bs-${String(b.id)}`,
-    title: b.title,
-    type: "CompraVenta",
-  };
-}
-
-export function getOfferTypeDisplay(type: OfferForAdmin["type"]) {
-  if (type === "CompraVenta") {
-    return {
-      text: "Compra y Venta",
-      className: "bg-purple-100 text-purple-800 hover:bg-purple-200",
-    };
-  }
-  return {
-    text: "Oferta de Trabajo",
-    className: "bg-blue-100 text-blue-800 hover:bg-blue-200",
-  };
-}
-
-export function getPublicRouteFromAdmin(adminPath: string): string {
-  if (
-    adminPath === "/admin/publications/validate" ||
-    adminPath === "/admin/publications/manage"
-  ) {
-    return "/offers";
-  }
-  return "/";
-}
+export const isValidId = (id: string): boolean => {
+  return /^[1-9]\d*$/.test(id);
+};
