@@ -47,8 +47,10 @@ export async function verifyEmail(payload: VerifyEmailDto | any){
   const response = await api.post<VerifyEmailResponseDto>("/auth/verify-email", payload);
   return mapVerifyEmailResponse(response.data);
 }
-export async function resendVerification(payload: ResendVerificationDto | any) {
-  const response = await api.post<ResendVerificationResponseDto>("/auth/resend-verification", payload);
+export async function resendVerification() {
+  const response = await api.post<ResendVerificationResponseDto>(
+    "/auth/resend-verification"
+  );
   return mapResendVerificationResponse(response.data);
 }
 

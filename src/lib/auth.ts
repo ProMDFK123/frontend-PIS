@@ -141,10 +141,9 @@ export function isSessionExpired(
   return expired;
 }
 
-export function isTokenExpired(
-  token: { customExp?: number } | null | undefined
-): boolean {
-  if (!token || !token.customExp) return true;
-  const now = Math.floor(Date.now() / 1000);
-  return token.customExp < now;
-}
+export const { 
+    handlers, 
+    auth, 
+    signIn, 
+    signOut 
+} = NextAuth(authConfig);
