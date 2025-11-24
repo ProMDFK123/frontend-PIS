@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { formatRut } from "src/utils/Util";
 import { getTokenFromCookie } from "@/lib";
+import StarsRating from "@/components/profile/RatingStar";
 
 type ProfileData = {
 	userName?: string;
@@ -106,9 +107,9 @@ export default function Page() {
 
 		try {
 			setSaving(true);
-			const res = await fetch("/api/user/profile/individual", {
+			const res = await fetch("http://localhost:5185/api/user/profile/individual", {
 				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
+				headers: { "Content-Type": "application/json", Authorization: `Bearer ${getTokenFromCookie()}` },
 				body: JSON.stringify(payload),
 			});
 			const json = await res.json();
@@ -152,6 +153,11 @@ export default function Page() {
 						</div>
 
 						<div className="text-lg font-medium">{data.userName ?? "-"}</div>
+
+						<div className="flex items-center gap-2 mt-2">
+						<span className="text-sm font-medium">Rating:</span>
+						<StarsRating value={data.rating ?? 0} max={6} editable={false} />
+						</div>
 
 						<div className="w-full flex gap-2 mt-4">
 							<Button

@@ -126,9 +126,9 @@ export default function Page() {
 
     try {
       setSaving(true);
-      const res = await fetch("/api/user/profile/student", {
+      const res = await fetch("http://localhost:5185/api/user/profile/student", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getTokenFromCookie()}` },
         body: JSON.stringify(payload),
       });
       const json = await res.json();
