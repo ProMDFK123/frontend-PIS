@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib";
 import { useEffect, useRef, useState } from "react";
-import { isLoggedIn, getUserFromToken, logoutAndRedirect } from "@/lib/auth";
+import { isLoggedIn, getUserFromToken, getTokenFromCookie, extractUserFromJwt, logoutAndRedirect } from "@/lib/auth";
 
 
 const baseLinks = [
@@ -29,14 +29,27 @@ function UserAvatar({ name }: { name?: string }) {
 
 export default function SiteHeader() {
   const pathname = usePathname();
-  const [auth, setAuth] = useState({ logged: false, name: "Usuario" });
+  const [auth, setAuth] = useState({ logged: false, name: "Usuario", role: null as string | null, });
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const logged = isLoggedIn();
-    const info = getUserFromToken();
-    setAuth({ logged, name: info?.name || info?.email || "Usuario" });
+    const token = getTokenFromCookie();
+    let info = null;
+    try {
+      info = token ? extractUserFromJwt(token) : null;
+    } catch {
+    // token expirado → cerrar sesión automáticamente
+    logoutAndRedirect("/auth/login");
+    return;
+}
+    
+    setAuth({
+  logged,
+  name: info?.email?.split("@")[0] ?? "Usuario",
+  role: info?.role ?? null,
+});
   }, [pathname]);
 
   useEffect(() => {
@@ -47,6 +60,13 @@ export default function SiteHeader() {
     if (open) document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [open]);
+
+  const reviewHistoryRoute =
+  auth.role === "Admin"
+    ? "/jobs/reports"
+    : auth.role === "Offeror"
+    ? "/jobs/reviews/employer"
+    : "/jobs/reviews/student"; // estudiante por defecto
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--card)]/85 backdrop-blur">
@@ -117,6 +137,12 @@ export default function SiteHeader() {
                     role="menuitem"
                   >
                     Historial de trabajos
+                  </Link>
+                  <Link href={reviewHistoryRoute}
+                      className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
+                      role="menuitem"
+                  >
+                   Historial de reseñas
                   </Link>
                   <button
                     onClick={() => logoutAndRedirect("/")}
