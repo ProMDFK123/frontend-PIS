@@ -54,7 +54,35 @@ export interface ValidationItemFull {
     item: OfferForAdmin;
 }
 
-  export interface PublicationResponse {
+export type PublicationType = "Trabajo" | "Voluntariado" | "CompraVenta"; 
+export type ValidationStatus = "Pending" | "Published" | "Rejected";
+
+export interface AdminDetail {
+    id: string; 
+    title: string;
+    description: string;
+    images: string[];
+    companyName: string; 
+    publicationDate: string;
+    type: PublicationType; 
+    active: boolean; 
+    statusValidation: ValidationStatus; 
+    price?: number;
+    remuneration?: number;
+    deadlineDate?: string; 
+    endDate?: string;
+}
+
+export interface UseAdminDetailResult {
+    detail: AdminDetail | null;
+    loading: boolean;
+    error: string | null;
+    isMutating: boolean; 
+    handleAction: (action: 'publish' | 'reject') => void;
+    handleRetry: () => void;
+}
+
+export interface PublicationResponse {
   message: string;
   data: string; // e.g., "Oferta ID: 14
   }

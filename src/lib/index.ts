@@ -1,3 +1,5 @@
+import { formatDate } from './../utils/Util';
+import { mapBuySellDtoToDetail } from 'src/services/adapters/adapters';
 export {
   getTokenFromCookie,
   isLoggedIn,
@@ -15,4 +17,11 @@ export {
   mapOfferDtoToValidate,
   getOfferTypeDisplay,
   getPublicRouteFromAdmin,
+  mapOfferToDetail,
+  mapBuySellToDetail,
+} from "./publication";
+export {
+  formatDate,
+  thousandSeparatorPipe,
+  isValidId,
 } from "./utils";

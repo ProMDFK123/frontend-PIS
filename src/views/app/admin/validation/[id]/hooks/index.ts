@@ -1,0 +1,1 @@
+export { useAdminPublicationDetailView } from "./use-validation-detail-view";

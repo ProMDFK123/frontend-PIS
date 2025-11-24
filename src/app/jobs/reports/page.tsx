@@ -1,163 +1,169 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "src/components/ui/Button";
-import { Card } from "src/components/ui/card";
-import { cn } from "src/lib";
-import EvaluacionTrabajoModal from "src/app/jobs/reports/details";
+import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import axios from "axios";
 
-export default function JobsHistory() {
-  const [filtro, setFiltro] = useState<"todos" | "bajas">("todos");
-  const [paginaActual, setPaginaActual] = useState(1);
-  const trabajosPorPagina = 10;
-  const [open, setOpen] = useState(false);
-  // 🔹 Datos de ejemplo (puedes reemplazar por los tuyos o traerlos desde un backend)
-  const trabajos = Array.from({ length: 32 }).map((_, i) => ({
-    id: i + 1,
-    titulo:
-      i % 3 === 0
-        ? "Se necesita paseador de perros"
-        : i % 3 === 1
-        ? "Traducción de documentos técnicos"
-        : "Diseño de logo para emprendimiento",
-    fecha: `${(i % 28) + 1} sept 2025`,
-    estudiante: ["Sofía López", "Luis Andrade", "Carolina Vega"][i % 3],
-    oferente: ["StartupTech", "GlobalTrans", "Artify Studio"][i % 3],
-    estrellas: (i % 5) + 1,
-  }));
+interface ReviewDTO {
+  idReview: number;
+  ratingForStudent?: number;
+  commentForStudent?: string;
+  ratingForOfferor?: number;
+  commentForOfferor?: string;
+  atTime: boolean;
+  goodPresentation: boolean;
+  reviewWindowEndDate: string;
+  idStudent: number;
+  idOfferor: number;
+  idPublication: number;
+  hasReviewForOfferorBeenDeleted: boolean;
+  hasReviewForStudentBeenDeleted: boolean;
+}
 
-  // 🔹 Filtro
-  const trabajosFiltrados =
-    filtro === "bajas" ? trabajos.filter((t) => t.estrellas <= 3) : trabajos;
+export default function AdminReviewsPage() {
+  const [reviews, setReviews] = useState<ReviewDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 🔹 Cálculo de páginas
-  const totalPaginas = Math.ceil(trabajosFiltrados.length / trabajosPorPagina);
-  const inicio = (paginaActual - 1) * trabajosPorPagina;
-  const fin = inicio + trabajosPorPagina;
-  const trabajosPagina = trabajosFiltrados.slice(inicio, fin);
+  // paginación simple: 5 por página
+  const pageSize = 5;
+  const [page, setPage] = useState(1);
 
-  const changePage = (nuevaPagina: number) => {
-    if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
-      setPaginaActual(nuevaPagina);
+  const paginated = reviews.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    const token = Cookies.get("token");
+
+    if (!token) {
+      setError("No hay token de administrador.");
+      setLoading(false);
+      return;
     }
-  };
+
+    try {
+      const claims: any = jwtDecode(token);
+      const role =
+        claims[
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        ];
+
+      if (role !== "Admin") {
+        setError("No tienes permisos para ver esta sección.");
+        setLoading(false);
+        return;
+      }
+    } catch {
+      setError("Token inválido.");
+      setLoading(false);
+      return;
+    }
+
+    const fetchReviews = async () => {
+      console.log(token);
+      try {
+        const res = await axios.get("http://localhost:5185/api/Review/Admin/GetAllReviews", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setReviews(res.data);
+        console.log("📌 DATOS RECIBIDOS DEL BACK:", res.data);  // <<<<<< AQUI
+      } catch (err) {
+        console.error(err);
+        setError("Error al cargar las reseñas.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, []);
+
+  if (loading) return <p className="text-center mt-10">Cargando reseñas...</p>;
+  if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10">
-      <div className="w-full max-w-4xl px-4">
-        {/* Encabezado */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-semibold">Historial de Trabajos</h1>
-          <p className="text-gray-600 text-sm">
-            Historial completo de trabajos realizados en la plataforma
-          </p>
-        </div>
+    
 
-        {/* Filtros */}
-        <div className="flex gap-3 mb-6">
-          <Button
-            onClick={() => {
-              setFiltro("todos");
-              setPaginaActual(1);
-            }}
-            className={cn(
-              "flex items-center gap-2 rounded-full px-4",
-              filtro === "todos"
-                ? "bg-purple-600 text-white"
-                : "bg-white border text-gray-700"
-            )}
-          >
-            🔍 Todos los trabajos
-          </Button>
-          <Button
-            onClick={() => {
-              setFiltro("bajas");
-              setPaginaActual(1);
-            }}
-            className={cn(
-              "flex items-center gap-2 rounded-full px-4",
-              filtro === "bajas"
-                ? "bg-purple-600 text-white"
-                : "bg-white border text-gray-700"
-            )}
-          >
-            ⭐ 3 estrellas o menos
-          </Button>
-        </div>
+    <div className="max-w-3xl mx-auto mt-10 space-y-6 pb-10">
+      <h1 className="text-3xl font-bold text-center">Reseñas registradas</h1>
 
-        {/* Lista de trabajos */}
-        <div className="space-y-5">
-          {trabajosPagina.map((trabajo) => (
-            <Card
-              key={trabajo.id}
-              className="p-5 rounded-2xl shadow-sm border border-gray-200 bg-white"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-lg font-medium text-gray-800">
-                    {trabajo.titulo}
-                  </h2>
-                  <p className="text-sm text-gray-500">{trabajo.fecha}</p>
-                </div>
-
-                {/* Estrellas */}
-                <div className="flex text-yellow-400">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <span key={i}>{i < trabajo.estrellas ? "★" : "☆"}</span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-4 space-y-2">
-                <div className="bg-purple-50 text-purple-700 px-4 py-2 rounded-lg text-sm">
-                  <strong>Estudiante</strong>: {trabajo.estudiante}
-                </div>
-                <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm">
-                  <strong>Oferente</strong>: {trabajo.oferente}
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <Button
-                  onClick={() => setOpen(true)}
-                  variant="outline"
-                  className="w-full border-purple-300 text-purple-600 hover:bg-purple-50"
-                >
-                  Ver detalles
-                </Button>
-                <EvaluacionTrabajoModal
-                  open={open}
-                  onClose={() => setOpen(false)}
-                />
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        {/* 🔸 Paginación */}
-        <div className="flex justify-between items-center mt-8">
-          <Button
-            variant="outline"
-            onClick={() => changePage(paginaActual - 1)}
-            disabled={paginaActual === 1}
-            className="text-purple-600 border-purple-300 hover:bg-purple-50"
-          >
-            ← Anterior
-          </Button>
+      {/* Tarjetas tipo revista */}
+      {paginated.map((review) => (
+        <div
+          key={review.idReview}
+          className="border rounded-xl shadow-sm p-5 flex flex-col gap-2"
+        >
+          <h2 className="text-xl font-semibold">
+            Reseña #{review.idReview}
+          </h2>
 
           <p className="text-sm text-gray-600">
-            Página {paginaActual} de {totalPaginas}
+            Finaliza el:{" "}
+            {new Date(review.reviewWindowEndDate).toLocaleDateString("es-CL")}
           </p>
 
-          <Button
-            variant="outline"
-            onClick={() => changePage(paginaActual + 1)}
-            disabled={paginaActual === totalPaginas}
-            className="text-purple-600 border-purple-300 hover:bg-purple-50"
-          >
-            Siguiente →
-          </Button>
+          <p>
+            <strong>Estudiante:</strong> {review.idStudent}
+          </p>
+          <p>
+            <strong>Oferente:</strong> {review.idOfferor}
+          </p>
+          <p>
+            <strong>Publicación ID:</strong> {review.idPublication}
+          </p>
+
+          <p>
+            <strong>Calificación al estudiante:</strong>{" "}
+            {"★".repeat(review.ratingForStudent ?? 0)}
+          </p>
+
+          <p>
+            <strong>Calificación al oferente:</strong>{" "}
+            {"★".repeat(review.ratingForOfferor ?? 0)}
+          </p>
+
+          <p>
+            <strong>Comentario del estudiante:</strong>{" "}
+            {review.commentForOfferor || "Sin comentario"}
+          </p>
+
+          <p>
+            <strong>Comentario del oferente:</strong>{" "}
+            {review.commentForStudent || "Sin comentario"}
+          </p>
+
+          <p>
+            <strong>Entrega a tiempo:</strong> {review.atTime ? "Sí" : "No"}
+          </p>
+
+          <p>
+            <strong>Buena presentación:</strong>{" "}
+            {review.goodPresentation ? "Sí" : "No"}
+          </p>
         </div>
+      ))}
+
+      {/* PAGINACIÓN */}
+      <div className="flex justify-center gap-4 mt-6">
+        <button
+          className="px-4 py-2 rounded-md border hover:bg-gray-100"
+          disabled={page === 1}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          ← Anterior
+        </button>
+
+        <button
+          className="px-4 py-2 rounded-md border hover:bg-gray-100"
+          disabled={page * pageSize >= reviews.length}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          Siguiente →
+        </button>
       </div>
     </div>
   );
