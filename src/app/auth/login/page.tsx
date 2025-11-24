@@ -6,13 +6,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Cookies from "js-cookie";
 import { loginUser } from "@/services/authService";
 import type { LoginRequestDto } from "@/services/dtos/authDto";
+//implementado para ver que rol y redigir segun 
+import { extractUserFromJwt } from "@/lib";
 
 function LoginForm() {
   const router = useRouter();
   const sp = useSearchParams();
-  const returnTo = sp?.get("returnTo") || "/offers";
+  const rawReturnTo = sp?.get("returnTo") || "";
   const msg = sp?.get("msg");
-
+  const bannerMessage = msg === "login_required" ? "Tienes que iniciar sesión primero." : msg;
   const [form, setForm] = useState({
     correo: "",
     password: "",
@@ -24,8 +26,20 @@ function LoginForm() {
   // Redirección automática si ya hay token
   useEffect(() => {
     const token = Cookies.get("token");
-    if (token) if (token) router.replace(returnTo); //  vuelve a la ruta original si ya hay token
-  }, [router, returnTo]);
+    if (token) {
+      try {
+        const decoded = extractUserFromJwt(token);
+        const role = decoded?.role;
+        console.log("[Role] response:", role);
+        const decodedReturn = rawReturnTo ? decodeURIComponent(rawReturnTo) : "";
+        const safeReturnTo = decodedReturn && decodedReturn.startsWith("/") ? decodedReturn : "";
+        const finalRedirect = safeReturnTo || (role === "Offerent" ? "/offerer" : role === "admin" ? "/admin" : "/offers");
+        router.replace(finalRedirect);
+      } catch (e) {
+        router.replace("/offers");
+      }
+    }
+  }, [router, rawReturnTo]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -49,6 +63,10 @@ function LoginForm() {
     try {
       const response = await loginUser(payload);
 
+      // Log de respuesta del login para depuración
+      // eslint-disable-next-line no-console
+      console.log("[login] response:", response);
+
       if (!response.token) {
         setError(
           response.message || "Usuario no registrado o contraseña incorrecta."
@@ -61,8 +79,29 @@ function LoginForm() {
         expires: form.rememberMe ? 7 : undefined,
       });
 
+      // Decodificar role desde el JWT para redirección por rol
+      let role: string | undefined;
+      try {
+        if (response.token) {
+          const decoded = extractUserFromJwt(response.token);
+          role = decoded?.role;
+        }
+      } catch (e) {
+        // no bloquear si falla el decode
+        // eslint-disable-next-line no-console
+        console.warn("No se pudo decodificar el token para extraer role", e);
+      }
+
+      // Determinar ruta segura a la que redirigir
+      const decodedReturn = rawReturnTo ? decodeURIComponent(rawReturnTo) : "";
+      const safeReturnTo = decodedReturn && decodedReturn.startsWith("/") ? decodedReturn : "";
+
+      // Si se proporcionó un returnTo válido lo usamos, si no elegimos según role
+      let finalRedirect = safeReturnTo || 
+        (role === "offerer" ? "/offerer" : role === "admin" ? "/admin" : "/offers");
+
       console.log(response.message || "Inicio de sesión exitoso.");
-      router.replace(returnTo); // regresar a la página que quiso ver
+      router.replace(finalRedirect);
     } catch (error: any) {
       console.error("Error en el login:", error);
 
@@ -96,9 +135,9 @@ function LoginForm() {
           Inicio de Sesión
         </h2>
         {/* Banner de aviso */}
-        {msg === "login_required" && (
+        {bannerMessage && (
           <div className="w-full mb-4 rounded-xl border border-blue-300 bg-blue-50/90 text-blue-800 px-3 py-2 text-sm">
-            Tienes que iniciar sesión primero.
+            {bannerMessage}
           </div>
         )}
 

@@ -1,6 +1,31 @@
-import {PublicationFormView } from '@/views/app';
+import { PublicationFormView } from '@/views/app';
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
+import { authConfig } from '@/auth.config';
+import { cookies } from 'next/headers';
 
-export default function CreatePublicationPage() {
+export default async function CreatePublicationPage() {
+  // Intentamos obtener la sesión de next-auth
+  const session = await getServerSession(authConfig as any);
+
+  // Fallback: si existe la cookie 'token' (JWT que guarda tu backend), la consideramos autenticación válida
+  const cookieStore: any = await cookies();
+  const tokenCookie = cookieStore.get?.("token")?.value;
+
+  // Logs para depuración (saldrán en la consola donde corres `npm run dev`)
+  // Muestran si hay sesión next-auth y/o cookie token
+  // Nota: mantener estos logs temporalmente mientras debuggeas
+  // eslint-disable-next-line no-console
+  console.log("[guard]/offerer session:", Boolean(session), session);
+  // eslint-disable-next-line no-console
+  console.log("[guard]/offerer tokenCookie:", Boolean(tokenCookie), tokenCookie);
+
+  if (!session && !tokenCookie) {
+    const returnTo = encodeURIComponent('/offerer');
+    const msg = encodeURIComponent('No tienes autorización para realizar esta acción. Por favor inicia sesión.');
+    redirect(`/auth/login?returnTo=${returnTo}&msg=${msg}`);
+  }
+
   return <PublicationFormView />;
 }
 // import { useState, useEffect } from 'react';
