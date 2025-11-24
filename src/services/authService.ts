@@ -26,7 +26,7 @@ export async function registerCompany(payload: CompanyRequestDto | any){
   return mapCompanyResponse(response.data);
 }
 export async function registerIndividual(payload: IndividualRequestDto | any) {
-  const response = await api.post("/uth/register/individual", payload);
+  const response = await api.post("/auth/register/individual", payload);
   return mapIndividualResponse(response.data);
 }
 export async function registerStudent(payload: StudentRequestDto) {
@@ -48,7 +48,7 @@ export async function verifyEmail(payload: VerifyEmailDto | any){
   return mapVerifyEmailResponse(response.data);
 }
 export async function resendVerification(payload: ResendVerificationDto | any) {
-  const response = await api.post<ResendVerificationResponseDto>("/uth/resend-verification", payload);
+  const response = await api.post<ResendVerificationResponseDto>("/auth/resend-verification", payload);
   return mapResendVerificationResponse(response.data);
 }
 
