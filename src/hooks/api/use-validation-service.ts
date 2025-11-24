@@ -17,18 +17,21 @@ export const useGetPendingPublications = () => {
                 ]);
                 const offersData = offersRes.data.data;
                 const buysellsData = buysellsRes.data.data;
+                
                 const mappedOffers = offersData
                     .filter(o => o && o.id)
                     .map(o => ({
                         id: String(o.id),
                         item: mapOfferDtoToValidate(o),
                     })) as ValidationItemFull[];
+                
                 const mappedBuys = buysellsData
                     .filter(b => b && b.id)
                     .map(b => ({
-                        id: String(b.id),
+                        id: `bs-${String(b.id)}`, 
                         item: mapBuySellDtoToValidate(b),
                     })) as ValidationItemFull[];
+                
                 return [...mappedOffers, ...mappedBuys];
 
             } catch (error) {

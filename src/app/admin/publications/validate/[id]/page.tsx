@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import {
   dehydrate,
   HydrationBoundary,
@@ -11,16 +10,6 @@ import { validationService } from "@/services/validationService";
 import { isValidId, mapOfferToDetail, mapBuySellToDetail } from "@/lib";
 import { AdminDetail } from "@/models/responses";
 import ValidationDetailView from "@/views/app/admin/validation/[id]";
-=======
-// src/app/admin/publications/validate/[id]/page.tsx
-"use client";
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import api from 'src/services/Service';
-import { ChevronLeft } from 'lucide-react';
-import type { AdminDetail } from 'src2/types/admin-publications'; 
-import { mapOfferDtoToDetail, mapBuySellDtoToDetail } from 'src/services/adapters/adapters';
->>>>>>> dev
 
 interface ValidationDetailPageProps {
   params: Promise<{ id: string }>;
