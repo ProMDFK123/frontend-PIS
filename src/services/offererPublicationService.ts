@@ -6,7 +6,7 @@ import type { CreatePublicationData} from "src/models/responses";
 import type{OffererPublication} from "src/models/generics";
 
 
-export class ValidationService extends BaseApiService {
+export class OffererPublicationService extends BaseApiService {
   constructor() {
     super("/publications");
   }
@@ -37,7 +37,7 @@ export class ValidationService extends BaseApiService {
   
 }
 
-export const OffererPublicationService = new ValidationService();
+export const offererPublicationService = new OffererPublicationService();
 
 /** 
  * export interface CreatePublicationData {
