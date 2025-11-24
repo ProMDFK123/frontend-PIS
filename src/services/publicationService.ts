@@ -1,7 +1,10 @@
 import api from "./Service";
+import { BaseApiService } from "./base-api-service";
+import { ApiResponse } from "@/models/generics";
 
-// Interfaz actualizada para coincidir con el nuevo contrato del backend
-export interface CreatePublicationData {
+
+/** 
+ * export interface CreatePublicationData {
   Title: string;
   Description: string;
   EndDate?: string; // Fecha de término de la oferta/pasantía
@@ -26,12 +29,13 @@ export interface OffererPublication {
   remuneration?: number;
   location?: string;
   status: number;
+  
 }
 
-export interface PublicationResponse {
-  message: string;
-  data: string; // e.g., "Oferta ID: 14"
-}
+}**/
+
+
+
 
 export const publicationService = {
   async create(data: CreatePublicationData): Promise<PublicationResponse> {

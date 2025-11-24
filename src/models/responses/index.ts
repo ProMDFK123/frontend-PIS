@@ -11,4 +11,5 @@ export {
   type ValidationStatus,
   type AdminDetail,
   type UseAdminDetailResult,
+  type PublicationResponse,
 } from "./publication";

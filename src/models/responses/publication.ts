@@ -81,3 +81,8 @@ export interface UseAdminDetailResult {
     handleAction: (action: 'publish' | 'reject') => void;
     handleRetry: () => void;
 }
+
+export interface PublicationResponse {
+  message: string;
+  data: string; // e.g., "Oferta ID: 14
+  }
