@@ -15,8 +15,7 @@ export default function ValidationDetailView({
   const router = useRouter();
   const { detail, loading, error, isMutating, handleAction, handleRetry } =
     useAdminPublicationDetailView(id);
-    
-  // Definimos la ruta de destino para el botón de "Volver"
+
   const backRoute = "/admin/publications/validate";
 
   if (loading)
@@ -25,7 +24,7 @@ export default function ValidationDetailView({
         Cargando detalles de la publicación...
       </div>
     );
-    
+
   if (error) {
     return (
       <div className="max-w-xl mx-auto p-8 mt-12 bg-red-50 border border-red-200 rounded-lg text-center">
