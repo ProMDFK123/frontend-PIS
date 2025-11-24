@@ -62,7 +62,7 @@ export default function AdminReviewsPage() {
     const fetchReviews = async () => {
       try {
         // use centralized axios instance which already attaches the token cookie
-        const res = await api.get("/Review/Admin/GetAllReviews", { headers: { "X-Skip-Redirect": "1" } });
+        const res = await api.get("/Review/Admin/system-reviews", { headers: { "X-Skip-Redirect": "1" } });
         // backend may return { data: [...] } or directly an array
         const payload = res.data ?? null;
         const all: any[] = (payload && (payload.data ?? payload)) || [];
