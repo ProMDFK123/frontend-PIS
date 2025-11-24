@@ -10,7 +10,7 @@ type JobApplication = {
   studentEmail: string;
   offerId?: number | null;
   offerTitle: string;
-  status: "Pendiente" | "Seleccionado" | "No seleccionado" | string;
+  status: "Pendiente" | "Aceptada" | "Rechazada" | string;
   applicationDate: string;
   curriculumVitae?: string | null;
   motivationLetter?: string | null;
@@ -37,22 +37,14 @@ function StatusBadge({ value }: { value?: string | null }) {
       wrap: "bg-yellow-100 text-yellow-800 border-yellow-200",
       label: "Pendiente",
     },
-    accepted: {
+    aceptada: {
       wrap: "bg-green-100 text-green-800 border-green-200",
       label: "Aceptada",
     },
-    rejected: {
+    rechazada: {
       wrap: "bg-red-100 text-red-800 border-red-200",
       label: "Rechazada",
-    },
-    seleccionado: {
-      wrap: "bg-green-100 text-green-800 border-green-200",
-      label: "Seleccionado",
-    },
-    "no seleccionado": {
-      wrap: "bg-red-100 text-red-800 border-red-200",
-      label: "No seleccionado",
-    },
+    }
   };
   const { wrap, label } = map[v] ?? map.pendiente;
 
@@ -67,8 +59,8 @@ function StatusBadge({ value }: { value?: string | null }) {
 
 function cardAccent(status?: string | null) {
   const v = (status ?? "Pendiente").toLowerCase();
-  if (v === "accepted" || v === "seleccionado") return "border-green-200 hover:ring-green-100/60";
-  if (v === "rejected" || v === "no seleccionado") return "border-red-200 hover:ring-red-100/60";
+  if (v === "aceptada") return "border-green-200 hover:ring-green-100/60";
+  if (v === "rechazada") return "border-red-200 hover:ring-red-100/60";
   return "border-yellow-200 hover:ring-yellow-100/60"; // pendiente
 }
 
@@ -138,19 +130,10 @@ export default function JobsHistoryPage() {
                 aria-hidden="true"
                 className={[
                   "absolute inset-y-0 left-0 w-1",
-                  (it.status ?? "Pendiente").toLowerCase() === "accepted" &&
-                    "bg-green-400",
-                  (it.status ?? "Pendiente").toLowerCase() === "rejected" &&
-                    "bg-red-400",
-                  (it.status ?? "Pendiente").toLowerCase() === "seleccionado" &&
-                    "bg-green-400",
-                  (it.status ?? "Pendiente").toLowerCase() === "no seleccionado" &&
-                    "bg-red-400",
-                  (it.status ?? "Pendiente").toLowerCase() !== "accepted" &&
-                    (it.status ?? "Pendiente").toLowerCase() !== "rejected" &&
-                    (it.status ?? "Pendiente").toLowerCase() !== "seleccionado" &&
-                    (it.status ?? "Pendiente").toLowerCase() !== "no seleccionado" &&
-                    "bg-yellow-400",
+                  (it.status ?? "Pendiente").toLowerCase() === "aceptada" &&  
+                  "bg-green-400",
+                (it.status ?? "Pendiente").toLowerCase() === "rechazada" &&  
+                  "bg-red-400",
                 ]
                   .filter(Boolean)
                   .join(" ")}

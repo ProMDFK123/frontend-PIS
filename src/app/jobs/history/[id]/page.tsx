@@ -15,7 +15,7 @@ type JobApplicationDetail = {
   description?: string | null;
   requirements?: string | null;
   contactInfo?: string | null;
-  status: "Pendiente" | "Seleccionado" | "No seleccionado" | string;
+  status: "Pendiente" | "Aceptada" | "Rechazada" | string;
   statusMessage?: string | null;
 };
 
@@ -41,22 +41,14 @@ function StatusBadge({ value }: { value?: string | null }) {
       wrap: "bg-yellow-100 text-yellow-800 border-yellow-200",
       label: "Pendiente",
     },
-    accepted: {
+    aceptada: {
       wrap: "bg-green-100 text-green-800 border-green-200",
       label: "Aceptada",
     },
-    rejected: {
+    rechazada: {
       wrap: "bg-red-100 text-red-800 border-red-200",
       label: "Rechazada",
-    },
-    seleccionado: {
-      wrap: "bg-green-100 text-green-800 border-green-200",
-      label: "Seleccionado",
-    },
-    "no seleccionado": {
-      wrap: "bg-red-100 text-red-800 border-red-200",
-      label: "No seleccionado",
-    },
+    }
   };
   const { wrap, label } = map[v] ?? map.pendiente;
 
@@ -71,8 +63,8 @@ function StatusBadge({ value }: { value?: string | null }) {
 
 function cardAccent(status?: string | null) {
   const v = (status ?? "Pendiente").toLowerCase();
-  if (v === "accepted" || v === "seleccionado") return "border-green-200";
-  if (v === "rejected" || v === "no seleccionado") return "border-red-200";
+  if (v === "aceptada") return "border-green-200";
+  if (v === "rechazada") return "border-red-200";
   return "border-yellow-200";
 }
 
@@ -171,20 +163,10 @@ export default function ApplicationDetailPage() {
           aria-hidden="true"
           className={[
             "absolute inset-y-0 left-0 w-1",
-            (application.status ?? "Pendiente").toLowerCase() === "accepted" &&
-              "bg-green-400",
-            (application.status ?? "Pendiente").toLowerCase() === "rejected" &&
-              "bg-red-400",
-            (application.status ?? "Pendiente").toLowerCase() ===
-              "seleccionado" && "bg-green-400",
-            (application.status ?? "Pendiente").toLowerCase() ===
-              "no seleccionado" && "bg-red-400",
-            (application.status ?? "Pendiente").toLowerCase() !== "accepted" &&
-              (application.status ?? "Pendiente").toLowerCase() !== "rejected" &&
-              (application.status ?? "Pendiente").toLowerCase() !==
-                "seleccionado" &&
-              (application.status ?? "Pendiente").toLowerCase() !==
-                "no seleccionado" && "bg-yellow-400",
+            (application.status ?? "Pendiente").toLowerCase() === "aceptada" &&
+            "bg-green-400",
+          (application.status ?? "Pendiente").toLowerCase() === "rechazada" &&
+            "bg-red-400",
           ]
             .filter(Boolean)
             .join(" ")}
