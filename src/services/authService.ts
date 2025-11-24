@@ -2,7 +2,7 @@
 
 import api from "@/services/Service";
 import { type LoginRequestDto, type LoginResponseDto, type AdminRequestDto, type AdminResponseDto, type CompanyRequestDto, CompanyResponsetDto, IndividualRequestDto, IndividualResponseDto, StudentRequestDto, VerifyEmailDto, VerifyEmailResponseDto, ResendVerificationDto, ResendVerificationResponseDto, ResetPasswordDto, ResetPasswordResponseDto, VerifyResetCodeDto, VerifyResetCodeResponseDto, StudentResponseDto } from "./dtos/authDto";
-import { mapLoginResponse, AdminAdapter, CompanyAdapter, EmailVerificationAdapter, PasswordResetAdapter, IndividualAdapter, StudentAdapter } from "./adapters/authAdapter";
+import { mapLoginResponse, mapAdminResponse, mapCompanyResponse, mapVerifyEmailResponse, mapResetPaswordResponse, mapIndividualResponse, StudentAdapter, mapStudentResponse, mapResetVerificationResponse } from "./adapters/authAdapter";
 
 // Login Service
 export async function loginUser(payload: LoginRequestDto | any) {
@@ -19,15 +19,15 @@ export async function loginUser(payload: LoginRequestDto | any) {
 // Register Services
 export async function registerAdmin(payload: AdminRequestDto | any){
   const response = await api.post<AdminResponseDto>("/api/auth/register/admin", payload);
-  return AdminAdapter.fromResponse(response.data);
+  return mapAdminResponse(response.data);
 }
 export async function registerCompany(payload: CompanyRequestDto | any){
   const response = await api.post<CompanyResponsetDto>("/api/auth/register/company", payload);
-  return CompanyAdapter.fromResponse(response.data);
+  return mapCompanyResponse(response.data);
 }
 export async function registerIndividual(payload: IndividualRequestDto | any) {
   const response = await api.post("/api/auth/register/individual", payload);
-  return IndividualAdapter.fromResponse(response.data);
+  return mapIndividualResponse(response.data);
 }
 export async function registerStudent(payload: StudentRequestDto) {
   try {
@@ -35,7 +35,7 @@ export async function registerStudent(payload: StudentRequestDto) {
       "/api/auth/register/student",
       payload
     );
-    return StudentAdapter.fromResponse(response.data);
+    return mapStudentResponse(response.data);
   } catch (error: any) {
     console.error("Error al registrar estudiante:", error.response?.data?.details);
     throw error;
@@ -45,23 +45,28 @@ export async function registerStudent(payload: StudentRequestDto) {
 // Email Verification
 export async function verifyEmail(payload: VerifyEmailDto | any){
   const response = await api.post<VerifyEmailResponseDto>("/auth/verify-email", payload);
-  return EmailVerificationAdapter.fromVerifyResponse(response.data);
+  return mapVerifyEmailResponse(response.data);
 }
-export async function resendVerification(payload: ResendVerificationDto | any) {
-  const response = await api.post<ResendVerificationResponseDto>("/api/uth/resend-verification", payload);
-  return EmailVerificationAdapter.fromResendResponse(response.data);
-}
+export const resendVerification = async () => {
+  try {
+    const response = await api.post("/api/auth/resend-verification");
+    return response.data; // { message, data }
+  } catch (err: any) {
+    if (err.response?.data?.message) throw new Error(err.response.data.message);
+    throw err;
+  }
+};
 
 // Reset Password
 export async function sendCode(payload: ResetPasswordDto){
-  const response = await api.post<ResetPasswordResponseDto>("/api/uth/reset-password", payload);
-  return PasswordResetAdapter.fromResetResponse(response.data);
+  const response = await api.post<ResetPasswordResponseDto>("/api/auth/reset-password", payload);
+  return mapResetPaswordResponse(response.data);
 }
 export async function verifyResetCode(payload: VerifyResetCodeDto){
-  const response = await api.post<VerifyResetCodeResponseDto>("/api/uth/reset-code/verify", payload);
-  return PasswordResetAdapter.fromVerificationResponse(response.data);
+  const response = await api.post<VerifyResetCodeResponseDto>("/api/auth/reset-code/verify", payload);
+  return mapResetVerificationResponse(response.data);
 }
 export async function resendCode(payload: ResetPasswordDto){
-  const response = await api.post<ResetPasswordResponseDto>("/api/uth/reset-password", payload);
-  return PasswordResetAdapter.fromResetResponse(response.data);
+  const response = await api.post<ResetPasswordResponseDto>("/api/auth/reset-password", payload);
+  return mapResetPaswordResponse(response.data);
 }
