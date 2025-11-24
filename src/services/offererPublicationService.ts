@@ -13,7 +13,7 @@ export class ValidationService extends BaseApiService {
 
   create(data: CreatePublicationData) {
     return this.httpClient.post<ApiResponse<OffererPublication>>(
-      `${this.baseURL}`, 
+      `${this.baseURL}/offers`, 
       data
     );
   }
