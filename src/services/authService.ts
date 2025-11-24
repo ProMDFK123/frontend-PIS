@@ -54,14 +54,14 @@ export async function resendVerification(payload: ResendVerificationDto | any) {
 
 // Reset Password
 export async function sendCode(payload: ResetPasswordDto){
-  const response = await api.post<ResetPasswordResponseDto>("/uth/reset-password", payload);
+  const response = await api.post<ResetPasswordResponseDto>("/auth/reset-password", payload);
   return mapResetVerificationResponse(response.data);
 }
 export async function verifyResetCode(payload: VerifyResetCodeDto){
-  const response = await api.post<VerifyResetCodeResponseDto>("/uth/reset-code/verify", payload);
+  const response = await api.post<VerifyResetCodeResponseDto>("/auth/reset-code/verify", payload);
   return mapResetVerificationResponse(response.data);
 }
 export async function resendCode(payload: ResetPasswordDto){
-  const response = await api.post<ResetPasswordResponseDto>("/uth/reset-password", payload);
+  const response = await api.post<ResetPasswordResponseDto>("/auth/reset-password", payload);
   return mapResetVerificationResponse(response.data);
 }
