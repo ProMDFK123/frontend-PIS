@@ -1,162 +1,480 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "src/components/ui/Button";
-import { Card } from "src/components/ui/card";
-import { cn } from "src/lib/utils";
-import EvaluacionTrabajoModal from "src2/app/jobs/reports/details";
+import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import axios from "axios";
 
+interface ImageDTO {
+  id: number;
+  url: string;
+}
 
+interface PublicationDTO {
+  idPublication: number;
+  userId: number;
+  title: string;
+  types: number;
+  description: string;
+  publicationDate: string;
+  images: ImageDTO[];
+  isActive: boolean;
+  statusValidation: number;
+}
 
-export default function JobsHistory() {
-  const [filtro, setFiltro] = useState<"todos" | "bajas">("todos");
-  const [paginaActual, setPaginaActual] = useState(1);
-  const trabajosPorPagina = 10;
-  const [open, setOpen] = useState(false);
-  // 🔹 Datos de ejemplo (puedes reemplazar por los tuyos o traerlos desde un backend)
-  const trabajos = Array.from({ length: 32 }).map((_, i) => ({
-    id: i + 1,
-    titulo:
-      i % 3 === 0
-        ? "Se necesita paseador de perros"
-        : i % 3 === 1
-        ? "Traducción de documentos técnicos"
-        : "Diseño de logo para emprendimiento",
-    fecha: `${(i % 28) + 1} sept 2025`,
-    estudiante: ["Sofía López", "Luis Andrade", "Carolina Vega"][i % 3],
-    oferente: ["StartupTech", "GlobalTrans", "Artify Studio"][i % 3],
-    estrellas: (i % 5) + 1,
-  }));
+interface ReviewDetailDTO {
+  idReview: number;
+  studentName: string;
+  offerorName: string;
+  ratingForStudent: number;
+  commentForStudent: string;
+  ratingForOfferor: number;
+  commentForOfferor: string;
+  atTime: boolean;
+  goodPresentation: boolean;
+  isCompleted: boolean;
+  isReviewForStudentCompleted: boolean;
+  isReviewForOfferorCompleted: boolean;
+  isClosed: boolean;
+}
 
-  // 🔹 Filtro
-  const trabajosFiltrados =
-    filtro === "bajas" ? trabajos.filter((t) => t.estrellas <= 3) : trabajos;
+interface CombinedReviewDTO {
+  publication: PublicationDTO;
+  review: ReviewDetailDTO;
+}
 
-  // 🔹 Cálculo de páginas
-  const totalPaginas = Math.ceil(trabajosFiltrados.length / trabajosPorPagina);
-  const inicio = (paginaActual - 1) * trabajosPorPagina;
-  const fin = inicio + trabajosPorPagina;
-  const trabajosPagina = trabajosFiltrados.slice(inicio, fin);
+/* ============================
+   📌 COMPONENTE PRINCIPAL
+============================ */
 
-  const changePage = (nuevaPagina: number) => {
-    if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
-      setPaginaActual(nuevaPagina);
-    }
+export default function AdminReviewsPage() {
+  const [reviews, setReviews] = useState<CombinedReviewDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterScore, setFilterScore] = useState("all");
+
+  const pageSize = 5;
+  const [page, setPage] = useState(1);
+
+  const [selectedReview, setSelectedReview] = useState<CombinedReviewDTO | null>(null);
+  const [showModal, setShowModal] = useState(false);
+
+  /* ============================
+      Abrir / cerrar modal
+  ============================ */
+  const openModal = (item: CombinedReviewDTO) => {
+    setSelectedReview(item);
+    setShowModal(true);
   };
 
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedReview(null);
+  };
+
+  /* ============================
+      Filtros
+  ============================ */
+  const filteredReviews = reviews.filter((item) => {
+    const r = item.review;
+
+    if (filterStatus === "open" && r.isClosed) return false;
+    if (filterStatus === "closed" && !r.isClosed) return false;
+
+    if (filterScore !== "all") {
+      const score = Number(filterScore);
+      if (r.ratingForStudent !== score && r.ratingForOfferor !== score) return false;
+    }
+
+    return true;
+  });
+
+  const paginated = filteredReviews.slice((page - 1) * pageSize, page * pageSize);
+
+  /* ============================
+      Fetch
+  ============================ */
+  useEffect(() => {
+    const token = Cookies.get("token");
+
+    if (!token) {
+      setError("No hay token de administrador.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const claims: any = jwtDecode(token);
+      if (claims["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] !== "Admin") {
+        setError("No tienes permisos para ver esta sección.");
+        setLoading(false);
+        return;
+      }
+    } catch {
+      setError("Token inválido.");
+      setLoading(false);
+      return;
+    }
+
+    axios
+      .get("http://localhost:5185/api/Review/Admin/system-reviews", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        setReviews(res.data);
+      })
+      .catch(() => setError("Error al cargar las reseñas."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p className="text-center mt-10">Cargando reseñas...</p>;
+  if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
+
+  /* ============================
+      Helpers
+  ============================ */
+
+  const starsOrNone = (score: number) =>
+    score > 0 ? "★".repeat(score) : "Sin puntuación";
+
+  const commentOrNone = (text: string | null | undefined) =>
+    text && text.trim().length > 0 ? text : "Sin reseña";
+
+ 
+  const deleteReviewPart = async (
+  ReviewId: number,
+  DeleteStudent: boolean,
+  DeleteOfferor: boolean
+) => {
+  const token = Cookies.get("token");
+  if (!token) return;
+
+  try {
+    await axios.request({
+      method: "DELETE",
+      url: "http://localhost:5185/api/Review/Admin/DeleteReviewPart",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      data: {
+        ReviewId,
+        DeleteReviewForStudent: DeleteStudent,
+        DeleteReviewForOfferor: DeleteOfferor,
+      },
+    });
+
+    return true;
+  } catch (err) {
+    console.error("❌ Error eliminando reseña:", err);
+    return false;
+  }
+};
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10">
-      <div className="w-full max-w-4xl px-4">
-        {/* Encabezado */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-semibold">Historial de Trabajos</h1>
-          <p className="text-gray-600 text-sm">
-            Historial completo de trabajos realizados en la plataforma
-          </p>
-        </div>
+    <div className="max-w-3xl mx-auto mt-10 space-y-6 pb-10">
+      <h1 className="text-3xl font-bold text-center">Reseñas registradas</h1>
 
-        {/* Filtros */}
-        <div className="flex gap-3 mb-6">
-          <Button
-            onClick={() => {
-              setFiltro("todos");
-              setPaginaActual(1);
-            }}
-            className={cn(
-              "flex items-center gap-2 rounded-full px-4",
-              filtro === "todos"
-                ? "bg-purple-600 text-white"
-                : "bg-white border text-gray-700"
-            )}
-          >
-            🔍 Todos los trabajos
-          </Button>
-          <Button
-            onClick={() => {
-              setFiltro("bajas");
-              setPaginaActual(1);
-            }}
-            className={cn(
-              "flex items-center gap-2 rounded-full px-4",
-              filtro === "bajas"
-                ? "bg-purple-600 text-white"
-                : "bg-white border text-gray-700"
-            )}
-          >
-            ⭐ 3 estrellas o menos
-          </Button>
-        </div>
+      {/* ============================
+         FILTROS + PDF
+      ============================ */}
+      <div className="flex justify-between items-end mt-6 flex-wrap gap-6">
 
-        {/* Lista de trabajos */}
-        <div className="space-y-5">
-          {trabajosPagina.map((trabajo) => (
-            <Card
-              key={trabajo.id}
-              className="p-5 rounded-2xl shadow-sm border border-gray-200 bg-white"
+        <div className="flex gap-4 items-end">
+          {/* Estado */}
+          <div className="flex flex-col">
+            <label className="text-sm font-medium">Estado</label>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="border rounded-lg px-3 py-2 text-sm"
             >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-lg font-medium text-gray-800">
-                    {trabajo.titulo}
-                  </h2>
-                  <p className="text-sm text-gray-500">{trabajo.fecha}</p>
-                </div>
+              <option value="all">Todas</option>
+              <option value="open">Abiertas</option>
+              <option value="closed">Cerradas</option>
+            </select>
+          </div>
 
-                {/* Estrellas */}
-                <div className="flex text-yellow-400">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <span key={i}>{i < trabajo.estrellas ? "★" : "☆"}</span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-4 space-y-2">
-                <div className="bg-purple-50 text-purple-700 px-4 py-2 rounded-lg text-sm">
-                  <strong>Estudiante</strong>: {trabajo.estudiante}
-                </div>
-                <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm">
-                  <strong>Oferente</strong>: {trabajo.oferente}
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <Button onClick={() => setOpen(true)}
-                  variant="outline"
-                  className="w-full border-purple-300 text-purple-600 hover:bg-purple-50"
-                >
-                  Ver detalles
-                </Button>
-                <EvaluacionTrabajoModal open={open} onClose={() => setOpen(false)} />
-              </div>
-            </Card>
-          ))}
+          {/* Puntuación */}
+          <div className="flex flex-col">
+            <label className="text-sm font-medium">Puntuación</label>
+            <select
+              value={filterScore}
+              onChange={(e) => setFilterScore(e.target.value)}
+              className="border rounded-lg px-3 py-2 text-sm"
+            >
+              <option value="all">Todas</option>
+              <option value="5">★★★★★★ (6)</option>
+              <option value="5">★★★★★ (5)</option>
+              <option value="4">★★★★ (4)</option>
+              <option value="3">★★★ (3)</option>
+              <option value="2">★★ (2)</option>
+              <option value="1">★ (1)</option>
+              <option value="0">Sin calificar</option>
+            </select>
+          </div>
         </div>
 
-        {/* 🔸 Paginación */}
-        <div className="flex justify-between items-center mt-8">
-          <Button
-            variant="outline"
-            onClick={() => changePage(paginaActual - 1)}
-            disabled={paginaActual === 1}
-            className="text-purple-600 border-purple-300 hover:bg-purple-50"
+        {/* PDF */}
+        <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+          Descargar reporte PDF
+        </button>
+      </div>
+
+      {/* ============================
+         TARJETAS
+      ============================ */}
+      {paginated.map((item) => {
+        const r = item.review;
+        const p = item.publication;
+
+        return (
+          <div key={r.idReview} className="border rounded-xl shadow-sm p-5 bg-white flex flex-col gap-4">
+
+            {/* Título + estado */}
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-bold">{p.title} — Reseña #{r.idReview}</h2>
+
+              <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                r.isClosed ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+              }`}>
+                {r.isClosed ? "Cerrada" : "Abierta"}
+              </span>
+            </div>
+
+            <p className="text-sm text-gray-500">
+              Publicada el: {new Date(p.publicationDate).toLocaleDateString("es-CL")}
+            </p>
+
+            <div className="text-base space-y-1">
+              <p><strong>Estudiante:</strong> {r.studentName}</p>
+              <p><strong>Oferente:</strong> {r.offerorName}</p>
+            </div>
+
+            {/* Calificaciones */}
+            <div className="space-y-2">
+              <p>
+                <strong>Calificación al estudiante:</strong>{" "}
+                <span className="text-purple-600">
+                  {starsOrNone(r.ratingForStudent)}
+                </span>
+              </p>
+
+              <p>
+                <strong>Calificación al oferente:</strong>{" "}
+                <span className="text-purple-600">
+                  {starsOrNone(r.ratingForOfferor)}
+                </span>
+              </p>
+            </div>
+
+            <button
+              onClick={() => openModal(item)}
+              className="mt-2 w-full text-center text-sm font-medium border border-purple-400 text-purple-700 rounded-lg py-2 hover:bg-purple-50"
+            >
+              Ver detalles
+            </button>
+          </div>
+        );
+      })}
+
+      {/* ============================
+         PAGINACIÓN
+      ============================ */}
+      <div className="flex flex-col items-center gap-3 mt-6">
+        <p className="text-sm text-gray-600">
+          Página <strong>{page}</strong> de{" "}
+          <strong>{Math.ceil(filteredReviews.length / pageSize)}</strong>
+        </p>
+
+        <div className="flex gap-4">
+          <button
+            className="px-4 py-2 rounded-md border hover:bg-gray-100 disabled:opacity-50"
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
           >
             ← Anterior
-          </Button>
+          </button>
 
-          <p className="text-sm text-gray-600">
-            Página {paginaActual} de {totalPaginas}
-          </p>
-
-          <Button
-            variant="outline"
-            onClick={() => changePage(paginaActual + 1)}
-            disabled={paginaActual === totalPaginas}
-            className="text-purple-600 border-purple-300 hover:bg-purple-50"
+          <button
+            className="px-4 py-2 rounded-md border hover:bg-gray-100 disabled:opacity-50"
+            disabled={page * pageSize >= filteredReviews.length}
+            onClick={() => setPage((p) => p + 1)}
           >
             Siguiente →
-          </Button>
+          </button>
         </div>
       </div>
+
+      {/* ============================
+         MODAL DETALLES
+      ============================ */}
+      {showModal && selectedReview && (
+      <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+        <div className="bg-white w-[90%] max-w-5xl rounded-lg shadow-lg p-6 relative">
+
+          {/* BOTÓN CERRAR (X) */}
+          <button
+            onClick={closeModal}
+            className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl"
+          >
+            ✕
+          </button>
+
+          <h2 className="text-2xl font-bold text-center mb-6">Evaluación de Trabajo</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            {/* =============== PUBLICACIÓN =============== */}
+            <div className="col-span-1 border rounded-lg p-3 flex flex-col items-center">
+
+              {selectedReview.publication.images.length > 0 ? (
+                <img
+                  src={selectedReview.publication.images[0].url}
+                  className="w-full h-40 object-cover rounded-md"
+                />
+              ) : (
+                <div className="w-full h-40 bg-gray-200 rounded-md flex items-center justify-center text-gray-500">
+                  Sin imagen
+                </div>
+              )}
+
+              <h3 className="text-lg font-semibold mt-3">
+                {selectedReview.publication.title}
+              </h3>
+
+              <p className="text-sm text-center text-gray-600 mt-1">
+                {selectedReview.publication.description}
+              </p>
+
+              <div className="text-sm text-gray-700 mt-3 space-y-1 w-full">
+                <p><strong>Fecha:</strong> {new Date(selectedReview.publication.publicationDate).toLocaleDateString("es-CL")}</p>
+                <p><strong>Tipo:</strong> {selectedReview.publication.types}</p>
+              </div>
+
+            </div>
+
+            {/* =============== REVIEWS =============== */}
+            <div className="col-span-2 space-y-6">
+
+              {/* ========= Oferente → Estudiante ========= */}
+              <div className="border rounded-lg p-4 relative">
+
+                {/* BOTÓN ELIMINAR RESEÑA (OFERENTE) */}
+                <button
+                onClick={async () => {
+                  const ok = await deleteReviewPart(
+                    selectedReview.review.idReview,
+                    false, // no borrar parte del estudiante
+                    true   // borrar parte del oferente
+                  );
+
+                  if (ok) {
+                    setSelectedReview({
+                      ...selectedReview,
+                      review: {
+                        ...selectedReview.review,
+                        commentForStudent: "",
+                      }
+                    });
+                  }
+                }}
+                className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-2xl"
+              >
+                🗑️
+              </button>
+
+                <p className="font-semibold text-gray-800 mb-1">Oferente</p>
+
+                <div className="flex items-center gap-2">
+                  <p className="text-yellow-500 text-lg">
+                    {selectedReview.review.ratingForStudent > 0
+                      ? "★".repeat(selectedReview.review.ratingForStudent)
+                      : "Sin puntuación"}
+                  </p>
+                  <span className="font-medium">{selectedReview.review.offerorName}</span>
+                </div>
+
+                <p className="mt-2 text-sm text-gray-700">
+                  {selectedReview.review.commentForStudent || "Sin reseña"}
+                </p>
+              </div>
+
+              {/* ========= Estudiante → Oferente ========= */}
+              <div className="border rounded-lg p-4 relative">
+
+                {/* BOTÓN ELIMINAR RESEÑA (ESTUDIANTE) */}
+                <button
+                  onClick={async () => {
+                    const ok = await deleteReviewPart(
+                      selectedReview.review.idReview,
+                      true,  // borrar parte del estudiante
+                      false  // no borrar parte del oferente
+                    );
+
+                    if (ok) {
+                      setSelectedReview({
+                        ...selectedReview,
+                        review: {
+                          ...selectedReview.review,
+                          commentForOfferor: "",
+                        }
+                      });
+                    }
+                  }}
+                  className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-2xl"
+                >
+                  🗑️
+                </button>
+
+
+                <p className="font-semibold text-gray-800 mb-1">Estudiante</p>
+
+                <div className="flex items-center gap-2">
+                  <p className="text-yellow-500 text-lg">
+                    {selectedReview.review.ratingForOfferor > 0
+                      ? "★".repeat(selectedReview.review.ratingForOfferor)
+                      : "Sin puntuación"}
+                  </p>
+                  <span className="font-medium">{selectedReview.review.studentName}</span>
+                </div>
+
+                <p className="mt-2 text-sm text-gray-700">
+                  {selectedReview.review.commentForOfferor || "Sin reseña"}
+                </p>
+              </div>
+
+              {/* ========= CHECKBOXES ========= */}
+              <div className="text-sm text-gray-800 space-y-2 mt-4">
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={selectedReview.review.atTime} disabled />
+                  ¿Se presentó a trabajar en la hora acordada?
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={selectedReview.review.goodPresentation} disabled />
+                  ¿Tuvo buena presentación personal?
+                </label>
+              </div>
+
+              {/* ========= BOTÓN CERRAR ========= */}
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={closeModal}
+                  className="px-5 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                >
+                  Cerrar
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    )}
     </div>
   );
 }

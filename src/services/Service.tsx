@@ -3,7 +3,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { buildLoginUrl } from "@/lib/auth";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5185/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5185/";
 
 const api = axios.create({
   baseURL: API_URL,

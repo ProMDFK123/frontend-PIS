@@ -53,3 +53,50 @@ export interface ValidationItemFull {
     id: string; 
     item: OfferForAdmin;
 }
+
+export type PublicationType = "Trabajo" | "Voluntariado" | "CompraVenta"; 
+export type ValidationStatus = "Pending" | "Published" | "Rejected";
+
+export interface AdminDetail {
+    id: string; 
+    title: string;
+    description: string;
+    images: string[];
+    companyName: string; 
+    publicationDate: string;
+    type: PublicationType; 
+    active: boolean; 
+    statusValidation: ValidationStatus; 
+    price?: number;
+    remuneration?: number;
+    deadlineDate?: string; 
+    endDate?: string;
+}
+
+export interface UseAdminDetailResult {
+    detail: AdminDetail | null;
+    loading: boolean;
+    error: string | null;
+    isMutating: boolean; 
+    handleAction: (action: 'publish' | 'reject') => void;
+    handleRetry: () => void;
+}
+
+export interface PublicationResponse {
+  message: string;
+  data: string; // e.g., "Oferta ID: 14
+  }
+
+export interface CreatePublicationData {
+  Title: string;
+  Description: string;
+  EndDate?: string; // Fecha de término de la oferta/pasantía
+  DeadlineDate?: string; // Fecha límite para postular
+  Remuneration?: number;
+  OfferType: number; // 0 para Trabajo, 1 para Voluntariado/Pasantía
+  Location?: string;
+  Requirements?: string;
+  ContactInfo?: string;
+  ImagesURL: string[];
+  IsCvRequired: boolean;
+}

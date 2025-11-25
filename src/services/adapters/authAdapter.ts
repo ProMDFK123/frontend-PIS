@@ -176,4 +176,4 @@ export const PasswordResetAdapter = {
       info: dto.data ?? null,
     };
   }
-};
+}

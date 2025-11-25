@@ -14,7 +14,7 @@ const baseLinks = [
 ];
 
 function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
-  
+
   const initials =
     name?.trim()?.split(/\s+/).slice(0, 2).map(n => n[0]?.toUpperCase()).join("") || "U";
   return (
@@ -34,13 +34,13 @@ function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
           </span>
         )}
       </div>
-      
+
       {/* Name label - separate from avatar */}
       <span className="hidden sm:inline text-[var(--ink)]/90 font-medium">
         {name ?? "Usuario"}
       </span>
     </div>
-    
+
   );
 }
 
@@ -82,7 +82,7 @@ export default function SiteHeader() {
     }
   }, [pathname]);
 
-  
+
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
       if (!menuRef.current) return;

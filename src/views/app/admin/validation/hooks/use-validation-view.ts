@@ -1,11 +1,13 @@
 "use client";
 import { useMemo, useState } from "react";
+import { useRouter } from 'next/navigation';
 import { useGetPendingPublications } from "@/hooks/api/use-validation-service"; 
 import { ValidationType, ValidationItemFull } from "@/models/responses"; 
 type SortType = "recientes" | "titulo";
 
 
 export const useValidationView = () => {
+    const router = useRouter();
     const [text, setText] = useState("");
     const [type, setType] = useState<ValidationType>("Todos");
     const [sort, setSort] = useState<SortType>("recientes");
@@ -34,7 +36,11 @@ export const useValidationView = () => {
         }
 
         return list;
-    }, [text, type, sort, allPublications]); 
+    }, [text, type, sort, allPublications]);
+
+    const handleViewDetail = (publicationId: string) => {
+        router.push(`/admin/publications/validate/${publicationId}`);
+    };
 
     const errorMessage = apiError ? (apiError as Error).message : null;
 
@@ -50,6 +56,8 @@ export const useValidationView = () => {
             setType,
             setSort,
             handleRetry: refetch,
+            handleViewDetail
         }
     };
 };
+

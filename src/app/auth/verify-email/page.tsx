@@ -22,7 +22,7 @@ export default function VerifyEmailPage() {
 
     try {
       const result = await verifyEmail(payload);
-      setMessage(result.data || result.message);
+      setMessage(result.message);
     } catch (err: any) {
       console.error("Error verificando el correo:", err);
       setError(err.message || "Error verificando el correo. Intenta nuevamente.");
@@ -38,7 +38,7 @@ export default function VerifyEmailPage() {
 
     try {
       const result = await resendVerification();
-      setMessage(result.data || result.message);
+      setMessage(result.message);
     } catch (err: any) {
       console.error("Error reenviando el código:", err);
       setError(err.message || "No se pudo reenviar el código. Intenta más tarde.");
