@@ -76,7 +76,7 @@ const getStatusBadge = (status: number) => {
   }
 };
 
-export default function YourPublicationsClient() {
+export default function YourPublicationsView() {
   const [isLoading, setIsLoading] = useState(true);
   const [publications, setPublications] = useState<OffererPublication[]>([]);
   const [error, setError] = useState<string | null>(null);
