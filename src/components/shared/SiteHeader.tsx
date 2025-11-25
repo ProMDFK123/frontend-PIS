@@ -2,61 +2,86 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib";
 import { useEffect, useRef, useState } from "react";
-import { isLoggedIn, getUserFromToken, logoutAndRedirect, getRoleFromToken, cn } from "@/lib"; 
+import { isLoggedIn, getUserFromToken, extractUserFromJwt, logoutAndRedirect, getProfileRoute} from "@/lib/auth";
+import { profileService } from "@/services/profileService";
 
-const userLinks = [
+
+const baseLinks = [
   { href: "/", label: "Inicio" },
   { href: "/offers", label: "Explorar" },
 ];
 
-const adminNavLinks = [
-  { href: "/admin/publications", label: "Inicio" },
-  { href: "/admin/publications/validate", label: "Validar" },
-  { href: "/admin/publications/manage", label: "Administrar" },
-];
+function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
 
-const baseDropdownItems = [
-  { href: "/profile", label: "Editar perfil" },
-  { href: "/jobs/history", label: "Historial de postulaciones" },
-  { href: "/offers/history", label: "Historial de trabajos" },
-];
-
-const adminDropdownItems = [
-  { href: "/admin/users", label: "Gestión de Usuarios" },
-];
-
-function UserAvatar({ name }: { name?: string }) {
   const initials =
     name?.trim()?.split(/\s+/).slice(0, 2).map(n => n[0]?.toUpperCase()).join("") || "U";
   return (
     <div className="flex items-center gap-2">
-      <div className="size-8 rounded-full bg-[var(--chip)] grid place-items-center text-[var(--ink)]/80 text-sm font-bold">
-        {initials}
+      {/* Avatar circle */}
+      <div className="size-8 rounded-full bg-[var(--chip)] grid place-items-center text-[var(--ink)]/80 text-sm font-bold overflow-hidden">
+        {photoUrl ? (
+          <img
+            src={photoUrl}
+            alt="Foto de perfil"
+            className="w-full h-full object-cover rounded-full"
+            key={photoUrl}
+          />
+        ) : (
+          <span className="text-[var(--ink)]/80">
+            {initials}
+          </span>
+        )}
       </div>
+
+      {/* Name label - separate from avatar */}
       <span className="hidden sm:inline text-[var(--ink)]/90 font-medium">
         {name ?? "Usuario"}
       </span>
     </div>
+
   );
 }
 
 export default function SiteHeader() {
   const pathname = usePathname();
-  const [auth, setAuth] = useState<{ logged: boolean, name: string, role: string | null }>({ logged: false, name: "Usuario", role: null }); 
+  const [auth, setAuth] = useState({ 
+    logged: false, 
+    name: "Usuario" , 
+    userType: "",
+    photoUrl: null as string | null
+  });
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const logged = isLoggedIn();
-    const info = getUserFromToken();
-    const userRole = getRoleFromToken();
-    setAuth({
-      logged,
-      name: info?.name || info?.email || "Usuario", 
-      role: userRole
+    const info = extractUserFromJwt();
+    setAuth({ 
+      logged, 
+      name: info?.userName || info?.email ? String(info.email).split("@")[0] : "Usuario",
+      userType: info?.userType || "",
+      photoUrl: null
     });
+    if (logged) {
+      const fetchProfilePhoto = async () => {
+        try {
+          const response = await profileService.getProfilePhoto();
+          if (response.data) {
+            setAuth(prev => ({
+                ...prev,
+                photoUrl: `${response.data.photoUrl}?v=${Date.now()}`
+            }));
+          }
+        } catch (err) {
+          console.error("Error al obtener la foto de perfil:", err);
+        }
+      };
+      fetchProfilePhoto();
+    }
   }, [pathname]);
+
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -66,14 +91,6 @@ export default function SiteHeader() {
     if (open) document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [open]);
-
-  const isAdmin = auth.role === "Admin"; 
-  
-  const mainLinks = isAdmin ? adminNavLinks : userLinks;
-  
-  const dropdownItems = isAdmin 
-    ? [...adminDropdownItems, ...baseDropdownItems]
-    : baseDropdownItems; 
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--card)]/85 backdrop-blur">
@@ -85,13 +102,13 @@ export default function SiteHeader() {
         </Link>
 
         <div className="flex items-center gap-2">
-          {/* RENDERIZADO DE ENLACES PRINCIPALES ADAPTADO AL ROL */}
-          {mainLinks.map((l) => (
+          {baseLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               className={cn(
                 "rounded-xl px-4 py-2 text-[var(--ink)]/85 hover:bg-[var(--chip)] transition",
+                // marcamos activo solo si coincide exacto o si estamos en /offers y el link es /offers
                 pathname === l.href && "bg-[var(--chip)] text-[var(--ink)]"
               )}
             >
@@ -100,7 +117,7 @@ export default function SiteHeader() {
           ))}
 
           {!auth.logged ? (
-            <Link 
+            <Link
               href="/auth/login"
               className="rounded-xl px-4 py-2 font-semibold text-white bg-[var(--primary)] hover:opacity-95 transition"
             >
@@ -114,30 +131,37 @@ export default function SiteHeader() {
                 aria-haspopup="menu"
                 aria-expanded={open}
               >
-                <UserAvatar name={auth.name} />
+                <UserAvatar name={auth.name} photoUrl={auth.photoUrl ?? undefined} />
                 <svg width="16" height="16" viewBox="0 0 20 20" className="text-[var(--ink)]/70">
-                  <path d="M5 7l5 5 5-5" fill="currentColor" />
-                </svg>
+                  <path d="M5 7l5 5 5-5" fill="currentColor" />
+                </svg>
               </button>
               {open && (
                 <div
                   role="menu"
                   className="absolute right-0 mt-2 w-56 rounded-xl border border-[var(--border)] bg-white shadow-lg overflow-hidden"
                 >
-                  
-                  {/* RENDERIZADO DE ÍTEMS DEL DROPDOWN ADAPTABLE */}
-                  {dropdownItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
-                      role="menuitem"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                  
-                  {/* Botón Cerrar Sesión */}
+                  <Link
+                    href={getProfileRoute(auth.userType)}
+                    className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
+                    role="menuitem"
+                  >
+                    Editar perfil
+                  </Link>
+                  <Link
+                    href="/jobs/history"
+                    className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
+                    role="menuitem"
+                  >
+                    Historial de postulaciones
+                  </Link>
+                  <Link
+                    href="/offers/history"
+                    className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
+                    role="menuitem"
+                  >
+                    Historial de trabajos
+                  </Link>
                   <button
                     onClick={() => logoutAndRedirect("/")}
                     className="w-full text-left px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"

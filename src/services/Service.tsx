@@ -3,7 +3,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { buildLoginUrl } from "@/lib/auth";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5185/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5185/";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -12,31 +12,35 @@ const api = axios.create({
   },
 });
 
-// Attach JWT token from cookie to every request (if present)
-api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = Cookies.get("token");
+api.interceptors.request.use(
+  (config) => {
+    console.log(`📤 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+    
+    const token = Cookies.get("token");  // ✅ Get the actual JWT token string
     if (token) {
-      config.headers = config.headers ?? {};
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;  // ✅ Send full token
+      console.log("🔑 Token attached to request");
+    } else {
+      console.warn("⚠️ No token found in cookies!");
     }
+    
+    return config;
+  },
+  (error) => {
+    console.error("❌ Request interceptor error:", error);
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
-// Centralized response handling: usually redirect on 401, but allow requests
-// to opt-out by sending header `X-Skip-Redirect: 1`.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
-    const config = error?.config ?? {};
 
-    const skipHeader = config.headers && (config.headers["x-skip-redirect"] || config.headers["X-Skip-Redirect"]);
+    const isOnLoginPage = typeof window !== "undefined" &&
+      window.location.pathname.includes("/auth/login");
 
-    const isOnLoginPage = typeof window !== "undefined" && window.location.pathname.includes("/auth/login");
-
-    if (status === 401 && !isOnLoginPage && !skipHeader) {
+    if (status === 401 && !isOnLoginPage) {
       Cookies.remove("token");
 
       const currentPath = window.location.pathname + window.location.search;
