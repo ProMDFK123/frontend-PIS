@@ -10,13 +10,20 @@ function peso(clp: number): string {
     });
 }
 
-export default function PublishedItemCard({ item }: { item: PublishedItem }) {
-    const { id, title, type, name, publicationDate, activa } = item;
+interface PublishedItemCardProps {
+    item: PublishedItem;
+    onViewDetail: (id: number) => void;
+}
+
+export default function PublishedCard({ item, onViewDetail }: PublishedItemCardProps) {
+    const { id, title, type, name, publicationDate, activa } = item; 
     const typeText = typeof type === 'string' ? type : 'CompraVenta'; 
     const statusClasses = activa
         ? { icon: CheckCircleIcon, text: "ACTIVA", color: "bg-green-100 text-green-800" }
         : { icon: XCircleIcon, text: "INACTIVA", color: "bg-red-100 text-red-800" };
-
+    const handleClick = () => {
+        onViewDetail(id);
+    };
     return (
         <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]
                             shadow-sm transition hover:shadow-lg">
@@ -55,7 +62,7 @@ export default function PublishedItemCard({ item }: { item: PublishedItem }) {
                 <div className="mt-auto pt-4 flex gap-3">
                     <button 
                         className="flex-1 inline-flex items-center justify-center rounded-xl px-4 py-2 text-[15px] font-semibold text-white bg-[var(--primary)] hover:opacity-95 transition"
-                        onClick={() => console.log(`Ver detalles admin de ID: ${id}`)}
+                        onClick={handleClick} 
                     >
                         Ver Detalles
                     </button>

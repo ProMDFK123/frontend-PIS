@@ -18,6 +18,21 @@ export class ManageService extends BaseApiService {
         `${this.baseURL}/buysells/published`
     );
   }
+
+  getPublicationManagementDetail(typePath: "buysells" | "offers", entityId: string) {
+    const endpoint = `${this.baseURL}/${typePath}/${entityId}/details`;
+    return this.httpClient.get<any>(endpoint);
+  }
+
+  closePublication(typePath: "buysells" | "offers", publicationId: string) {
+    const endpoint = `${this.baseURL}/${typePath}/${publicationId}/close`;
+    return this.httpClient.patch<ApiResponse<string>>(endpoint, {});
+  }
+
+  getPostulants(publicationId: string) {
+    const endpoint = `${this.baseURL}/offers/${publicationId}/applicants`;
+    return this.httpClient.get<ApiResponse<any[]>>(endpoint); 
+  }
 }
 
 export const manageService = new ManageService();

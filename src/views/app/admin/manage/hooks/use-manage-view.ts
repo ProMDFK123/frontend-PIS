@@ -35,8 +35,7 @@ export const useManageView = () => {
     }, [text, type, sort, allPublications]); 
 
     const handleViewDetail = (publicationId: number) => {
-        // Redirige a la vista de validación/gestión de detalle
-        router.push(`/admin/publications/validate/${publicationId}`);
+        router.push(`/admin/publications/manage/${publicationId}`);
     };
     
     const errorMessage = apiError ? (apiError as Error).message : null;
