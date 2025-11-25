@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authConfig } from "@/auth.config";
 import { cookies } from "next/headers";
-import YourPublicationsClient from "../../../views/app/offerer/your-publication/YourPublicationsClient";
+import YourPublicationsClient from "@/views/app/offerer/your-publications";
 
 export default async function TusPublicacionesPage() {
   const session = await getServerSession(authConfig as any);

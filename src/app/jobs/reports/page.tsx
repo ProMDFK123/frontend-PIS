@@ -61,6 +61,43 @@ export default function AdminReviewsPage() {
   const [selectedReview, setSelectedReview] = useState<CombinedReviewDTO | null>(null);
   const [showModal, setShowModal] = useState(false);
 
+  const downloadPdf = async () => {
+    const token = Cookies.get("token");
+    if (!token) {
+      alert("No se encontró el token.");
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        "http://localhost:5185/api/Review/Admin/system-reviews/pdf",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob", // 🔥 CLAVE para descargar archivos
+        }
+      );
+
+      // Crear URL para el archivo
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.setAttribute("download", "system-reviews.pdf"); 
+      document.body.appendChild(link);
+      link.click();
+
+      // Limpieza
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+      console.error("Error descargando PDF:", error);
+      alert("No se pudo descargar el PDF.");
+    }
+  };
+
   /* ============================
       Abrir / cerrar modal
   ============================ */
@@ -118,6 +155,7 @@ export default function AdminReviewsPage() {
       return;
     }
 
+
     axios
       .get("http://localhost:5185/api/Review/Admin/system-reviews", {
         headers: { Authorization: `Bearer ${token}` },
@@ -168,7 +206,7 @@ export default function AdminReviewsPage() {
 
     return true;
   } catch (err) {
-    console.error("❌ Error eliminando reseña:", err);
+    console.error("Error eliminando reseña:", err);
     return false;
   }
 };
@@ -218,9 +256,13 @@ export default function AdminReviewsPage() {
         </div>
 
         {/* PDF */}
-        <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+        <button
+          onClick={downloadPdf}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+        >
           Descargar reporte PDF
         </button>
+
       </div>
 
       {/* ============================
@@ -352,6 +394,7 @@ export default function AdminReviewsPage() {
               <div className="text-sm text-gray-700 mt-3 space-y-1 w-full">
                 <p><strong>Fecha:</strong> {new Date(selectedReview.publication.publicationDate).toLocaleDateString("es-CL")}</p>
                 <p><strong>Tipo:</strong> {selectedReview.publication.types}</p>
+                <p><strong>Estado:</strong> {selectedReview.publication.isActive}</p>
               </div>
 
             </div>
