@@ -1,4 +1,3 @@
-/*
 import { useQuery } from "@tanstack/react-query";
 import { mapOfferToManage, mapBuySellToManage, handleApiError } from "@/lib";
 import { manageService } from "@/services/manageService";
@@ -32,4 +31,3 @@ export const useGetPublishedPublications = () => {
         initialData: [],
     });
 };
-*/

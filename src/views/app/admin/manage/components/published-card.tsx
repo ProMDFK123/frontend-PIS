@@ -11,9 +11,9 @@ function peso(clp: number): string {
 }
 
 export default function PublishedItemCard({ item }: { item: PublishedItem }) {
-    const { id, title, type, name, publicationDate, active } = item;
+    const { id, title, type, name, publicationDate, activa } = item;
     const typeText = typeof type === 'string' ? type : 'CompraVenta'; 
-    const statusClasses = active
+    const statusClasses = activa
         ? { icon: CheckCircleIcon, text: "ACTIVA", color: "bg-green-100 text-green-800" }
         : { icon: XCircleIcon, text: "INACTIVA", color: "bg-red-100 text-red-800" };
 
@@ -27,17 +27,17 @@ export default function PublishedItemCard({ item }: { item: PublishedItem }) {
             <div className="p-4 flex flex-col flex-1">
                 <div className="mb-2">
                     <span className="inline-flex items-center rounded-full bg-[var(--chip)] px-3 py-1 text-xs font-medium text-[var(--ink)]/80">
-                        {typeText} {/* TIPO CORREGIDO */}
+                        {typeText}
                     </span>
                 </div>
 
-                <h3 className="text-xl font-extrabold text-[var(--ink)] mb-4">{title || "Publicación sin título"}</h3> {/* TÍTULO CORREGIDO */}
+                <h3 className="text-xl font-extrabold text-[var(--ink)] mb-4">{title || "Publicación sin título"}</h3>
 
                 <ul className="space-y-2 text-[var(--muted-ink)] text-sm">
                     {/* Publicado por */}
                     <li className="flex items-center gap-2">
                         <UserIcon className="w-4 h-4" />
-                        <span>Publicado por: <strong className="text-[var(--ink)]">{name}</strong></span> {/* NOMBRE CORREGIDO */}
+                        <span>Publicado por: <strong className="text-[var(--ink)]">{name}</strong></span>
                     </li>
                     {/* Fecha de Publicación */}
                     <li className="flex items-center gap-2">
@@ -57,7 +57,7 @@ export default function PublishedItemCard({ item }: { item: PublishedItem }) {
                         className="flex-1 inline-flex items-center justify-center rounded-xl px-4 py-2 text-[15px] font-semibold text-white bg-[var(--primary)] hover:opacity-95 transition"
                         onClick={() => console.log(`Ver detalles admin de ID: ${id}`)}
                     >
-                        Ver Detalles (Admin)
+                        Ver Detalles
                     </button>
                 </div>
             </div>

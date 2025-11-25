@@ -6,28 +6,28 @@ export interface PendingOffersForAdmin {
 // Interfaz de entrada para todas las interfaces de salida que usen ofertas
 export interface OfferDetailForAdmin {
     id: number;
-    Title: string; 
-    Description: string;
-    Images: string[];
-    CompanyName: string;
-    PublicationDate: string;
-    Type: number;
-    StatusValidation: "Pending" | "Published" | "Rejected"; 
-    Remuneration: number; 
-    Active: boolean;
+    title: string; 
+    description: string;
+    images: string[];
+    companyName: string;
+    publicationDate: string;
+    type: number;
+    statusValidation: "Pending" | "Published" | "Rejected"; 
+    remuneration: number; 
+    activa: boolean;
 }
 // Interfaz de entrada para todas las interfaces de salida que usen compras/ventas
 export interface BuySellDetailForAdmin {
     id: number;
-    Title: string;
-    Description: string;
-    Images: string[];
-    UserName: string;
-    PublicationDate: string;
-    Price: number;
-    Type: number;
-    StatusValidation: "Pending" | "Published" | "Rejected"; 
-    Active: boolean;
+    title: string;
+    description: string;
+    images: string[];
+    userName: string;
+    publicationDate: string;
+    price: number;
+    type: number;
+    statusValidation: "Pending" | "Published" | "Rejected"; 
+    activa: boolean;
 }
 
 export type BuySellBasic = {
@@ -57,10 +57,10 @@ export interface ValidationItemFull {
 
 export interface PublishedItem {
     title: string;
-    type: number;
+    type: string;
     name: string;
     publicationDate: string;
-    active: boolean;
+    activa: boolean;
     id: number;
 }
 

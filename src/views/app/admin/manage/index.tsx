@@ -70,7 +70,7 @@ export default function ManageView() {
                             </Button>
                         </Link>
                         <h1 className="text-3xl md:text-4xl font-extrabold text-primary">
-                            Gestión de Publicaciones
+                            Administrar Publicaciones
                         </h1>
                         <p className="text-muted-foreground mt-1">
                             {totalCount} publicaciones activas para gestionar.

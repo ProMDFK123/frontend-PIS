@@ -1,8 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useRouter } from 'next/navigation';
-
-import { mapOfferToManage, mapBuySellToManage, handleApiError, getAdminItemTypeString } from "@/lib"; 
 import { useGetPublishedPublications } from "@/hooks/api/use-manage-service"; 
 import { PublishedItem, ValidationType } from "@/models/responses"; 
 
@@ -13,18 +11,17 @@ export const useManageView = () => {
     const [text, setText] = useState("");
     const [type, setType] = useState<ValidationType>("Todos"); 
     const [sort, setSort] = useState<SortType>("recientes");
-    const { 
+    const {
         data: allPublications,
-        isLoading, 
+        isLoading,
         error: apiError,
-        refetch, 
-    } = useGetPublishedPublications(); 
+        refetch,
+    } = useGetPublishedPublications();
     const filteredAndSorted = useMemo(() => {
         let list = [...allPublications];
         if (type !== "Todos") {
             list = list.filter((o) => {
-                const itemTypeString = getAdminItemTypeString(o.type);
-                return itemTypeString === type;
+                return o.type === type;
             });
         }
         if (text.trim()) {
@@ -35,12 +32,15 @@ export const useManageView = () => {
             list.sort((a, b) => a.title.localeCompare(b.title));
         }
         return list;
-    }, [text, type, sort, allPublications]);
+    }, [text, type, sort, allPublications]); 
 
     const handleViewDetail = (publicationId: number) => {
+        // Redirige a la vista de validación/gestión de detalle
         router.push(`/admin/publications/validate/${publicationId}`);
     };
+    
     const errorMessage = apiError ? (apiError as Error).message : null;
+
     return {
         managedPublications: filteredAndSorted,
         totalCount: allPublications.length,
