@@ -19,6 +19,12 @@ export {
   getPublicRouteFromAdmin,
   mapOfferToDetail,
   mapBuySellToDetail,
+  /*
+  mapOfferToManage,
+  */
+  mapBuySellToManage,
+  toOfferTypeForAdmin,
+  getAdminItemTypeString,
 } from "./publication";
 export {
   formatDate,

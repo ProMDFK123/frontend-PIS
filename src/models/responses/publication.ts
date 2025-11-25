@@ -3,9 +3,9 @@ export interface PendingOffersForAdmin {
     type: number; 
     id: number;
 }
-
+// Interfaz de entrada para todas las interfaces de salida que usen ofertas
 export interface OfferDetailForAdmin {
-    Id: number;
+    id: number;
     Title: string; 
     Description: string;
     Images: string[];
@@ -16,15 +16,16 @@ export interface OfferDetailForAdmin {
     Remuneration: number; 
     Active: boolean;
 }
-
+// Interfaz de entrada para todas las interfaces de salida que usen compras/ventas
 export interface BuySellDetailForAdmin {
-    Id: number;
+    id: number;
     Title: string;
     Description: string;
     Images: string[];
     UserName: string;
     PublicationDate: string;
     Price: number;
+    Type: number;
     StatusValidation: "Pending" | "Published" | "Rejected"; 
     Active: boolean;
 }
@@ -52,6 +53,15 @@ export interface OfferForAdmin {
 export interface ValidationItemFull {
     id: string; 
     item: OfferForAdmin;
+}
+
+export interface PublishedItem {
+    title: string;
+    type: number;
+    name: string;
+    publicationDate: string;
+    active: boolean;
+    id: number;
 }
 
 export type PublicationType = "Trabajo" | "Voluntariado" | "CompraVenta"; 

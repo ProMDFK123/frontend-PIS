@@ -48,35 +48,25 @@ export const useGetAdminPublicationDetailQuery = (id: string | undefined) => {
         queryKey: ["admin", "publication", id],
         queryFn: async () => {
             if (!id || id === 'undefined') throw new Error("ID de publicación no válido.");
-
             const isBuySellPrefixed = id.startsWith('bs-');
             const entityId = isBuySellPrefixed ? id.split('-')[1] : id;
-
-            // 1. Si tiene prefijo 'bs-', vamos directo a buysells
             if (isBuySellPrefixed) {
                 const response = await validationService.getPublicationDetail("buysells", entityId);
                 const detailDto = response.data?.data ?? response.data;
                 if (!detailDto) throw new Error("Respuesta de API vacía o malformada.");
                 return { ...mapBuySellToDetail(detailDto), id };
             }
-
-            // 2. Si NO tiene prefijo, intentamos primero como Offer, luego como BuySell (Fallback)
             try {
-                // Intentar como Oferta de Trabajo (Offer)
                 const response = await validationService.getPublicationDetail("offers", entityId);
                 const detailDto = response.data?.data ?? response.data;
                 if (!detailDto) throw new Error("Respuesta de API vacía o malformada.");
-                
                 return { ...mapOfferToDetail(detailDto), id };
-
             } catch (error) {
                 if (error instanceof AxiosError && error.response?.status === 404) {
                     try {
                         const response = await validationService.getPublicationDetail("buysells", entityId);
                         const detailDto = response.data?.data ?? response.data;
                         if (!detailDto) throw new Error("Respuesta de API vacía o malformada.");
-                        
-                        // Éxito como BuySell
                         return { ...mapBuySellToDetail(detailDto), id };
                     } catch (innerError) {
                         // Si falla la segunda vez, es un 404 real.
@@ -84,8 +74,6 @@ export const useGetAdminPublicationDetailQuery = (id: string | undefined) => {
                         throw new Error(apiError.details || `Publicación con ID ${entityId} no encontrada.`);
                     }
                 }
-                
-                // Re-lanzar otros errores (ej: 500, network error, etc.)
                 const apiError = handleApiError(error);
                 throw new Error(apiError.details || apiError.message);
             }
@@ -94,6 +82,7 @@ export const useGetAdminPublicationDetailQuery = (id: string | undefined) => {
         staleTime: 5 * 60 * 1000,
     });
 };
+
 export const useValidationActionMutation = () => {
     const queryClient = useQueryClient();
 

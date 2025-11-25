@@ -5,10 +5,11 @@ import {
   AdminDetail,
   OfferDetailForAdmin,
   BuySellDetailForAdmin,
-  PublicationType
+  PublicationType,
+  PublishedItem,
 } from "@/models/responses";
 
-function toOfferTypeForAdmin(o: PendingOffersForAdmin): OfferForAdmin["type"] {
+export function toOfferTypeForAdmin(o: PendingOffersForAdmin): OfferForAdmin["type"] {
   const typeValue = o.type ?? 0;
   if (typeValue === 0 || typeValue === 1) {
     return "Trabajo";
@@ -31,7 +32,28 @@ export function mapBuySellDtoToValidate(b: BuySellBasic): OfferForAdmin {
     type: "CompraVenta",
   };
 }
-
+/*
+export function mapOfferToManage(o: OfferDetailForAdmin): PublishedItem {
+    return {
+        id: o.id,
+        title: o.title,
+        type: getPublicationTypeFromNumber(o.type),
+        name: o.companyName && o.companyName.trim() !== "" ? o.companyName : "Empresa Desconocida",
+        publicationDate: o.publicationDate,
+        active: o.active ?? false,
+    };
+}
+*/
+export function mapBuySellToManage(b: BuySellDetailForAdmin): PublishedItem {
+    return {
+        id: b.id,
+        title: b.Title,
+        type: b.Type,
+        name: b.UserName && b.UserName.trim() !== "" ? b.UserName : "Usuario desconocido",
+        publicationDate: b.PublicationDate,
+        active: b.Active ?? false,
+    };
+}
 export function getOfferTypeDisplay(type: OfferForAdmin["type"]) {
   if (type === "CompraVenta") {
     return {
@@ -62,7 +84,7 @@ function getAdminDetailType(typeValue: any): PublicationType {
 }
 
 export function mapOfferToDetail(dto: any): AdminDetail {
-  const idValue = (dto as OfferDetailForAdmin).Id ?? dto.id;
+  const idValue = (dto as OfferDetailForAdmin).id ?? dto.id;
   const titleValue =
     (dto as OfferDetailForAdmin).Title ?? dto.title ?? "Sin título";
   const descriptionValue =
@@ -110,7 +132,7 @@ export function mapOfferToDetail(dto: any): AdminDetail {
 }
 
 export function mapBuySellToDetail(dto: any): AdminDetail {
-  const idValue = (dto as BuySellDetailForAdmin).Id ?? dto.id;
+  const idValue = (dto as BuySellDetailForAdmin).id ?? dto.id;
   const titleValue =
     (dto as BuySellDetailForAdmin).Title ?? dto.title ?? "Sin título";
   const descriptionValue =
@@ -152,4 +174,13 @@ export function getPublicRouteFromAdmin(adminPath: string): string {
     return "/offers";
   }
   return "/";
+}
+
+export type AdminItemType = "Trabajo" | "CompraVenta";
+
+export function getAdminItemTypeString(typeValue: number): AdminItemType {
+    if (typeValue === 0 || typeValue === 1) {
+        return "Trabajo";
+    }
+    return "CompraVenta"; 
 }
