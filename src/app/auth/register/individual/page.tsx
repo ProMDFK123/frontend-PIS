@@ -1,76 +1,98 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent } from "react";
+import { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { registerIndividual } from "@/services/authService";
-import { IndividualRequestDto } from "@/services/dtos/authDto";
-import { formatRut } from "src2/utils/Util"
+import { IndividualAdapter } from "@/services/adapters/authAdapter";
+import { formatRut } from "@/utils/Util"
+import { useFormValidation } from "@/hooks/auth/useFormValidation";
+import { validators } from "@/utils/AuthValidatorsUtil";
+import { FormField } from "@/components/forms/FormField";
+import { PasswordField } from "@/components/forms/PasswordField";
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";
 
-export default function RegisterParticularPage() {
+//Validaciones del formulario
+const individualValidationRules = {
+  nombre: (value: string) => validators.name(value, "Nombre"),
+  apellido: (value: string) => validators.name(value, "Apellido"),
+  email: (value: string) => validators.regularEmail(value, "Email"),
+  rut: (value: string) => validators.rut(value, "RUT"),
+  telefono: (value: string) => validators.phone(value),
+  password: (value: string) => validators.password(value, "Contraseña"),
+  confirmPassword: (value: string, formData: any) => 
+    validators.confirmPassword(value, formData?.password || ""),
+};
+
+export default function RegisterIndividualPage() {
   const router = useRouter();
 
-  const [formData, setFormData] = useState({
-    nombre: "",
-    apellido: "",
-    rut: "",
-    correo: "",
-    telefono: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const { 
+    formData, 
+    errors, 
+    touched, 
+    handleChange: baseHandleChange, 
+    handleBlur, 
+    validateAll,
+  } = useFormValidation(
+    {
+      nombre: "",
+      apellido: "",
+      rut: "",
+      email: "",
+      telefono: "",
+      password: "",
+      confirmPassword: "",
+    },
+    individualValidationRules
+  );
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-
-    let newValue = value;
-
-    if (name === "rut") newValue = formatRut(value);
-    setFormData((prev) => ({ ...prev, [name]: newValue }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (e.target.name === "rut") {
+      const formatted = formatRut(e.target.value);
+      e.target.value = formatted;
+    }
+    baseHandleChange(e);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      alert("Las contraseñas no coinciden.");
+    if (!validateAll()) {
+      const firstErrorField = Object.keys(errors)[0];
+      document.getElementById(firstErrorField!)?.focus();
       return;
     }
 
-    const payload: IndividualRequestDto = {
-      Name: formData.nombre,
-      LastName: formData.apellido,
-      Email: formData.correo,
-      Rut: formData.rut,
-      PhoneNumber: formData.telefono,
-      Password: formData.password,
-      ConfirmPassword: formData.confirmPassword,
-    };
-
     try {
+      const payload = IndividualAdapter.toDTO(formData);
       const response = await registerIndividual(payload);
-      alert(response.message || "Registro exitoso.");
+
+      alert(response.message || "Registro exitoso. Revisa tu correo para verificar tu cuenta.");
       router.push("/auth/verify-email");
-    } catch (error: any) {
+    }catch (error: any) {
       console.error("Error en el registro:", error);
 
       const backendError = error?.response?.data;
-
       let errorMessage = "Error al registrarse. Por favor, inténtalo nuevamente.";
 
+      if (backendError.details) {
+          errorMessage += `\n${backendError.details}`;
+        }
+
       if (backendError?.errors) {
-        // Caso validaciones por campo (ej. RUT inválido)
         errorMessage = Object.entries(backendError.errors)
-          .map(([field, messages]) => `${field}: ${(messages as string[]).join(", ")}`)
+          .map(([field, messages]) => {
+            const friendlyField = field === "Rut" ? "RUT" : field;
+            return `${friendlyField}: ${(messages as string[]).join(", ")}`;
+          })
           .join("\n");
       } else if (backendError?.message) {
-        // Caso general con message y optional details
         errorMessage = backendError.message;
         if (backendError.details) {
-          errorMessage += `\nDetalles: ${backendError.details}`;
+          errorMessage += `\n${backendError.details}`;
         }
       }
 
@@ -107,64 +129,95 @@ export default function RegisterParticularPage() {
               <hr className="mb-6" />
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <InputField
+                <FormField
                   id="nombre"
                   label="Nombre"
-                  name="nombre"
+                  placeholder="Juan"
                   value={formData.nombre}
                   onChange={handleChange}
-                  placeholder="Juan"
+                  onBlur={() => handleBlur("nombre")}
+                  error={errors.nombre ?? undefined}
+                  touched={touched.nombre}
                 />
-                <InputField
+                <FormField
                   id="apellido"
                   label="Apellido"
-                  name="apellido"
+                  placeholder="Pérez"
                   value={formData.apellido}
                   onChange={handleChange}
-                  placeholder="Pérez"
+                  onBlur={() => handleBlur("apellido")}
+                  error={errors.apellido ?? undefined}
+                  touched={touched.apellido}
                 />
-                <InputField
+                
+                <div>
+                  <label htmlFor="email" className="text-sm font-medium text-gray-700 block mb-1">
+                    Correo Personal *
+                  </label>
+                  <div
+                    className={`flex items-center border ${
+                      touched.email && errors.email ? "border-red-500" : "border-gray-300"
+                    } rounded-md px-2 focus-within:ring-1 focus-within:ring-blue-500`}
+                  >
+                    <input
+                      id="email"
+                      type="text"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      onBlur={() => handleBlur("email")}
+                      placeholder="juan.perez@ejemplo.com"
+                      className="flex-grow p-2 text-sm focus:outline-none"
+                    />
+                    <span className="text-gray-600 text-sm"></span>
+                  </div>
+                  {touched.email && errors.email && (
+                    <p className="text-red-600 text-xs mt-1">{errors.email}</p>
+                  )}
+                </div>
+
+                <FormField
                   id="rut"
                   label="RUT"
-                  name="rut"
+                  placeholder="12345678-9"
                   value={formData.rut}
                   onChange={handleChange}
-                  placeholder="12345678-9"
+                  onBlur={() => handleBlur("rut")}
+                  error={errors.rut ?? undefined}
+                  touched={touched.rut}
+                  description="Sin puntos, con guión (ej: 12345678-9)"
                 />
-                <InputField
-                  id="correo"
-                  label="Correo"
-                  name="correo"
-                  type="email"
-                  value={formData.correo}
-                  onChange={handleChange}
-                  placeholder="email@example.com"
-                />
-                <InputField
+
+                <FormField
                   id="telefono"
                   label="Teléfono"
-                  name="telefono"
+                  placeholder="+56912345678"
                   value={formData.telefono}
                   onChange={handleChange}
-                  placeholder="+56912345678"
+                  onBlur={() => handleBlur("telefono")}
+                  error={errors.telefono ?? undefined}
+                  touched={touched.telefono}
                 />
-                <InputField
+                
+                <PasswordField
                   id="password"
                   label="Contraseña"
-                  name="password"
-                  type="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="••••••••"
+                  onBlur={() => handleBlur("password")}
+                  error={errors.password ?? undefined}
+                  touched={touched.password}
+                  showStrength={true}
                 />
-                <InputField
+
+                <PasswordField
                   id="confirmPassword"
-                  label="Repetir Contraseña"
-                  name="confirmPassword"
-                  type="password"
+                  label="Confirmar Contraseña"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  placeholder="••••••••"
+                  onBlur={() => handleBlur("confirmPassword")}
+                  error={errors.confirmPassword ?? undefined}
+                  touched={touched.confirmPassword}
                 />
 
                 <button
@@ -189,46 +242,6 @@ export default function RegisterParticularPage() {
           </div>
         </div>
       </main>
-    </div>
-  );
-}
-
-// 🔹 Componente reutilizable para campos del formulario
-interface InputFieldProps {
-  id: string;
-  label: string;
-  name: string;
-  value: string;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  type?: string;
-  placeholder?: string;
-}
-
-function InputField({
-  id,
-  label,
-  name,
-  value,
-  onChange,
-  type = "text",
-  placeholder = "",
-}: InputFieldProps) {
-  return (
-    <div>
-      <label htmlFor={id} className="text-sm font-medium text-gray-700 block mb-1">
-        {label}
-      </label>
-      <input
-        id={id}
-        name={name}
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        required
-        className="w-full border border-gray-300 rounded-md p-2 text-sm 
-                   focus:outline-none focus:ring-1 focus:ring-blue-500"
-      />
     </div>
   );
 }

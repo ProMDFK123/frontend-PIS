@@ -117,7 +117,7 @@ export const usePublicationForm = () => {
       });
 
       alert('¡Publicación creada exitosamente!');
-      router.push('/offerer/your-publications?success=true');
+      router.push('/offerer/create-publication/your-publications?success=true');
     } catch (error) {
       if (error instanceof AxiosError && error.response?.data?.errors) {
          const serverErrors: any = {};

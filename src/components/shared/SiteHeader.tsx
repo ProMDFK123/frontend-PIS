@@ -3,37 +3,55 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { isLoggedIn, getUserFromToken, logoutAndRedirect, getRoleFromToken, cn } from "@/lib"; 
 
+import { 
+  isLoggedIn,
+  extractUserFromJwt,
+  getRoleFromToken,
+  logoutAndRedirect,
+  cn
+} from "@/lib";
+
+import { profileService } from "@/services/profileService";
+
+// LINKS DE USUARIO
 const userLinks = [
   { href: "/", label: "Inicio" },
   { href: "/offers", label: "Explorar" },
 ];
 
+// LINKS DE ADMIN
 const adminNavLinks = [
   { href: "/admin/publications", label: "Inicio" },
   { href: "/admin/publications/validate", label: "Validar" },
   { href: "/admin/publications/manage", label: "Administrar" },
 ];
 
+// DROPDOWN USER
 const baseDropdownItems = [
   { href: "/profile", label: "Editar perfil" },
   { href: "/jobs/history", label: "Historial de postulaciones" },
   { href: "/offers/history", label: "Historial de trabajos" },
 ];
 
-const adminDropdownItems = [
-  { href: "/admin/users", label: "Gestión de Usuarios" },
-];
-
-function UserAvatar({ name }: { name?: string }) {
+function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
   const initials =
     name?.trim()?.split(/\s+/).slice(0, 2).map(n => n[0]?.toUpperCase()).join("") || "U";
+
   return (
     <div className="flex items-center gap-2">
-      <div className="size-8 rounded-full bg-[var(--chip)] grid place-items-center text-[var(--ink)]/80 text-sm font-bold">
-        {initials}
+      <div className="size-8 rounded-full bg-[var(--chip)] grid place-items-center text-[var(--ink)]/80 text-sm font-bold overflow-hidden">
+        {photoUrl ? (
+          <img
+            src={photoUrl}
+            alt="Foto de perfil"
+            className="w-full h-full object-cover rounded-full"
+          />
+        ) : (
+          <span className="text-[var(--ink)]/80">{initials}</span>
+        )}
       </div>
+
       <span className="hidden sm:inline text-[var(--ink)]/90 font-medium">
         {name ?? "Usuario"}
       </span>
@@ -43,49 +61,75 @@ function UserAvatar({ name }: { name?: string }) {
 
 export default function SiteHeader() {
   const pathname = usePathname();
-  const [auth, setAuth] = useState<{ logged: boolean, name: string, role: string | null }>({ logged: false, name: "Usuario", role: null }); 
+  const [auth, setAuth] = useState({
+    logged: false,
+    name: "Usuario",
+    role: null as string | null,
+    photoUrl: null as string | null
+  });
+
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // CARGAR AUTH Y FOTO DE PERFIL
   useEffect(() => {
     const logged = isLoggedIn();
-    const info = getUserFromToken();
+    const info = extractUserFromJwt();
     const userRole = getRoleFromToken();
+
     setAuth({
       logged,
-      name: info?.name || info?.email || "Usuario", 
-      role: userRole
+      name: info?.userName || info?.email?.split("@")[0] || "Usuario",
+      role: userRole,
+      photoUrl: null
     });
+
+    if (logged) {
+      const loadPhoto = async () => {
+        try {
+          const res = await profileService.getProfilePhoto();
+          if (res.data?.photoUrl) {
+            setAuth(prev => ({
+              ...prev,
+              photoUrl: `${res.data.photoUrl}?v=${Date.now()}`
+            }));
+          }
+        } catch (err) {
+          console.error("Error obteniendo foto:", err);
+        }
+      };
+      loadPhoto();
+    }
   }, [pathname]);
 
+  // CERRAR DROPDOWN CLICK FUERA
   useEffect(() => {
-    function onDocClick(e: MouseEvent) {
+    const onDocClick = (e: MouseEvent) => {
       if (!menuRef.current) return;
       if (!menuRef.current.contains(e.target as Node)) setOpen(false);
-    }
+    };
     if (open) document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [open]);
 
-  const isAdmin = auth.role === "Admin"; 
-  
+  const isAdmin = auth.role === "Admin";
   const mainLinks = isAdmin ? adminNavLinks : userLinks;
-  
-  const dropdownItems = isAdmin 
-    ? [...adminDropdownItems, ...baseDropdownItems]
-    : baseDropdownItems; 
+
+  const dropdownItems = isAdmin
+    ? [...baseDropdownItems]
+    : baseDropdownItems;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--card)]/85 backdrop-blur">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        {/* Logo / marca */}
+
         <Link href="/" className="font-extrabold text-lg">
           <span className="text-[var(--ink)]">Bolsa</span>
           <span className="ml-1 rounded-md bg-[var(--primary)] px-2 py-1 text-white">FEUCN</span>
         </Link>
 
         <div className="flex items-center gap-2">
-          {/* RENDERIZADO DE ENLACES PRINCIPALES ADAPTADO AL ROL */}
+
           {mainLinks.map((l) => (
             <Link
               key={l.href}
@@ -100,7 +144,7 @@ export default function SiteHeader() {
           ))}
 
           {!auth.logged ? (
-            <Link 
+            <Link
               href="/auth/login"
               className="rounded-xl px-4 py-2 font-semibold text-white bg-[var(--primary)] hover:opacity-95 transition"
             >
@@ -109,39 +153,32 @@ export default function SiteHeader() {
           ) : (
             <div className="relative" ref={menuRef}>
               <button
-                onClick={() => setOpen((v) => !v)}
+                onClick={() => setOpen(v => !v)}
                 className="rounded-xl px-2 py-1 hover:bg-[var(--chip)] transition flex items-center gap-2"
-                aria-haspopup="menu"
-                aria-expanded={open}
               >
-                <UserAvatar name={auth.name} />
+                <UserAvatar name={auth.name} photoUrl={auth.photoUrl ?? undefined} />
                 <svg width="16" height="16" viewBox="0 0 20 20" className="text-[var(--ink)]/70">
-                  <path d="M5 7l5 5 5-5" fill="currentColor" />
-                </svg>
+                  <path d="M5 7l5 5 5-5" fill="currentColor" />
+                </svg>
               </button>
+
               {open && (
                 <div
-                  role="menu"
                   className="absolute right-0 mt-2 w-56 rounded-xl border border-[var(--border)] bg-white shadow-lg overflow-hidden"
                 >
-                  
-                  {/* RENDERIZADO DE ÍTEMS DEL DROPDOWN ADAPTABLE */}
                   {dropdownItems.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
                       className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
-                      role="menuitem"
                     >
                       {item.label}
                     </Link>
                   ))}
-                  
-                  {/* Botón Cerrar Sesión */}
+
                   <button
                     onClick={() => logoutAndRedirect("/")}
                     className="w-full text-left px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
-                    role="menuitem"
                   >
                     Cerrar sesión
                   </button>

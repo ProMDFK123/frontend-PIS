@@ -1,77 +1,99 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent, ChangeEventHandler } from "react";
+import React, { FormEvent} from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { registerStudent } from "@/services/authService";
 import { StudentAdapter } from "@/services/adapters/authAdapter";
-import { formatRut } from "src2/utils/Util"
+import { formatRut } from "@/utils/Util"
+import { useFormValidation } from "@/hooks/auth/useFormValidation";
+import { validators } from "@/utils/AuthValidatorsUtil";
+import { FormField } from "@/components/forms/FormField";
+import { PasswordField } from "@/components/forms/PasswordField";
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(64, 64, 48, 0.4)";
 
+//Validaciones del formulario
+const studentValidationRules = {
+  nombre: (value: string) => validators.name(value, "Nombre"),
+  apellido: (value: string) => validators.name(value, "Apellido"),
+  email: (value: string) => validators.studentEmail(value, "Email"),
+  rut: (value: string) => validators.rut(value, "RUT"),
+  telefono: (value: string) => validators.phone(value),
+  password: (value: string) => validators.password(value, "Contraseña"),
+  confirmPassword: (value: string, formData: any) => 
+    validators.confirmPassword(value, formData?.password || ""),
+};
+
 export default function RegisterStudentPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    nombre: "",
-    apellido: "",
-    email: "",
-    rut: "",
-    telefono: "",
-    password: "",
-    confirmPassword: "",
-    discapacidad: "Ninguna",
-  });
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const {name, value} = e.target;
+  const {
+    formData,
+    errors,
+    touched,
+    handleChange: baseHandleChange,
+    handleBlur,
+    validateAll,
+  } = useFormValidation(
+    {
+      nombre: "",
+      apellido: "",
+      email: "",
+      rut: "",
+      telefono: "",
+      password: "",
+      confirmPassword: "",
+      discapacidad: "Ninguna",
+    },
+    studentValidationRules
+  );
 
-    let newValue = value;
-
-    if(name === "rut") newValue = formatRut(value);
-
-    setFormData((prev) => ({...prev, [name]: newValue}));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (e.target.name === "rut") {
+      const formatted = formatRut(e.target.value);
+      e.target.value = formatted;
+    }
+    baseHandleChange(e);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      alert("Las contraseñas no coinciden.");
+    if (!validateAll()) {
+      const firstErrorField = Object.keys(errors)[0];
+      document.getElementById(firstErrorField!)?.focus();
       return;
     }
-
+    
     try {
       const payload = StudentAdapter.toDTO(formData);
       const response = await registerStudent(payload);
 
-      alert(response.message || "Registro exitoso.");
+      alert(response.message || "Registro exitoso. Revisa tu correo para verificar tu cuenta.");
       router.push("/auth/verify-email");
-    } catch (error: any) {
+    }catch (error: any) {
       console.error("Error en el registro:", error);
 
       const backendError = error?.response?.data;
-
       let errorMessage = "Error al registrarse. Por favor, inténtalo nuevamente.";
 
       if (backendError?.errors) {
-        // Caso validaciones por campo (ej. RUT inválido)
         errorMessage = Object.entries(backendError.errors)
           .map(([field, messages]) => {
-            // Opcional: reemplazar nombres de campo por algo más amigable
             const friendlyField = field === "Rut" ? "RUT" : field;
             return `${friendlyField}: ${(messages as string[]).join(", ")}`;
           })
           .join("\n");
       } else if (backendError?.message) {
-        // Caso general con message y optional details
         errorMessage = backendError.message;
         if (backendError.details) {
-          errorMessage += `\nDetalles: ${backendError.details}`;
+          errorMessage += `\n${backendError.details}`;
         }
       }
 
-      console.log(errorMessage);
+      alert(errorMessage);
     }
   };
 
@@ -104,29 +126,103 @@ export default function RegisterStudentPage() {
 
               {/* Formulario */}
               <form onSubmit={handleSubmit} className="space-y-4">
-                {renderInput("nombre", "Nombre", formData.nombre, handleChange, "text", "Juan")}
-                {renderInput("apellido", "Apellido", formData.apellido, handleChange, "text", "Pérez")}
-                <div className="flex items-center border border-gray-300 rounded-md px-2">
-                  <input
-                    type="text"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="example"
-                    className="flex-grow p-2 text-sm focus:outline-none"
-                  />
-                  <span className="text-gray-600 text-sm">@alumnos.ucn.cl</span>
+                <FormField
+                  id="nombre"
+                  label="Nombre"
+                  placeholder="Juan"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur("nombre")}
+                  error={errors.nombre ?? undefined}
+                  touched={touched.nombre}
+                />
+                <FormField
+                  id="apellido"
+                  label="Apellido"
+                  placeholder="Pérez"
+                  value={formData.apellido}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur("apellido")}
+                  error={errors.apellido ?? undefined}
+                  touched={touched.apellido}
+                />
+                
+                 <div>
+                  <label htmlFor="email" className="text-sm font-medium text-gray-700 block mb-1">
+                    Correo Institucional *
+                  </label>
+                  <div
+                    className={`flex items-center border ${
+                      touched.email && errors.email ? "border-red-500" : "border-gray-300"
+                    } rounded-md px-2 focus-within:ring-1 focus-within:ring-blue-500`}
+                  >
+                    <input
+                      id="email"
+                      type="text"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      onBlur={() => handleBlur("email")}
+                      placeholder="juan.perez"
+                      className="flex-grow p-2 text-sm focus:outline-none"
+                    />
+                    <span className="text-gray-600 text-sm">@alumnos.ucn.cl</span>
+                  </div>
+                  {touched.email && errors.email && (
+                    <p className="text-red-600 text-xs mt-1">{errors.email}</p>
+                  )}
                 </div>
-                {renderInput("rut", "RUT", formData.rut, handleChange, "text", "12345678-9")}
-                {renderInput("telefono", "Teléfono", formData.telefono, handleChange, "text", "+56912345678")}
-                {renderInput("password", "Contraseña", formData.password, handleChange, "password", "••••••••")}
-                {renderInput("confirmPassword", "Repetir Contraseña", formData.confirmPassword, handleChange, "password", "••••••••")}
+
+                <FormField
+                  id="rut"
+                  label="RUT"
+                  placeholder="12345678-9"
+                  value={formData.rut}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur("rut")}
+                  error={errors.rut ?? undefined}
+                  touched={touched.rut}
+                  description="Sin puntos, con guión (ej: 12345678-9)"
+                />
+
+                <FormField
+                  id="telefono"
+                  label="Teléfono"
+                  placeholder="+56912345678"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur("telefono")}
+                  error={errors.telefono ?? undefined}
+                  touched={touched.telefono}
+                />
+                
+                <PasswordField
+                  id="password"
+                  label="Contraseña"
+                  value={formData.password}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur("password")}
+                  error={errors.password ?? undefined}
+                  touched={touched.password}
+                  showStrength={true}
+                />
+
+                <PasswordField
+                  id="confirmPassword"
+                  label="Confirmar Contraseña"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur("confirmPassword")}
+                  error={errors.confirmPassword ?? undefined}
+                  touched={touched.confirmPassword}
+                />
 
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">
                     Discapacidad
                   </label>
                   <select
+                    id="discapacidad"
                     name="discapacidad"
                     value={formData.discapacidad}
                     onChange={handleChange}
@@ -164,6 +260,7 @@ export default function RegisterStudentPage() {
   );
 }
 
+/*
 function renderInput(
   name: string,
   label: string,
@@ -189,4 +286,4 @@ function renderInput(
       />
     </div>
   );
-}
+}*/

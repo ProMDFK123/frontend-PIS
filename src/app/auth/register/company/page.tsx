@@ -1,80 +1,103 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent } from "react";
+import { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { registerCompany } from "@/services/authService";
-import { CompanyRequestDto } from "@/services/dtos/authDto";
-import { formatRut } from "src2/utils/Util"
+import { CompanyAdapter } from "@/services/adapters/authAdapter";
+import { formatRut } from "@/utils/Util"
+import { useFormValidation } from "@/hooks/auth/useFormValidation";
+import { validators } from "@/utils/AuthValidatorsUtil";
+import { FormField } from "@/components/forms/FormField";
+import { PasswordField } from "@/components/forms/PasswordField";
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";
 
+//Validaciones del formulario
+const individualValidationRules = {
+  nombre: (value: string) => validators.name(value, "Nombre Empresa"),
+  apellido: (value: string) => validators.name(value, "Razon Social"),
+  email: (value: string) => validators.regularEmail(value, "Email"),
+  rut: (value: string) => validators.rut(value, "RUT"),
+  telefono: (value: string) => validators.phone(value),
+  password: (value: string) => validators.password(value, "Contraseña"),
+  confirmPassword: (value: string, formData: any) => 
+    validators.confirmPassword(value, formData?.password || ""),
+};
+
+
+
 export default function RegisterCompanyPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    nombre: "",
-    razonSocial: "",
-    rutEmpresa: "",
-    correo: "",
-    telefono: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const {
+    formData,
+    errors,
+    touched,
+    handleChange: baseHandleChange,
+    handleBlur,
+    validateAll,
+  } = useFormValidation(
+    {
+      nombreEmpresa: "",
+      razonSocial: "",
+      rut: "",
+      email: "",
+      telefono: "",
+      password: "",
+      confirmPassword: "",
+    },
+    individualValidationRules
+  );
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-
-    let newValue = value;
-
-    if (name === "rutEmpresa") newValue = formatRut(value);
-    setFormData((prev) => ({ ...prev, [name]: newValue }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (e.target.name === "rutEmpresa") {
+      const formatted = formatRut(e.target.value);
+      e.target.value = formatted;
+    }
+    baseHandleChange(e);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      setMessage({ type: "error", text: "Las contraseñas no coinciden." });
+    if (!validateAll()) {
+      const firstErrorField = Object.keys(errors)[0];
+      document.getElementById(firstErrorField!)?.focus();
       return;
     }
 
     try {
-      const payload: CompanyRequestDto = {
-        CompanyName: formData.nombre,
-        LegalName: formData.razonSocial,
-        Email: formData.correo,
-        Rut: formData.rutEmpresa,
-        PhoneNumber: formData.telefono,
-        Password: formData.password,
-        ConfirmPassword: formData.confirmPassword,
-      };
-
-      const result = await registerCompany(payload);
-      setMessage({ type: "success", text: result.message });
-      setTimeout(() => router.push("/auth/verify-email"), 1500);
-    } catch (error: any) {
+      const payload = CompanyAdapter.toDTO(formData);
+      const response = await registerCompany(payload);
+        
+      alert(response.message || "Registro exitoso. Revisa tu correo para verificar tu cuenta.");
+      router.push("/auth/verify-email");
+    }catch (error: any) {
       console.error("Error en el registro:", error);
 
       const backendError = error?.response?.data;
-
       let errorMessage = "Error al registrarse. Por favor, inténtalo nuevamente.";
 
+      if (backendError.details) {
+          errorMessage += `\n${backendError.details}`;
+        }
+
       if (backendError?.errors) {
-        // Caso validaciones por campo (ej. RUT inválido)
         errorMessage = Object.entries(backendError.errors)
-          .map(([field, messages]) => `${field}: ${(messages as string[]).join(", ")}`)
+          .map(([field, messages]) => {
+            const friendlyField = field === "Rut" ? "RUT" : field;
+            return `${friendlyField}: ${(messages as string[]).join(", ")}`;
+          })
           .join("\n");
       } else if (backendError?.message) {
-        // Caso general con message y optional details
         errorMessage = backendError.message;
         if (backendError.details) {
-          errorMessage += `\nDetalles: ${backendError.details}`;
+          errorMessage += `\n${backendError.details}`;
         }
       }
 
-      setMessage({ type: "error", text: errorMessage });
+      alert(errorMessage);
     }
   };
 
@@ -106,83 +129,108 @@ export default function RegisterCompanyPage() {
               </div>
               <hr className="mb-6" />
 
-              {message && (
-                <div
-                  className={`p-3 mb-4 rounded-md text-sm font-medium ${
-                    message.type === "error"
-                      ? "bg-red-100 text-red-700 border border-red-300"
-                      : "bg-green-100 text-green-700 border border-green-300"
-                  }`}
-                  role="alert"
-                >
-                  {message.text}
-                </div>
-              )}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <FormField
+                  id="nombreEmpresa"
+                  label="Nombre Empresa"
+                  placeholder="Ingresa el nombre de la empresa"
+                  value={formData.nombreEmpresa}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur("nombreEmpresa")}
+                  error={errors.nombreEmpresa ?? undefined}
+                  touched={touched.nombreEmpresa}
+                />
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {[ 
-                { id: "nombre", label: "Nombre", type: "text", placeholder: "Empresa Inc." },
-                { id: "razonSocial", label: "Razón social", type: "text", placeholder: "Empresa S.A." },
-                { id: "rutEmpresa", label: "RUT Empresa", type: "text", placeholder: "12345678-9" },
-                { id: "correo", label: "Correo", type: "email", placeholder: "correo@empresa.cl" },
-                { id: "telefono", label: "Teléfono", type: "tel", placeholder: "+56912345678" },
-              ].map(({ id, label, type, placeholder }) => (
-                <div key={id}>
-                  <label
-                    htmlFor={id}
-                    className="text-sm font-medium text-gray-700 block mb-1"
-                  >
-                    {label}
+                <FormField
+                  id="razonSocial"
+                  label="Razon Social"
+                  placeholder="Ingresa la razon social"
+                  value={formData.razonSocial}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur("razonSocial")}
+                  error={errors.razonSocial ?? undefined}
+                  touched={touched.razonSocial}
+                />
+
+                <div>
+                  <label htmlFor="email" className="text-sm font-medium text-gray-700 block mb-1">
+                    Correo Empresarial *
                   </label>
-                  <input
-                    id={id}
-                    name={id}
-                    type={type}
-                    placeholder={placeholder}
-                    value={(formData as any)[id]}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-              ))}
-
-              {/* Contraseñas */}
-              {[
-                { id: "password", label: "Contraseña", placeholder: "••••••••" },
-                { id: "confirmPassword", label: "Repetir Contraseña", placeholder: "••••••••" },
-              ].map(({ id, label, placeholder }) => (
-                <div key={id}>
-                  <label
-                    htmlFor={id}
-                    className="text-sm font-medium text-gray-700 block mb-1"
+                  <div
+                    className={`flex items-center border ${
+                      touched.email && errors.email ? "border-red-500" : "border-gray-300"
+                    } rounded-md px-2 focus-within:ring-1 focus-within:ring-blue-500`}
                   >
-                    {label}
-                  </label>
-                  <input
-                    id={id}
-                    name={id}
-                    type="password"
-                    placeholder={placeholder} // <- agregado
-                    value={(formData as any)[id]}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 
-                    text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
+                    <input
+                      id="email"
+                      type="text"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      onBlur={() => handleBlur("email")}
+                      placeholder="empresa@ejemplo.com"
+                      className="flex-grow p-2 text-sm focus:outline-none"
+                    />
+                    <span className="text-gray-600 text-sm"></span>
+                  </div>
+                  {touched.email && errors.email && (
+                    <p className="text-red-600 text-xs mt-1">{errors.email}</p>
+                  )}
                 </div>
-              ))}
 
-              <button
-                type="submit"
-                className="w-full text-white rounded-md py-2 font-medium 
+                <FormField
+                  id="rut"
+                  label="RUT"
+                  placeholder="12345678-9"
+                  value={formData.rut}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur("rut")}
+                  error={errors.rut ?? undefined}
+                  touched={touched.rut}
+                  description="Sin puntos, con guión (ej: 12345678-9)"
+                />
+
+                <FormField
+                  id="telefono"
+                  label="Teléfono"
+                  placeholder="+56912345678"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur("telefono")}
+                  error={errors.telefono ?? undefined}
+                  touched={touched.telefono}
+                />
+                
+                <PasswordField
+                  id="password"
+                  label="Contraseña"
+                  value={formData.password}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur("password")}
+                  error={errors.password ?? undefined}
+                  touched={touched.password}
+                  showStrength={true}
+                />
+
+                <PasswordField
+                  id="confirmPassword"
+                  label="Confirmar Contraseña"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur("confirmPassword")}
+                  error={errors.confirmPassword ?? undefined}
+                  touched={touched.confirmPassword}
+                />
+
+                <button
+                  type="submit"
+                  className="w-full text-white rounded-md py-2 font-medium 
                 transition mt-6 shadow-md hover:shadow-lg"
-                style={{ backgroundColor: PRIMARY_COLOR }}
-              >
-                Crear Cuenta
-              </button>
-            </form>
+                  style={{ backgroundColor: PRIMARY_COLOR }}
+                >
+                  Crear Cuenta
+                </button>
+              </form>
 
               <p className="text-center text-sm mt-6 text-gray-600">
                 ¿Tienes una cuenta?{" "}

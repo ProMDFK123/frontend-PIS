@@ -2,25 +2,13 @@
 
 import { useState } from "react";
 import { verifyEmail, resendVerification } from "@/services/authService";
-import type { VerifyEmailDto, ResendVerificationDto } from "@/services/dtos/authDto";
+import type { VerifyEmailDto } from "@/services/dtos/authDto";
 
 export default function VerifyEmailPage() {
-  const [form, setForm] = useState({
-    email: "",
-    VerificationCode: "",
-  });
-
+  const [code, setCode] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
 
   const handleVerifyEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,16 +17,15 @@ export default function VerifyEmailPage() {
     setMessage(null);
 
     const payload: VerifyEmailDto = {
-      Email: form.email,
-      VerificationCode: form.VerificationCode,
+      VerificationCode: code,
     };
 
     try {
       const result = await verifyEmail(payload);
-      setMessage(result.info || result.message);
-    } catch (err) {
+      setMessage(result.message);
+    } catch (err: any) {
       console.error("Error verificando el correo:", err);
-      setError("Error verificando el correo. Intenta nuevamente.");
+      setError(err.message || "Error verificando el correo. Intenta nuevamente.");
     } finally {
       setLoading(false);
     }
@@ -49,16 +36,12 @@ export default function VerifyEmailPage() {
     setError(null);
     setMessage(null);
 
-    const payload: ResendVerificationDto = {
-      Email: form.email,
-    };
-
     try {
-      const result = await resendVerification(payload);
-      setMessage(result.info || result.message);
-    } catch (err) {
+      const result = await resendVerification();
+      setMessage(result.message);
+    } catch (err: any) {
       console.error("Error reenviando el código:", err);
-      setError("No se pudo reenviar el código. Intenta más tarde.");
+      setError(err.message || "No se pudo reenviar el código. Intenta más tarde.");
     } finally {
       setLoading(false);
     }
@@ -99,23 +82,11 @@ export default function VerifyEmailPage() {
         <form onSubmit={handleVerifyEmail} className="space-y-4">
           <div>
             <input
-              type="email"
-              name="email"
-              placeholder="email@example.com"
-              value={form.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <input
               type="text"
               name="VerificationCode"
               placeholder="******"
-              value={form.VerificationCode}
-              onChange={handleChange}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
               required
               pattern="\d{6}"
               className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -131,16 +102,18 @@ export default function VerifyEmailPage() {
           </button>
         </form>
 
+        {/* Reenviar código */}
         <div className="mt-4 text-center">
           <button
             onClick={handleResendCode}
             disabled={loading}
-            className="text-blue-700 hover:underline text-sm"
+            className="text-blue-700 hover:underline text-sm disabled:opacity-60"
           >
             Reenviar código
           </button>
         </div>
 
+        {/* Volver */}
         <div className="mt-6 text-center">
           <a href="/" className="text-gray-500 hover:underline text-sm">
             ← Volver

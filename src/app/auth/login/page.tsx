@@ -4,8 +4,9 @@ import { useState, useEffect, Suspense } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import Cookies from "js-cookie";
-import { loginUser } from "@/services/authService";
+import { login } from "@/services/authService";
 import type { LoginRequestDto } from "@/services/dtos/authDto";
+
 //implementado para ver que rol y redigir segun 
 import { extractUserFromJwt } from "@/lib";
 
@@ -28,7 +29,7 @@ function LoginForm() {
     const token = Cookies.get("token");
     if (token) {
       try {
-        const decoded = extractUserFromJwt(token);
+        const decoded = extractUserFromJwt();
         const role = decoded?.role;
         console.log("[Role] response:", role);
         const decodedReturn = rawReturnTo ? decodeURIComponent(rawReturnTo) : "";
@@ -61,7 +62,7 @@ function LoginForm() {
     };
 
     try {
-      const response = await loginUser(payload);
+      const response = await login(payload);
 
       // Log de respuesta del login para depuración
       // eslint-disable-next-line no-console
@@ -83,7 +84,7 @@ function LoginForm() {
       let role: string | undefined;
       try {
         if (response.token) {
-          const decoded = extractUserFromJwt(response.token);
+          const decoded = extractUserFromJwt();
           role = decoded?.role;
         }
       } catch (e) {
@@ -259,7 +260,7 @@ export default function LoginPage() {
         };
 
         try {
-            const response = await loginUser(payload);
+            const response = await login(payload);
 
             if (!response.token) {
                 setError("Usuario no registrado o contraseña incorrecta.");

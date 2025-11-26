@@ -27,7 +27,7 @@ export default function ResetPasswordPage() {
       setMessage(res.message);
       setStep(2);
     } catch (err: any) {
-      console.error("Error al enviar código:", err);
+      console.error("Error al enviar código:", err.response?.data?.details);
       setError("No se pudo enviar el código. Intenta nuevamente.");
     } finally {
       setLoading(false);
