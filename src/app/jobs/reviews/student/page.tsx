@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
 
-/* ======= NUEVOS DTOs ======= */
+/* ======= DTOs ======= */
 
 interface ImageDTO {
   id: number;
@@ -63,6 +63,9 @@ export default function StudentReviewsPage() {
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [finishReview, setFinishReview] = useState<CombinedReviewDTO | null>(null);
 
+  /* ======= MODAL DE CONFIRMACIÓN ======= */
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
   /* ======= FORMULARIO ======= */
   const [commentJob, setCommentJob] = useState("");
   const [commentEmployer, setCommentEmployer] = useState("");
@@ -91,63 +94,63 @@ export default function StudentReviewsPage() {
     setRating(0);
   };
 
-  /* ======= ENVIAR REVIEW DEL ESTUDIANTE AL OFERENTE ======= */
-  /* ======= ENVIAR REVIEW DEL ESTUDIANTE AL OFERENTE ======= */
-const submitOfferorReview = async () => {
-  if (!finishReview) return;
+  const refreshReviews = async () => {
+    const token = Cookies.get("token");
+    if (!token) return;
 
-  if (!commentEmployer.trim() || rating === 0) {
-    alert("Debes ingresar un comentario y una calificación.");
-    return;
-  }
+    const res = await axios.get("http://localhost:5185/api/Review/my-reviews", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-  const token = Cookies.get("token");
-  if (!token) {
-    alert("No hay token válido.");
-    return;
-  }
+    setReviews(res.data);
+  };
 
-  // Combinar comentarios en el formato requerido por el backend
-  const combinedComment =
-    `¿Cómo fue tu experiencia en este trabajo?: ${commentJob.trim() || "Sin comentario"}. ` +
-    `¿Cómo fue tu relación con el empleador?: ${commentEmployer.trim()}`;
+  /* ======= CONFIRMAR ENVÍO ======= */
+  const handleOpenConfirm = () => {
+    if (!commentEmployer.trim() || rating === 0) return;
+    setShowConfirmModal(true);
+  };
 
-  try {
-    const body = {
-      ratingForOfferor: rating,
-      commentForOfferor: combinedComment,
-      sendedAt: new Date(),
-      reviewId: finishReview.review.idReview   // ← AHORA SE USA REVIEW ID
-    };
+  const handleCancelConfirm = () => {
+    setShowConfirmModal(false);
+  };
 
-    await axios.post(
-      "http://localhost:5185/api/Review/AddOfferorReview",
-      body,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+  /* ======= SEND FINAL ======= */
+  const confirmSubmitOfferorReview = async () => {
+    if (!finishReview) return;
 
-    alert("¡Gracias! Tu reseña ha sido enviada.");
+    const token = Cookies.get("token");
+    if (!token) return;
 
-    // Actualizar estado para reflejar completado
-    setReviews(prev =>
-      prev.map(item =>
-        item.review.idReview === finishReview.review.idReview
-          ? {
-              ...item,
-              review: { ...item.review, isReviewForOfferorCompleted: true }
-            }
-          : item
-      )
-    );
+    const combinedComment =
+      `¿Cómo fue tu experiencia en este trabajo?: ${commentJob.trim() || "Sin comentario"}. ` +
+      `¿Cómo fue tu relación con el empleador?: ${commentEmployer.trim()}`;
 
-    closeFinishModal();
-  } catch (err) {
-    console.error(err);
-    alert("Hubo un error al enviar tu reseña.");
-  }
-};
+    try {
+      const body = {
+        ratingForOfferor: rating,
+        commentForOfferor: combinedComment,
+        sendedAt: new Date(),
+        reviewId: finishReview.review.idReview,
+      };
 
+      await axios.post(
+        "http://localhost:5185/api/Review/AddOfferorReview",
+        body,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
+      setShowConfirmModal(false);
+      closeFinishModal();
+
+      // 🔄 Recargar los datos sin refrescar la página
+      await refreshReviews();
+
+    } catch (err) {
+      console.error("Error al enviar reseña:", err);
+      setShowConfirmModal(false);
+    }
+  };
 
   /* ======= UTIL ======= */
   const starsOrNone = (score: number) =>
@@ -156,14 +159,14 @@ const submitOfferorReview = async () => {
   /* ======= PDF ======= */
   const downloadPdf = async () => {
     const token = Cookies.get("token");
-    if (!token) return alert("No se encontró token.");
+    if (!token) return;
 
     try {
       const response = await axios.get(
         "http://localhost:5185/api/Review/my-reviews/pdf",
         {
           headers: { Authorization: `Bearer ${token}` },
-          responseType: "blob"
+          responseType: "blob",
         }
       );
 
@@ -174,27 +177,24 @@ const submitOfferorReview = async () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (err) {
-      alert("No se pudo generar el PDF.");
-    }
+    } catch (err) {}
   };
 
   /* ======= FILTROS ======= */
   const filtered = reviews.filter(({ publication, review }) => {
-  // SOLO trabajos (types == 0)
-  if (publication.types !== 0) return false;
+    if (publication.types !== 0) return false;
 
-  if (filterStatus === "open" && review.isClosed) return false;
-  if (filterStatus === "closed" && !review.isClosed) return false;
+    if (filterStatus === "open" && review.isClosed) return false;
+    if (filterStatus === "closed" && !review.isClosed) return false;
 
-  if (filterScore !== "all") {
-    const s = Number(filterScore);
-    if (review.ratingForStudent !== s && review.ratingForOfferor !== s)
-      return false;
-  }
+    if (filterScore !== "all") {
+      const s = Number(filterScore);
+      if (review.ratingForStudent !== s && review.ratingForOfferor !== s)
+        return false;
+    }
 
-  return true;
-});
+    return true;
+  });
 
   /* ======= ORDEN ======= */
   const ordered = [...filtered].sort((a, b) => {
@@ -206,7 +206,7 @@ const submitOfferorReview = async () => {
   /* ======= PAGINACIÓN ======= */
   const paginated = ordered.slice((page - 1) * pageSize, page * pageSize);
 
-  /* ======= CARGA INICIAL ======= */
+  /* ======= LOAD ======= */
   useEffect(() => {
     const token = Cookies.get("token");
     if (!token) {
@@ -217,9 +217,9 @@ const submitOfferorReview = async () => {
 
     axios
       .get("http://localhost:5185/api/Review/my-reviews", {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .then(res => setReviews(res.data))
+      .then((res) => setReviews(res.data))
       .catch(() => setError("Error al cargar reseñas."))
       .finally(() => setLoading(false));
   }, []);
@@ -229,19 +229,18 @@ const submitOfferorReview = async () => {
 
   return (
     <div className="max-w-3xl mx-auto mt-10 space-y-6 pb-20">
-      <h1 className="text-3xl font-bold text-center">Historial de trabajos realizados</h1>
+      <h1 className="text-3xl font-bold text-center">
+        Historial de trabajos realizados
+      </h1>
 
-      {/* ======= FILTROS + PDF ======= */}
+      {/* ======= FILTERS ======= */}
       <div className="flex justify-between items-end mt-6 flex-wrap gap-6">
-
         <div className="flex gap-4 items-end">
-
-          {/* Estado */}
           <div className="flex flex-col">
             <label className="text-sm font-medium">Estado</label>
             <select
               value={filterStatus}
-              onChange={e => setFilterStatus(e.target.value)}
+              onChange={(e) => setFilterStatus(e.target.value)}
               className="border rounded-lg px-3 py-2 text-sm"
             >
               <option value="all">Todas</option>
@@ -250,12 +249,11 @@ const submitOfferorReview = async () => {
             </select>
           </div>
 
-          {/* Puntuación */}
           <div className="flex flex-col">
             <label className="text-sm font-medium">Puntuación</label>
             <select
               value={filterScore}
-              onChange={e => setFilterScore(e.target.value)}
+              onChange={(e) => setFilterScore(e.target.value)}
               className="border rounded-lg px-3 py-2 text-sm"
             >
               <option value="all">Todas</option>
@@ -269,12 +267,11 @@ const submitOfferorReview = async () => {
             </select>
           </div>
 
-          {/* Orden */}
           <div className="flex flex-col">
             <label className="text-sm font-medium">Ordenar</label>
             <select
               value={orderBy}
-              onChange={e => setOrderBy(e.target.value)}
+              onChange={(e) => setOrderBy(e.target.value)}
               className="border rounded-lg px-3 py-2 text-sm"
             >
               <option value="none">Sin orden</option>
@@ -284,16 +281,15 @@ const submitOfferorReview = async () => {
           </div>
         </div>
 
-        {/* PDF */}
         <button
           onClick={downloadPdf}
-          className="px-4 py-2 bg-red-600 !bg-red-600 text-white rounded-lg hover:!bg-red-700 transition"
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
         >
           Generar PDF
         </button>
       </div>
 
-      {/* ======= TARJETAS ======= */}
+      {/* ======= LISTA ======= */}
       {paginated.map(({ publication, review }) => (
         <div
           key={review.idReview}
@@ -306,12 +302,12 @@ const submitOfferorReview = async () => {
 
             <span
               className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                review.isCompleted
+                review.isClosed
                   ? "bg-green-100 text-green-700"
                   : "bg-yellow-100 text-yellow-700"
               }`}
             >
-              {review.isCompleted ? "Cerrada" : "Abierta"}
+              {review.isClosed ? "Cerrada" : "Abierta"}
             </span>
           </div>
 
@@ -321,20 +317,25 @@ const submitOfferorReview = async () => {
           </p>
 
           <div>
-            <p><strong>Oferente:</strong> {review.offerorName}</p>
+            <p>
+              <strong>Oferente:</strong> {review.offerorName}
+            </p>
           </div>
 
           <p>
             <strong>Calificación al estudiante:</strong>{" "}
-            <span className="text-purple-700">{starsOrNone(review.ratingForStudent)}</span>
+            <span className="text-purple-700">
+              {starsOrNone(review.ratingForStudent)}
+            </span>
           </p>
 
           <p>
             <strong>Tu calificación al oferente:</strong>{" "}
-            <span className="text-purple-700">{starsOrNone(review.ratingForOfferor)}</span>
+            <span className="text-purple-700">
+              {starsOrNone(review.ratingForOfferor)}
+            </span>
           </p>
 
-          {/* VER DETALLES */}
           <button
             onClick={() => openModal({ publication, review })}
             className="mt-2 w-full text-center text-sm font-medium border border-purple-400 text-purple-700 rounded-lg py-2 hover:bg-purple-50"
@@ -342,16 +343,14 @@ const submitOfferorReview = async () => {
             Ver detalles
           </button>
 
-          {/* FINALIZAR */}
           <button
             onClick={() => openFinishModal({ publication, review })}
             disabled={review.isReviewForOfferorCompleted}
-            className={`mt-2 w-full text-center text-sm font-medium rounded-lg py-2 transition 
-              ${
-                review.isReviewForOfferorCompleted
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-purple-600 text-white hover:bg-purple-700"
-              }`}
+            className={`mt-2 w-full text-center text-sm font-medium rounded-lg py-2 transition ${
+              review.isReviewForOfferorCompleted
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-purple-600 text-white hover:bg-purple-700"
+            }`}
           >
             Finalizar
           </button>
@@ -384,12 +383,11 @@ const submitOfferorReview = async () => {
       </div>
 
       {/* ================================================================
-         🌟 MODAL DETALLES
+          MODAL DETALLES
       ================================================================= */}
       {showModal && selectedReview && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
           <div className="bg-white w-[90%] max-w-3xl rounded-lg shadow-lg p-6 relative">
-
             <button
               onClick={closeModal}
               className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl"
@@ -406,21 +404,30 @@ const submitOfferorReview = async () => {
               <h3 className="text-lg font-semibold">
                 {selectedReview.publication.title}
               </h3>
-              <p className="text-gray-600">{selectedReview.publication.description}</p>
+              <p className="text-gray-600">
+                {selectedReview.publication.description}
+              </p>
               <p className="text-sm text-gray-500 mt-1">
-                Fecha: {new Date(selectedReview.publication.publicationDate).toLocaleDateString("es-CL")}
+                Fecha:{" "}
+                {new Date(
+                  selectedReview.publication.publicationDate
+                ).toLocaleDateString("es-CL")}
               </p>
             </div>
 
-            {/* Oferente → Estudiante */}
+            {/* OFERENTE → ESTUDIANTE */}
             <div className="border rounded-lg p-4">
-              <p className="font-semibold text-gray-800 mb-1">Oferente → Estudiante</p>
+              <p className="font-semibold text-gray-800 mb-1">
+                Oferente → Estudiante
+              </p>
 
               <div className="flex items-center gap-2">
                 <p className="text-yellow-500 text-lg">
                   {starsOrNone(selectedReview.review.ratingForStudent)}
                 </p>
-                <span className="font-medium">{selectedReview.review.offerorName}</span>
+                <span className="font-medium">
+                  {selectedReview.review.offerorName}
+                </span>
               </div>
 
               <p className="mt-2 text-sm text-gray-700">
@@ -428,15 +435,19 @@ const submitOfferorReview = async () => {
               </p>
             </div>
 
-            {/* Estudiante → Oferente */}
+            {/* ESTUDIANTE → OFERENTE */}
             <div className="border rounded-lg p-4 mt-6">
-              <p className="font-semibold text-gray-800 mb-1">Estudiante → Oferente</p>
+              <p className="font-semibold text-gray-800 mb-1">
+                Estudiante → Oferente
+              </p>
 
               <div className="flex items-center gap-2">
                 <p className="text-yellow-500 text-lg">
                   {starsOrNone(selectedReview.review.ratingForOfferor)}
                 </p>
-                <span className="font-medium">{selectedReview.review.studentName}</span>
+                <span className="font-medium">
+                  {selectedReview.review.studentName}
+                </span>
               </div>
 
               <p className="mt-2 text-sm text-gray-700">
@@ -448,22 +459,26 @@ const submitOfferorReview = async () => {
             <div className="text-sm text-gray-800 space-y-4 mt-6">
               <label className="flex items-center gap-3">
                 <span
-                  className={`w-5 h-5 rounded border-2 flex items-center justify-center 
-                    ${
-                      selectedReview.review.atTime
-                        ? "bg-purple-700 border-purple-800"
-                        : "bg-white border-gray-400"
-                    }`}
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                    selectedReview.review.atTime
+                      ? "bg-purple-700 border-purple-800"
+                      : "bg-white border-gray-400"
+                  }`}
                 >
                   {selectedReview.review.atTime && (
-                    <svg xmlns="http://www.w3.org/2000/svg"
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4 text-white"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                       strokeWidth="3"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   )}
                 </span>
@@ -472,22 +487,26 @@ const submitOfferorReview = async () => {
 
               <label className="flex items-center gap-3">
                 <span
-                  className={`w-5 h-5 rounded border-2 flex items-center justify-center 
-                    ${
-                      selectedReview.review.goodPresentation
-                        ? "bg-purple-700 border-purple-800"
-                        : "bg-white border-gray-400"
-                    }`}
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                    selectedReview.review.goodPresentation
+                      ? "bg-purple-700 border-purple-800"
+                      : "bg-white border-gray-400"
+                  }`}
                 >
                   {selectedReview.review.goodPresentation && (
-                    <svg xmlns="http://www.w3.org/2000/svg"
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4 text-white"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                       strokeWidth="3"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   )}
                 </span>
@@ -503,97 +522,124 @@ const submitOfferorReview = async () => {
                 Cerrar
               </button>
             </div>
-
           </div>
         </div>
       )}
 
       {/* ================================================================
-         MODAL FINALIZAR 
+          MODAL FINALIZAR EVALUACIÓN
       ================================================================= */}
       {showFinishModal && finishReview && (
-      <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-        <div className="bg-white w-[95%] max-w-3xl rounded-xl shadow-xl p-8 relative animate-fadeIn">
-
-          <button
-            onClick={closeFinishModal}
-            className="absolute top-4 right-4 text-gray-500 hover:text-black text-xl"
-          >
-            ✕
-          </button>
-
-          <h2 className="text-3xl font-bold text-center mb-8">
-            ¡GRACIAS POR TRABAJAR CON NOSOTROS!
-          </h2>
-
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="bg-purple-500 text-white rounded-lg p-6 flex-1 flex items-center justify-center text-center text-lg font-semibold shadow-md">
-              {finishReview.review.offerorName}
-            </div>
-
-            <div className="flex-1 text-sm text-gray-700 leading-relaxed">
-              A través de este formulario, cuéntanos cómo fue tu experiencia trabajando con este oferente.
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <label className="text-sm font-semibold text-gray-800">
-              ¿Cómo fue tu experiencia en este trabajo?
-            </label>
-            <textarea
-              rows={3}
-              value={commentJob}
-              onChange={e => setCommentJob(e.target.value)}
-              placeholder="Escribe tu comentario..."
-              className="w-full border border-purple-300 rounded-lg p-3 mt-2 focus:outline-purple-500"
-            />
-          </div>
-
-          <div className="mt-6">
-            <label className="text-sm font-semibold text-gray-800">
-              ¿Cómo fue tu relación con el empleador?
-            </label>
-            <textarea
-              rows={3}
-              value={commentEmployer}
-              onChange={e => setCommentEmployer(e.target.value)}
-              placeholder="Escribe tu comentario..."
-              className="w-full border border-purple-300 rounded-lg p-3 mt-2 focus:outline-purple-500"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col items-center mt-8">
-            <div className="flex gap-3">
-              {[1, 2, 3, 4, 5, 6].map(n => (
-                <span
-                  key={n}
-                  onClick={() => setRating(n)}
-                  className={`text-4xl cursor-pointer transition ${
-                    rating >= n ? "text-yellow-400" : "text-gray-300"
-                  } hover:text-yellow-300`}
-                >
-                  ★
-                </span>
-              ))}
-            </div>
-            <p className="text-sm mt-1 text-gray-600">Puntuar</p>
-          </div>
-
-          <div className="flex justify-center mt-10">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-40">
+          <div className="bg-white w-[95%] max-w-3xl rounded-xl shadow-xl p-8 relative">
             <button
-              onClick={submitOfferorReview}
-              disabled={!commentEmployer.trim() || rating === 0}
-              className="px-8 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md disabled:bg-gray-400"
+              onClick={closeFinishModal}
+              className="absolute top-4 right-4 text-gray-500 hover:text-black text-xl"
             >
-              Enviar
+              ✕
             </button>
+
+            <h2 className="text-3xl font-bold text-center mb-8">
+              ¡GRACIAS POR TRABAJAR CON NOSOTROS!
+            </h2>
+
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="bg-purple-500 text-white rounded-lg p-6 flex-1 flex items-center justify-center text-center text-lg font-semibold shadow-md">
+                {finishReview.review.offerorName}
+              </div>
+
+              <div className="flex-1 text-sm text-gray-700 leading-relaxed">
+                A través de este formulario, cuéntanos cómo fue tu experiencia
+                trabajando con este oferente.
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <label className="text-sm font-semibold text-gray-800">
+                ¿Cómo fue tu experiencia en este trabajo?
+              </label>
+              <textarea
+                rows={3}
+                value={commentJob}
+                onChange={(e) => setCommentJob(e.target.value)}
+                placeholder="Escribe tu comentario..."
+                className="w-full border border-purple-300 rounded-lg p-3 mt-2 focus:outline-purple-500"
+              />
+            </div>
+
+            <div className="mt-6">
+              <label className="text-sm font-semibold text-gray-800">
+                ¿Cómo fue tu relación con el empleador?
+              </label>
+              <textarea
+                rows={3}
+                value={commentEmployer}
+                onChange={(e) => setCommentEmployer(e.target.value)}
+                placeholder="Escribe tu comentario..."
+                className="w-full border border-purple-300 rounded-lg p-3 mt-2 focus:outline-purple-500"
+              />
+            </div>
+
+            <div className="flex flex-col items-center mt-8">
+              <div className="flex gap-3">
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <span
+                    key={n}
+                    onClick={() => setRating(n)}
+                    className={`text-4xl cursor-pointer transition ${
+                      rating >= n ? "text-yellow-400" : "text-gray-300"
+                    } hover:text-yellow-300`}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+              <p className="text-sm mt-1 text-gray-600">Puntuar</p>
+            </div>
+
+            <div className="flex justify-center mt-10">
+              <button
+                onClick={handleOpenConfirm}
+                disabled={!commentEmployer.trim() || rating === 0}
+                className="px-8 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md disabled:bg-gray-400"
+              >
+                Enviar
+              </button>
+            </div>
           </div>
-
         </div>
-      </div>
-    )}
+      )}
 
+      {/* ================================================================
+          MODAL CONFIRMACIÓN (blur + FEUCN)
+      ================================================================= */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-md text-center">
+            <h2 className="text-xl font-semibold mb-4">Confirmar envío</h2>
+            <p className="text-gray-700 mb-6">
+              ¿Seguro que deseas enviar esta evaluación?  
+              Una vez enviada no podrás editarla.
+            </p>
+
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleCancelConfirm}
+                className="px-6 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
+              >
+                Cancelar
+              </button>
+
+              <button
+                onClick={confirmSubmitOfferorReview}
+                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
