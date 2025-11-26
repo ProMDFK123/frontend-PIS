@@ -40,3 +40,12 @@ html {
   * { @apply outline-[var(--ring)]/50; }
   body { @apply bg-[var(--bg)] text-[var(--ink)]; }
 }
+
+/* Checkbox para modal de reviews */
+.checkbox-purple {
+  accent-color: #a248ec !important; /* purple-800 */
+}
+.checkbox-purple:disabled {
+  opacity: 0.9 !important;
+  accent-color: #a248ec !important;
+}
