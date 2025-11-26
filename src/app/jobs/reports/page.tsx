@@ -394,7 +394,7 @@ export default function AdminReviewsPage() {
               <div className="text-sm text-gray-700 mt-3 space-y-1 w-full">
                 <p><strong>Fecha:</strong> {new Date(selectedReview.publication.publicationDate).toLocaleDateString("es-CL")}</p>
                 <p><strong>Tipo:</strong> {selectedReview.publication.types}</p>
-                <p><strong>Estado:</strong> {selectedReview.publication.isActive}</p>
+                
               </div>
 
             </div>
