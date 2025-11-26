@@ -21,11 +21,7 @@ git clone github.com/ProMDFK123/frontend-PIS
 ```bash
 npm install
 ```
-### 3️⃣ Instalar js-cookie (si no lo tienes instalado)
-```bash
-npm install js-cookie
-```
-### 4️⃣ Ejecutar en modo desarrollo
+### 3️⃣ Ejecutar en modo desarrollo
 ```bash
 npm run dev
 ```
@@ -34,50 +30,18 @@ Luego abre http://localhost:3000 para ver la aplicación en tu navegador.
 ## ⚙️ Variables de entorno
 Crea un archivo .env.local en la raíz del proyecto con el siguiente contenido:
 ```ini
-NEXT_PUBLIC_API_URL=http://localhost:5185
+NEXT_PUBLIC_API_URL=http://localhost:5000
 ```
 
 ## 🌐 Configuración de Axios
 Archivo: src/services/api.ts
 ```ts
-// src/services/Service.ts
 import axios from "axios";
-import Cookies from "js-cookie";
-import { buildLoginUrl } from "@/lib/auth";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5185/api";
 
 const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  timeout: 5000,
 });
-
-api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = Cookies.get("token");
-    if (token) {
-      config.headers = config.headers ?? {};
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const status = error?.response?.status;
-
-    if (typeof window !== "undefined" && status === 401) {
-      const currentPath = window.location.pathname + window.location.search;
-      window.location.href = buildLoginUrl(currentPath, "login_required");
-    }
-
-    return Promise.reject(error);
-  }
-);
 
 export default api;
 ```
