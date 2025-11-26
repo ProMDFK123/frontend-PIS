@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
+import { getProfileRoute, getUserFromToken } from "@/lib";
 
 import { 
   isLoggedIn,
@@ -65,6 +66,7 @@ export default function SiteHeader() {
     logged: false,
     name: "Usuario",
     role: null as string | null,
+    userType: null as string | null,
     photoUrl: null as string | null
   });
 
@@ -76,11 +78,13 @@ export default function SiteHeader() {
     const logged = isLoggedIn();
     const info = extractUserFromJwt();
     const userRole = getRoleFromToken(); // <-- AQUÍ LLEGA Student, Offerent o Admin
+    const tokenData = getUserFromToken();
 
     setAuth({
       logged,
       name: info?.userName || info?.email?.split("@")[0] || "Usuario",
       role: userRole,
+      userType: tokenData?.userType || null,
       photoUrl: null
     });
 
@@ -102,6 +106,29 @@ export default function SiteHeader() {
     }
   }, [pathname]);
 
+  // Calculo dinamico de rutas
+  const dropdownItems = useMemo(() => {
+    const baseItems = [
+      { href: getProfileRoute(auth.userType ?? undefined), label: "Editar perfil"},
+      { href: "/jobs/history", label: "Historial de postulaciones" },
+      { href: "/jobs/reports", label: "Historial de trabajos" },
+    ];
+    return baseItems.map(item => {
+      if (item.label !== "Historial de trabajos") return item;
+
+      let newHref = "/jobs/reviews/student"; // Ruta para estudiante
+
+      if (auth.role === "Offerent") {
+        newHref = "/jobs/reviews/employer"; // Ruta para oferente
+      }
+
+      if (auth.role === "Admin") {
+        newHref = "/jobs/reports"; // Ruta para admin
+      }
+      return { ...item, href: newHref };
+    });
+  }, [auth.userType, auth.role]);
+
   // CERRAR DROPDOWN CLICK FUERA
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
@@ -114,23 +141,6 @@ export default function SiteHeader() {
 
   const isAdmin = auth.role === "Admin";
   const mainLinks = isAdmin ? adminNavLinks : userLinks;
-
-  // Rutas para boton de historial de trabajos
-  const dropdownItems = baseDropdownItems.map(item => {
-    if (item.label !== "Historial de trabajos") return item;
-
-    let newHref = "/jobs/reviews/student"; // Ruta para estudiante
-
-    if (auth.role === "Offerent") {
-      newHref = "/jobs/reviews/employer"; // Ruta para oferente
-    }
-
-    if (auth.role === "Admin") {
-      newHref = "/jobs/reports"; // Ruta para admin
-    }
-
-    return { ...item, href: newHref };
-  });
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--card)]/85 backdrop-blur">

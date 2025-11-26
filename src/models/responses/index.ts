@@ -13,6 +13,7 @@ export {
   type UseAdminDetailResult,
   type PublicationResponse,
   type CreatePublicationData,
+  type MyPublishedPublication,
   type PublishedItem,
   type ViewAppplicantsForAdmin
 } from "./publication";

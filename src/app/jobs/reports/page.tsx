@@ -162,6 +162,7 @@ export default function AdminReviewsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  
   const starsOrNone = (score: number) =>
     score > 0 ? "★".repeat(score) : "Sin puntuación";
 

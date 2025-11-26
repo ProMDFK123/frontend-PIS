@@ -111,6 +111,32 @@ export interface CreatePublicationData {
   IsCvRequired: boolean;
 }
 
+    //  mypublished PublicationsDTO
+export interface MyPublishedPublication {
+    idPublication: number;  // Antes tenías IdPublication o Id
+    userId: number;
+    title: string;          // Antes Title
+    types: number;          // Viene como número (0), no como string
+    description: string;    // Antes Description
+    publicationDate: string;
+    images: string[];
+    isActive: boolean;
+    statusValidation: number; // Viene como número (0)
+}
+
+    //  mypublished PublicationsDTO
+export interface MyPublishedPublication {
+    idPublication: number;  // Antes tenías IdPublication o Id
+    userId: number;
+    title: string;          // Antes Title
+    types: number;          // Viene como número (0), no como string
+    description: string;    // Antes Description
+    publicationDate: string;
+    images: string[];
+    isActive: boolean;
+    statusValidation: number; // Viene como número (0)
+}
+
 // interfaz para ver los postulantes de una publicación
 export interface ViewAppplicantsForAdmin {
   id: number;
