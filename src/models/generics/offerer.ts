@@ -24,3 +24,26 @@ export interface OffererPublication {
   location?: string;
   status: number;
 }
+
+export interface OfferDetail {
+  id: number;
+  title: string;
+  description: string;
+  offerType: string;
+  publicationDate: string;
+  companyName:string;
+  location?: string;
+  postDate: string;
+  endDate?: string;
+  remuneration?: number;
+}
+    // OfferDetailDto
+    // public int Id s 
+    //  string Title s
+    //  string Description s
+    //  string CompanyName 
+    //  string? Location 
+    //  DateTime PostDate s
+    //  DateTime EndDate  s
+    //  int Remuneration s
+    //  string OfferType s

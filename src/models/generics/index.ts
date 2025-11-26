@@ -6,5 +6,6 @@ export {
 } from "./api";
 export {
   type FormData,
-  type OffererPublication
+  type OffererPublication,
+  type OfferDetail
 } from "./offerer";
