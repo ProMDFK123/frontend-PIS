@@ -322,12 +322,6 @@ export default function StudentReviewsPage() {
             </p>
           </div>
 
-          <p>
-            <strong>Calificación al estudiante:</strong>{" "}
-            <span className="text-purple-700">
-              {starsOrNone(review.ratingForStudent)}
-            </span>
-          </p>
 
           <p>
             <strong>Tu calificación al oferente:</strong>{" "}
@@ -335,6 +329,15 @@ export default function StudentReviewsPage() {
               {starsOrNone(review.ratingForOfferor)}
             </span>
           </p>
+
+          <p>
+            <strong>Calificación del oferente hacia ti:</strong>{" "}
+            <span className="text-purple-700">
+              {starsOrNone(review.ratingForStudent)}
+            </span>
+          </p>
+
+          
 
           <button
             onClick={() => openModal({ publication, review })}
@@ -352,7 +355,7 @@ export default function StudentReviewsPage() {
                 : "bg-purple-600 text-white hover:bg-purple-700"
             }`}
           >
-            Finalizar
+            Evaluar al oferente
           </button>
         </div>
       ))}

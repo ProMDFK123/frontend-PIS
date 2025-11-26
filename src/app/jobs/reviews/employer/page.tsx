@@ -4,6 +4,25 @@ import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
 
+/* ======= DTOs ======= */
+
+interface ImageDTO {
+  id: number;
+  url: string;
+}
+
+interface PublicationDTO {
+  idPublication: number;
+  userId: number;
+  title: string;
+  types: number;
+  description: string;
+  publicationDate: string;
+  images: ImageDTO[];
+  isActive: boolean;
+  statusValidation: number;
+}
+
 interface ReviewDetailDTO {
   idReview: number;
   studentName: string;
@@ -20,8 +39,13 @@ interface ReviewDetailDTO {
   isClosed: boolean;
 }
 
+interface CombinedReviewDTO {
+  publication: PublicationDTO;
+  review: ReviewDetailDTO;
+}
+
 export default function OfferentReviewsPage() {
-  const [reviews, setReviews] = useState<ReviewDetailDTO[]>([]);
+  const [reviews, setReviews] = useState<CombinedReviewDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,16 +56,23 @@ export default function OfferentReviewsPage() {
   const pageSize = 5;
   const [page, setPage] = useState(1);
 
-  const [selectedReview, setSelectedReview] = useState<ReviewDetailDTO | null>(null);
+  /* ======= MODALES ======= */
+  const [selectedReview, setSelectedReview] = useState<CombinedReviewDTO | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   const [showFinishModal, setShowFinishModal] = useState(false);
-  const [finishReview, setFinishReview] = useState<ReviewDetailDTO | null>(null);
+  const [finishReview, setFinishReview] = useState<CombinedReviewDTO | null>(null);
 
-  const [commentJob, setCommentJob] = useState(""); // comentario del oferente hacia el estudiante
+  /* ======= MODAL DE CONFIRMACIÓN ======= */
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  /* ======= FORMULARIO (Oferente → Estudiante) ======= */
+  const [commentStudent, setCommentStudent] = useState("");
   const [rating, setRating] = useState(0);
+  const [atTime, setAtTime] = useState(false);
+  const [goodPresentation, setGoodPresentation] = useState(false);
 
-  const openModal = (item: ReviewDetailDTO) => {
+  const openModal = (item: CombinedReviewDTO) => {
     setSelectedReview(item);
     setShowModal(true);
   };
@@ -51,41 +82,61 @@ export default function OfferentReviewsPage() {
     setSelectedReview(null);
   };
 
-  const openFinishModal = (item: ReviewDetailDTO) => {
+  const openFinishModal = (item: CombinedReviewDTO) => {
     setFinishReview(item);
     setShowFinishModal(true);
+    // Reseteamos formulario cada vez
+    setCommentStudent("");
+    setRating(0);
+    setAtTime(false);
+    setGoodPresentation(false);
   };
 
   const closeFinishModal = () => {
     setShowFinishModal(false);
     setFinishReview(null);
-    setCommentJob("");
+    setCommentStudent("");
     setRating(0);
+    setAtTime(false);
+    setGoodPresentation(false);
   };
 
-  /* ==============================
-     ENVIAR REVIEW DEL OFERENTE → ESTUDIANTE
-  =============================== */
-  const submitStudentReview = async () => {
+  const refreshReviews = async () => {
+    const token = Cookies.get("token");
+    if (!token) return;
+
+    const res = await axios.get("http://localhost:5185/api/Review/my-reviews", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setReviews(res.data);
+  };
+
+  /* ======= CONFIRMAR ENVÍO ======= */
+  const handleOpenConfirm = () => {
+    if (!commentStudent.trim() || rating === 0) return;
+    setShowConfirmModal(true);
+  };
+
+  const handleCancelConfirm = () => {
+    setShowConfirmModal(false);
+  };
+
+  /* ======= ENVÍO FINAL (OFERENTE → ESTUDIANTE) ======= */
+  const confirmSubmitStudentReview = async () => {
     if (!finishReview) return;
 
-    if (!commentJob.trim() || rating === 0) {
-      alert("Debes ingresar un comentario y una calificación.");
-      return;
-    }
-
     const token = Cookies.get("token");
-    if (!token) {
-      alert("No hay token válido.");
-      return;
-    }
+    if (!token) return;
 
     try {
       const body = {
         ratingForStudent: rating,
-        commentForStudent: commentJob.trim(),
+        commentForStudent: commentStudent.trim(),
         sendedAt: new Date(),
-        publicationId: -1 // PARCHE TEMPORAL
+        atTime,
+        goodPresentation,
+        reviewId: finishReview.review.idReview,
       };
 
       await axios.post(
@@ -94,33 +145,25 @@ export default function OfferentReviewsPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      alert("¡Reseña enviada exitosamente!");
-
-      setReviews(prev =>
-        prev.map(r =>
-          r.idReview === finishReview.idReview
-            ? { ...r, isReviewForStudentCompleted: true }
-            : r
-        )
-      );
-
+      setShowConfirmModal(false);
       closeFinishModal();
 
+      // 🔄 Recargar los datos sin refrescar la página
+      await refreshReviews();
     } catch (err) {
-      console.error(err);
-      alert("Error al enviar la reseña.");
+      console.error("Error al enviar reseña:", err);
+      setShowConfirmModal(false);
     }
   };
 
+  /* ======= UTIL ======= */
   const starsOrNone = (score: number) =>
     score > 0 ? "★".repeat(score) : "Sin puntuación";
 
-  /* ==============================
-     PDF
-  =============================== */
+  /* ======= PDF ======= */
   const downloadPdf = async () => {
     const token = Cookies.get("token");
-    if (!token) return alert("No se encontró el token.");
+    if (!token) return;
 
     try {
       const response = await axios.get(
@@ -137,42 +180,39 @@ export default function OfferentReviewsPage() {
       link.setAttribute("download", "mis-reseñas.pdf");
       document.body.appendChild(link);
       link.click();
-
       link.remove();
-      window.URL.revokeObjectURL(url);
-
     } catch (err) {
-      console.error(err);
-      alert("Error al generar PDF.");
+      console.error("Error al generar PDF:", err);
     }
   };
 
-  /* ==============================
-     FILTROS
-  =============================== */
-  const filtered = reviews.filter((r) => {
-    if (filterStatus === "open" && r.isClosed) return false;
-    if (filterStatus === "closed" && !r.isClosed) return false;
+  /* ======= FILTROS ======= */
+  const filtered = reviews.filter(({ publication, review }) => {
+    // Solo trabajos (types == 0)
+    if (publication.types !== 0) return false;
+
+    if (filterStatus === "open" && review.isClosed) return false;
+    if (filterStatus === "closed" && !review.isClosed) return false;
 
     if (filterScore !== "all") {
       const s = Number(filterScore);
-      if (r.ratingForStudent !== s) return false;
+      if (review.ratingForStudent !== s && review.ratingForOfferor !== s) return false;
     }
 
     return true;
   });
 
+  /* ======= ORDEN ======= */
   const ordered = [...filtered].sort((a, b) => {
-    if (orderBy === "asc") return a.idReview - b.idReview;
-    if (orderBy === "desc") return b.idReview - a.idReview;
+    if (orderBy === "asc") return a.review.idReview - b.review.idReview;
+    if (orderBy === "desc") return b.review.idReview - a.review.idReview;
     return 0;
   });
 
+  /* ======= PAGINACIÓN ======= */
   const paginated = ordered.slice((page - 1) * pageSize, page * pageSize);
 
-  /* ==============================
-     CARGA INICIAL
-  =============================== */
+  /* ======= LOAD ======= */
   useEffect(() => {
     const token = Cookies.get("token");
     if (!token) {
@@ -186,7 +226,7 @@ export default function OfferentReviewsPage() {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setReviews(res.data))
-      .catch(() => setError("Error al cargar las reseñas."))
+      .catch(() => setError("Error al cargar reseñas."))
       .finally(() => setLoading(false));
   }, []);
 
@@ -195,14 +235,13 @@ export default function OfferentReviewsPage() {
 
   return (
     <div className="max-w-3xl mx-auto mt-10 space-y-6 pb-20">
-      <h1 className="text-3xl font-bold text-center">Historial de Reseñas</h1>
+      <h1 className="text-3xl font-bold text-center">
+        Historial de estudiantes evaluados
+      </h1>
 
-      {/* ========================== FILTROS + PDF ========================== */}
+      {/* ======= FILTERS + PDF ======= */}
       <div className="flex justify-between items-end mt-6 flex-wrap gap-6">
-
         <div className="flex gap-4 items-end">
-
-          {/* Estado */}
           <div className="flex flex-col">
             <label className="text-sm font-medium">Estado</label>
             <select
@@ -216,7 +255,6 @@ export default function OfferentReviewsPage() {
             </select>
           </div>
 
-          {/* Puntuación */}
           <div className="flex flex-col">
             <label className="text-sm font-medium">Puntuación</label>
             <select
@@ -235,9 +273,8 @@ export default function OfferentReviewsPage() {
             </select>
           </div>
 
-          {/* Orden */}
           <div className="flex flex-col">
-            <label className="text-sm font-medium">Ordenar por ID</label>
+            <label className="text-sm font-medium">Ordenar</label>
             <select
               value={orderBy}
               onChange={(e) => setOrderBy(e.target.value)}
@@ -250,85 +287,93 @@ export default function OfferentReviewsPage() {
           </div>
         </div>
 
-        {/* PDF */}
         <button
           onClick={downloadPdf}
-          className="px-4 py-2 bg-red-600 !bg-red-600 text-white rounded-lg hover:!bg-red-700 transition"
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
         >
           Generar PDF
         </button>
       </div>
 
-      {/* ========================== TARJETAS ========================== */}
-      {paginated.map((r) => (
+      {/* ======= LISTA ======= */}
+      {paginated.map(({ publication, review }) => (
         <div
-          key={r.idReview}
+          key={review.idReview}
           className="border rounded-xl shadow-sm p-5 bg-white flex flex-col gap-4"
         >
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-bold">Reseña #{r.idReview}</h2>
+            <h2 className="text-lg font-bold">
+              {publication.title} — Reseña #{review.idReview}
+            </h2>
 
             <span
               className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                r.isClosed ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                review.isClosed
+                  ? "bg-green-100 text-green-700"
+                  : "bg-yellow-100 text-yellow-700"
               }`}
             >
-              {r.isClosed ? "Cerrada" : "Abierta"}
+              {review.isClosed ? "Cerrada" : "Abierta"}
             </span>
           </div>
 
-          <div className="text-base space-y-1">
-            <p><strong>Estudiante:</strong> {r.studentName}</p>
-          </div>
+          <p className="text-sm text-gray-600">
+            Publicada el:{" "}
+            {new Date(publication.publicationDate).toLocaleDateString("es-CL")}
+          </p>
 
-          <div className="space-y-2">
+          <div>
             <p>
-              <strong>Tu calificación al estudiante:</strong>{" "}
-              <span className="text-purple-700">{starsOrNone(r.ratingForStudent)}</span>
-            </p>
-
-            <p>
-              <strong>Calificación del estudiante al oferente:</strong>{" "}
-              <span className="text-purple-700">{starsOrNone(r.ratingForOfferor)}</span>
+              <strong>Estudiante:</strong> {review.studentName}
             </p>
           </div>
 
-          {/* VER DETALLES */}
+          <p>
+            <strong>Tu calificación al estudiante:</strong>{" "}
+            <span className="text-purple-700">
+              {starsOrNone(review.ratingForStudent)}
+            </span>
+          </p>
+
+          <p>
+            <strong>Calificación del estudiante hacia ti:</strong>{" "}
+            <span className="text-purple-700">
+              {starsOrNone(review.ratingForOfferor)}
+            </span>
+          </p>
+
           <button
-            onClick={() => openModal(r)}
+            onClick={() => openModal({ publication, review })}
             className="mt-2 w-full text-center text-sm font-medium border border-purple-400 text-purple-700 rounded-lg py-2 hover:bg-purple-50"
           >
             Ver detalles
           </button>
 
-          {/* FINALIZAR: ahora usa isReviewForStudentCompleted */}
           <button
-            onClick={() => openFinishModal(r)}
-            disabled={r.isReviewForStudentCompleted}
-            className={`mt-2 w-full text-center text-sm font-medium rounded-lg py-2 transition 
-              ${
-                r.isReviewForStudentCompleted
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-purple-600 text-white hover:bg-purple-700"
-              }`}
+            onClick={() => openFinishModal({ publication, review })}
+            disabled={review.isReviewForStudentCompleted}
+            className={`mt-2 w-full text-center text-sm font-medium rounded-lg py-2 transition ${
+              review.isReviewForStudentCompleted
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-purple-600 text-white hover:bg-purple-700"
+            }`}
           >
-            Finalizar
+            Evaluar al estudiante
           </button>
         </div>
       ))}
 
-      {/* ========================== PAGINACIÓN ========================== */}
+      {/* ======= PAGINACIÓN ======= */}
       <div className="flex flex-col items-center gap-3 mt-6">
         <p className="text-sm text-gray-600">
-          Página <strong>{page}</strong> de{" "}
-          <strong>{Math.ceil(filtered.length / pageSize)}</strong>
+          Página {page} de {Math.ceil(filtered.length / pageSize)}
         </p>
 
         <div className="flex gap-4">
           <button
             className="px-4 py-2 rounded-md border hover:bg-gray-100 disabled:opacity-50"
             disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
+            onClick={() => setPage(page - 1)}
           >
             ← Anterior
           </button>
@@ -336,18 +381,19 @@ export default function OfferentReviewsPage() {
           <button
             className="px-4 py-2 rounded-md border hover:bg-gray-100 disabled:opacity-50"
             disabled={page * pageSize >= filtered.length}
-            onClick={() => setPage((p) => p + 1)}
+            onClick={() => setPage(page + 1)}
           >
             Siguiente →
           </button>
         </div>
       </div>
 
-      {/* ========================== MODAL DETALLES ========================== */}
+      {/* ================================================================
+          MODAL DETALLES
+      ================================================================= */}
       {showModal && selectedReview && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-40">
           <div className="bg-white w-[90%] max-w-3xl rounded-lg shadow-lg p-6 relative">
-
             <button
               onClick={closeModal}
               className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl"
@@ -356,44 +402,122 @@ export default function OfferentReviewsPage() {
             </button>
 
             <h2 className="text-2xl font-bold text-center mb-6">
-              Detalles de la reseña #{selectedReview.idReview}
+              Detalles de la reseña #{selectedReview.review.idReview}
             </h2>
 
-            {/* Oferente → Estudiante */}
+            {/* PUBLICACIÓN */}
+            <div className="border rounded-lg p-4 mb-6">
+              <h3 className="text-lg font-semibold">
+                {selectedReview.publication.title}
+              </h3>
+              <p className="text-gray-600">
+                {selectedReview.publication.description}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Fecha:{" "}
+                {new Date(
+                  selectedReview.publication.publicationDate
+                ).toLocaleDateString("es-CL")}
+              </p>
+            </div>
+
+            {/* OFERENTE → ESTUDIANTE */}
             <div className="border rounded-lg p-4">
-              <p className="font-semibold text-gray-800 mb-1">Oferente → Estudiante</p>
+              <p className="font-semibold text-gray-800 mb-1">
+                Oferente → Estudiante
+              </p>
 
               <div className="flex items-center gap-2">
                 <p className="text-yellow-500 text-lg">
-                  {starsOrNone(selectedReview.ratingForStudent)}
+                  {starsOrNone(selectedReview.review.ratingForStudent)}
                 </p>
-                <span className="font-medium">{selectedReview.studentName}</span>
+                <span className="font-medium">
+                  {selectedReview.review.offerorName}
+                </span>
               </div>
 
               <p className="mt-2 text-sm text-gray-700">
-                {selectedReview.commentForStudent || "Sin reseña"}
+                {selectedReview.review.commentForStudent || "Sin reseña"}
               </p>
             </div>
 
-            {/* Estudiante → Oferente */}
+            {/* ESTUDIANTE → OFERENTE */}
             <div className="border rounded-lg p-4 mt-6">
-              <p className="font-semibold text-gray-800 mb-1">Estudiante → Oferente</p>
+              <p className="font-semibold text-gray-800 mb-1">
+                Estudiante → Oferente
+              </p>
 
               <div className="flex items-center gap-2">
                 <p className="text-yellow-500 text-lg">
-                  {starsOrNone(selectedReview.ratingForOfferor)}
+                  {starsOrNone(selectedReview.review.ratingForOfferor)}
                 </p>
-                <span className="font-medium">{selectedReview.offerorName}</span>
+                <span className="font-medium">
+                  {selectedReview.review.studentName}
+                </span>
               </div>
 
               <p className="mt-2 text-sm text-gray-700">
-                {selectedReview.commentForOfferor || "Sin reseña"}
+                {selectedReview.review.commentForOfferor || "Sin reseña"}
               </p>
             </div>
 
+            {/* CHECKBOXES */}
             <div className="text-sm text-gray-800 space-y-4 mt-6">
-              <p>¿Llegó a la hora? <b>{selectedReview.atTime ? "Sí" : "No"}</b></p>
-              <p>¿Buena presentación personal? <b>{selectedReview.goodPresentation ? "Sí" : "No"}</b></p>
+              <label className="flex items-center gap-3">
+                <span
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                    selectedReview.review.atTime
+                      ? "bg-purple-700 border-purple-800"
+                      : "bg-white border-gray-400"
+                  }`}
+                >
+                  {selectedReview.review.atTime && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  )}
+                </span>
+                ¿Llegó a la hora?
+              </label>
+
+              <label className="flex items-center gap-3">
+                <span
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                    selectedReview.review.goodPresentation
+                      ? "bg-purple-700 border-purple-800"
+                      : "bg-white border-gray-400"
+                  }`}
+                >
+                  {selectedReview.review.goodPresentation && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  )}
+                </span>
+                ¿Buena presentación personal?
+              </label>
             </div>
 
             <div className="flex justify-end mt-6">
@@ -404,16 +528,16 @@ export default function OfferentReviewsPage() {
                 Cerrar
               </button>
             </div>
-
           </div>
         </div>
       )}
 
-      {/* ========================== MODAL FINALIZAR (OFERENTE → ESTUDIANTE) ========================== */}
+      {/* ================================================================
+          MODAL FINALIZAR EVALUACIÓN (OFERENTE → ESTUDIANTE)
+      ================================================================= */}
       {showFinishModal && finishReview && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-          <div className="bg-white w-[95%] max-w-3xl rounded-xl shadow-xl p-8 relative animate-fadeIn">
-
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-40">
+          <div className="bg-white w-[95%] max-w-3xl rounded-xl shadow-xl p-8 relative">
             <button
               onClick={closeFinishModal}
               className="absolute top-4 right-4 text-gray-500 hover:text-black text-xl"
@@ -421,34 +545,127 @@ export default function OfferentReviewsPage() {
               ✕
             </button>
 
-            <h2 className="text-3xl font-bold text-center mb-8 text-gray-900">
-              ¡EVALUACIÓN DEL ESTUDIANTE!
-            </h2>
+            {/* Encabezado tipo “formulario FEUCN” */}
+            <div className="mb-6">
+              <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">
+                Formulario de evaluación
+              </p>
+              <h2 className="text-2xl md:text-3xl font-bold mt-1">
+                Evalúa al estudiante
+              </h2>
+              <p className="text-sm text-gray-600 mt-2">
+                Tu opinión nos ayuda a mejorar la experiencia de trabajo y
+                orientar a futuros oferentes.
+              </p>
+            </div>
 
+            {/* Indicador de pasos simple */}
+            <div className="flex items-center gap-2 mb-8 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs font-bold">
+                  1
+                </div>
+                <span className="font-medium text-purple-700">
+                  Completa el formulario
+                </span>
+              </div>
+              <span className="text-gray-400 mx-1">›</span>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">
+                  2
+                </div>
+                <span className="text-gray-500">Revisa tu evaluación</span>
+              </div>
+              <span className="text-gray-400 mx-1">›</span>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">
+                  3
+                </div>
+                <span className="text-gray-500">Envío final</span>
+              </div>
+            </div>
+
+            {/* Nombre del estudiante + explicación */}
             <div className="flex flex-col md:flex-row gap-6">
               <div className="bg-purple-500 text-white rounded-lg p-6 flex-1 flex items-center justify-center text-center text-lg font-semibold shadow-md">
-                {finishReview.studentName}
+                {finishReview.review.studentName}
               </div>
 
               <div className="flex-1 text-sm text-gray-700 leading-relaxed">
-                Por favor evalúa la experiencia trabajando con este estudiante.
+                A través de este formulario, evalúa el desempeño del estudiante
+                en este trabajo. Esta información también le entregará
+                orientación a futuros oferentes.
               </div>
             </div>
 
-            <div className="mt-8">
-              <label className="text-sm font-semibold text-gray-800">
-                ¿Cómo fue tu experiencia con el estudiante?
+            {/* Preguntas de checkboxes */}
+            <div className="mt-8 space-y-4">
+              <p className="text-sm font-semibold text-gray-800">
+                Sobre el compromiso del estudiante
+              </p>
+
+              <label className="flex items-center gap-3 text-sm text-gray-800">
+                <button
+                  type="button"
+                  onClick={() => setAtTime((prev) => !prev)}
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition ${
+                    atTime
+                      ? "bg-purple-600 border-purple-700"
+                      : "bg-white border-gray-400"
+                  }`}
+                >
+                  {atTime && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3 w-3 text-white"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+                El estudiante llegó puntualmente al trabajo.
               </label>
-              <textarea
-                rows={3}
-                value={commentJob}
-                onChange={(e) => setCommentJob(e.target.value)}
-                placeholder="Escribe tu comentario..."
-                className="w-full border border-purple-300 rounded-lg p-3 mt-2 focus:outline-purple-500"
-              />
+
+              <label className="flex items-center gap-3 text-sm text-gray-800">
+                <button
+                  type="button"
+                  onClick={() => setGoodPresentation((prev) => !prev)}
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition ${
+                    goodPresentation
+                      ? "bg-purple-600 border-purple-700"
+                      : "bg-white border-gray-400"
+                  }`}
+                >
+                  {goodPresentation && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3 w-3 text-white"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+                El estudiante tuvo una buena presentación personal.
+              </label>
             </div>
 
+            {/* Rating */}
             <div className="flex flex-col items-center mt-8">
+              <p className="text-sm font-semibold text-gray-800 mb-2">
+                Califica el desempeño general del estudiante
+              </p>
               <div className="flex gap-3">
                 {[1, 2, 3, 4, 5, 6].map((n) => (
                   <span
@@ -462,23 +679,72 @@ export default function OfferentReviewsPage() {
                   </span>
                 ))}
               </div>
-              <p className="text-sm mt-2 text-gray-600">Puntuar</p>
+              <p className="text-xs mt-1 text-gray-500">
+                1 = Muy bajo, 6 = Excelente
+              </p>
+            </div>
+
+            {/* Comentario */}
+            <div className="mt-8">
+              <label className="text-sm font-semibold text-gray-800">
+                Déjanos un comentario sobre el estudiante
+              </label>
+              <textarea
+                rows={4}
+                value={commentStudent}
+                onChange={(e) => setCommentStudent(e.target.value)}
+                placeholder="Describe el desempeño, fortalezas o aspectos a mejorar del estudiante..."
+                className="w-full border border-purple-300 rounded-lg p-3 mt-2 focus:outline-purple-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Máximo 320 caracteres.
+              </p>
             </div>
 
             <div className="flex justify-center mt-10">
               <button
-                onClick={submitStudentReview}
-                disabled={!commentJob.trim() || rating === 0}
+                onClick={handleOpenConfirm}
+                disabled={!commentStudent.trim() || rating === 0}
                 className="px-8 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md disabled:bg-gray-400"
               >
-                Enviar
+                Enviar evaluación
               </button>
             </div>
-
           </div>
         </div>
       )}
 
+      {/* ================================================================
+          MODAL CONFIRMACIÓN (blur + morado)
+      ================================================================= */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-md text-center">
+            <h2 className="text-xl font-semibold mb-4">Confirmar envío</h2>
+            <p className="text-gray-700 mb-6">
+              ¿Seguro que deseas enviar esta evaluación del estudiante?{" "}
+              <br />
+              Una vez enviada no podrás editarla.
+            </p>
+
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleCancelConfirm}
+                className="px-6 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
+              >
+                Cancelar
+              </button>
+
+              <button
+                onClick={confirmSubmitStudentReview}
+                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+              >
+                Confirmar envío
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
