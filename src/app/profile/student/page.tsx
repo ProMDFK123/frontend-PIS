@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { formatRut } from "src/utils/Util";
 import { profileService, StudentProfileDTO } from "@/services/profileService";
 import { validators } from "src/utils/AuthValidatorsUtil";
+import { CVUpload } from "@/components/profile/CVUpload";
 import ChangePassword from "@/components/profile/ChangePassword";
 
 
@@ -459,7 +460,18 @@ export default function Page() {
               {editing ? (saving ? "Guardando..." : "Guardar") : "Editar"}
             </Button>
           </div>
+
+          {/* CV Upload */}
+          <div className="w-full mt-6 pt-6 border-t">
+            <CVUpload
+              currentCVUrl={data?.curriculumVitae}
+              onUploadSuccess={(url) => {
+                setData((prev) => prev ? { ...prev, curriculumVitae: url || undefined } : null);
+              }}
+            />
+          </div>
         </div>
+        
 
         {/* Right box - Profile Fields */}
         <div className="col-span-1 md:col-span-2 border rounded-md p-6">
