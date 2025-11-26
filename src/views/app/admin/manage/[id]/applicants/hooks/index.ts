@@ -1,0 +1,1 @@
+export { useGetApplicantsView, type ApplicantFilterType } from "./use-get-applicants-view";

@@ -1,1 +1,1 @@
-export { type ValidationActionVariables } from "./publication";
+export { type ValidationActionVariables, type ClosePublicationVariables } from "./publication";

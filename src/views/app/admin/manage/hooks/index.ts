@@ -1,0 +1,1 @@
+export { useManageView } from "./use-manage-view"

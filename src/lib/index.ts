@@ -9,6 +9,7 @@ export {
   extractUserFromJwt,
   isSessionExpired,
   isTokenExpired,
+  getProfileRoute
 } from "./auth";
 export { cn } from "./tailwind";
 export { handleApiError } from "./api";
@@ -19,6 +20,11 @@ export {
   getPublicRouteFromAdmin,
   mapOfferToDetail,
   mapBuySellToDetail,
+  mapOfferToManage,
+  mapBuySellToManage,
+  toOfferTypeForAdmin,
+  getAdminItemTypeString,
+  mapApplicantToView,
 } from "./publication";
 export {
   formatDate,
