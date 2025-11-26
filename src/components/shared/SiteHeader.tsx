@@ -9,7 +9,8 @@ import {
   extractUserFromJwt,
   getRoleFromToken,
   logoutAndRedirect,
-  cn
+  cn,
+  getProfileRoute
 } from "@/lib";
 
 import { profileService } from "@/services/profileService";
@@ -31,7 +32,7 @@ const adminNavLinks = [
 const baseDropdownItems = [
   { href: "/profile", label: "Editar perfil" },
   { href: "/jobs/history", label: "Historial de postulaciones" },
-  { href: "/offers/history", label: "Historial de trabajos" },
+  { href: "/jobs/reports", label: "Historial de trabajos" },
 ];
 
 function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
@@ -115,9 +116,7 @@ export default function SiteHeader() {
   const isAdmin = auth.role === "Admin";
   const mainLinks = isAdmin ? adminNavLinks : userLinks;
 
-  const dropdownItems = isAdmin
-    ? [...baseDropdownItems]
-    : baseDropdownItems;
+  const dropdownItems = [...baseDropdownItems];
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--card)]/85 backdrop-blur">
@@ -191,3 +190,4 @@ export default function SiteHeader() {
     </header>
   );
 }
+

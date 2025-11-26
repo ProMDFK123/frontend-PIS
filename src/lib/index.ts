@@ -9,6 +9,7 @@ export {
   extractUserFromJwt,
   isSessionExpired,
   isTokenExpired,
+  getProfileRoute
 } from "./auth";
 export { cn } from "./tailwind";
 export { handleApiError } from "./api";

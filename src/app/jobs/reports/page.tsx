@@ -43,10 +43,6 @@ interface CombinedReviewDTO {
   review: ReviewDetailDTO;
 }
 
-/* ============================
-   📌 COMPONENTE PRINCIPAL
-============================ */
-
 export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState<CombinedReviewDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +50,9 @@ export default function AdminReviewsPage() {
 
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterScore, setFilterScore] = useState("all");
+
+  // 🔥 Nuevo estado para ordenamiento
+  const [orderBy, setOrderBy] = useState("none");
 
   const pageSize = 5;
   const [page, setPage] = useState(1);
@@ -75,32 +74,26 @@ export default function AdminReviewsPage() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          responseType: "blob", // 🔥 CLAVE para descargar archivos
+          responseType: "blob",
         }
       );
 
-      // Crear URL para el archivo
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
 
       link.href = url;
-      link.setAttribute("download", "system-reviews.pdf"); 
+      link.setAttribute("download", "system-reviews.pdf");
       document.body.appendChild(link);
       link.click();
 
-      // Limpieza
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
-
     } catch (error) {
       console.error("Error descargando PDF:", error);
       alert("No se pudo descargar el PDF.");
     }
   };
 
-  /* ============================
-      Abrir / cerrar modal
-  ============================ */
   const openModal = (item: CombinedReviewDTO) => {
     setSelectedReview(item);
     setShowModal(true);
@@ -111,11 +104,14 @@ export default function AdminReviewsPage() {
     setSelectedReview(null);
   };
 
-  /* ============================
-      Filtros
-  ============================ */
+  /* ============================================
+      Filtros y type === 0
+  ============================================ */
   const filteredReviews = reviews.filter((item) => {
     const r = item.review;
+    const p = item.publication;
+
+    if (p.types !== 0) return false;
 
     if (filterStatus === "open" && r.isClosed) return false;
     if (filterStatus === "closed" && !r.isClosed) return false;
@@ -128,11 +124,20 @@ export default function AdminReviewsPage() {
     return true;
   });
 
-  const paginated = filteredReviews.slice((page - 1) * pageSize, page * pageSize);
+  /* ============================================
+      🔥 Ordenamiento por ID (ASC / DESC)
+  ============================================ */
+  const orderedReviews = [...filteredReviews].sort((a, b) => {
+    if (orderBy === "asc") return a.review.idReview - b.review.idReview;
+    if (orderBy === "desc") return b.review.idReview - a.review.idReview;
+    return 0;
+  });
 
-  /* ============================
-      Fetch
-  ============================ */
+  /* ============================================
+      Paginación usando orderedReviews
+  ============================================ */
+  const paginated = orderedReviews.slice((page - 1) * pageSize, page * pageSize);
+
   useEffect(() => {
     const token = Cookies.get("token");
 
@@ -155,7 +160,6 @@ export default function AdminReviewsPage() {
       return;
     }
 
-
     axios
       .get("http://localhost:5185/api/Review/Admin/system-reviews", {
         headers: { Authorization: `Bearer ${token}` },
@@ -170,57 +174,48 @@ export default function AdminReviewsPage() {
   if (loading) return <p className="text-center mt-10">Cargando reseñas...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
-  /* ============================
-      Helpers
-  ============================ */
-
   const starsOrNone = (score: number) =>
     score > 0 ? "★".repeat(score) : "Sin puntuación";
 
-  const commentOrNone = (text: string | null | undefined) =>
-    text && text.trim().length > 0 ? text : "Sin reseña";
-
- 
   const deleteReviewPart = async (
-  ReviewId: number,
-  DeleteStudent: boolean,
-  DeleteOfferor: boolean
-) => {
-  const token = Cookies.get("token");
-  if (!token) return;
+    ReviewId: number,
+    DeleteStudent: boolean,
+    DeleteOfferor: boolean
+  ) => {
+    const token = Cookies.get("token");
+    if (!token) return;
 
-  try {
-    await axios.request({
-      method: "DELETE",
-      url: "http://localhost:5185/api/Review/Admin/DeleteReviewPart",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      data: {
-        ReviewId,
-        DeleteReviewForStudent: DeleteStudent,
-        DeleteReviewForOfferor: DeleteOfferor,
-      },
-    });
+    try {
+      await axios.request({
+        method: "DELETE",
+        url: "http://localhost:5185/api/Review/Admin/DeleteReviewPart",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        data: {
+          ReviewId,
+          DeleteReviewForStudent: DeleteStudent,
+          DeleteReviewForOfferor: DeleteOfferor,
+        },
+      });
 
-    return true;
-  } catch (err) {
-    console.error("Error eliminando reseña:", err);
-    return false;
-  }
-};
+      return true;
+    } catch (err) {
+      console.error("Error eliminando reseña:", err);
+      return false;
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto mt-10 space-y-6 pb-10">
-      <h1 className="text-3xl font-bold text-center">Reseñas registradas</h1>
+      <h1 className="text-3xl font-bold text-center">Historial de Trabajos del Sistema</h1>
 
-      {/* ============================
-         FILTROS + PDF
-      ============================ */}
+      {/* ============================ FILTROS + PDF ============================ */}
+
       <div className="flex justify-between items-end mt-6 flex-wrap gap-6">
-
         <div className="flex gap-4 items-end">
+
           {/* Estado */}
           <div className="flex flex-col">
             <label className="text-sm font-medium">Estado</label>
@@ -244,7 +239,6 @@ export default function AdminReviewsPage() {
               className="border rounded-lg px-3 py-2 text-sm"
             >
               <option value="all">Todas</option>
-              <option value="5">★★★★★★ (6)</option>
               <option value="5">★★★★★ (5)</option>
               <option value="4">★★★★ (4)</option>
               <option value="3">★★★ (3)</option>
@@ -253,6 +247,21 @@ export default function AdminReviewsPage() {
               <option value="0">Sin calificar</option>
             </select>
           </div>
+
+          {/* 🔥 Nuevo select: Ordenar por ID */}
+          <div className="flex flex-col">
+            <label className="text-sm font-medium">Ordenar por ID</label>
+            <select
+              value={orderBy}
+              onChange={(e) => setOrderBy(e.target.value)}
+              className="border rounded-lg px-3 py-2 text-sm"
+            >
+              <option value="none">Sin orden</option>
+              <option value="asc">Ascendente</option>
+              <option value="desc">Descendente</option>
+            </select>
+          </div>
+
         </div>
 
         {/* PDF */}
@@ -262,12 +271,9 @@ export default function AdminReviewsPage() {
         >
           Descargar reporte PDF
         </button>
-
       </div>
 
-      {/* ============================
-         TARJETAS
-      ============================ */}
+      {/* ============================ TARJETAS ============================ */}
       {paginated.map((item) => {
         const r = item.review;
         const p = item.publication;
@@ -275,7 +281,6 @@ export default function AdminReviewsPage() {
         return (
           <div key={r.idReview} className="border rounded-xl shadow-sm p-5 bg-white flex flex-col gap-4">
 
-            {/* Título + estado */}
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-bold">{p.title} — Reseña #{r.idReview}</h2>
 
@@ -295,7 +300,6 @@ export default function AdminReviewsPage() {
               <p><strong>Oferente:</strong> {r.offerorName}</p>
             </div>
 
-            {/* Calificaciones */}
             <div className="space-y-2">
               <p>
                 <strong>Calificación al estudiante:</strong>{" "}
@@ -322,9 +326,7 @@ export default function AdminReviewsPage() {
         );
       })}
 
-      {/* ============================
-         PAGINACIÓN
-      ============================ */}
+      {/* ============================ PAGINACIÓN ============================ */}
       <div className="flex flex-col items-center gap-3 mt-6">
         <p className="text-sm text-gray-600">
           Página <strong>{page}</strong> de{" "}
@@ -350,174 +352,213 @@ export default function AdminReviewsPage() {
         </div>
       </div>
 
-      {/* ============================
-         MODAL DETALLES
-      ============================ */}
+      {/* ============================ MODAL DETALLES ============================ */}
       {showModal && selectedReview && (
-      <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-        <div className="bg-white w-[90%] max-w-5xl rounded-lg shadow-lg p-6 relative">
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+          <div className="bg-white w-[90%] max-w-5xl rounded-lg shadow-lg p-6 relative">
 
-          {/* BOTÓN CERRAR (X) */}
-          <button
-            onClick={closeModal}
-            className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl"
-          >
-            ✕
-          </button>
+            <button
+              onClick={closeModal}
+              className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl"
+            >
+              ✕
+            </button>
 
-          <h2 className="text-2xl font-bold text-center mb-6">Evaluación de Trabajo</h2>
+            <h2 className="text-2xl font-bold text-center mb-6">Evaluación de Trabajo</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-            {/* =============== PUBLICACIÓN =============== */}
-            <div className="col-span-1 border rounded-lg p-3 flex flex-col items-center">
+              {/* PUBLICACIÓN */}
+              <div className="col-span-1 border rounded-lg p-3 flex flex-col items-center">
 
-              {selectedReview.publication.images.length > 0 ? (
-                <img
-                  src={selectedReview.publication.images[0].url}
-                  className="w-full h-40 object-cover rounded-md"
-                />
-              ) : (
-                <div className="w-full h-40 bg-gray-200 rounded-md flex items-center justify-center text-gray-500">
-                  Sin imagen
+                {selectedReview.publication.images.length > 0 ? (
+                  <img
+                    src={selectedReview.publication.images[0].url}
+                    className="w-full h-40 object-cover rounded-md"
+                  />
+                ) : (
+                  <div className="w-full h-40 bg-gray-200 rounded-md flex items-center justify-center text-gray-500">
+                    Sin imagen
+                  </div>
+                )}
+
+                <h3 className="text-lg font-semibold mt-3">
+                  {selectedReview.publication.title}
+                </h3>
+
+                <p className="text-sm text-center text-gray-600 mt-1">
+                  {selectedReview.publication.description}
+                </p>
+
+                {/* AQUI AGREGAMOS EL ESTADO DE LA RESEÑA */}
+                <div className="text-sm text-gray-700 mt-3 space-y-1 w-full">
+                  <p><strong>Fecha:</strong> {new Date(selectedReview.publication.publicationDate).toLocaleDateString("es-CL")}</p>
+
+                  {/* NUEVO: ESTADO */}
+                  <p>
+                    <strong>Estado reseña:</strong>{" "}
+                    {selectedReview.review.isClosed ? (
+                      <span className="text-green-600 font-semibold">Cerrada</span>
+                    ) : (
+                      <span className="text-yellow-600 font-semibold">Abierta</span>
+                    )}
+                  </p>
                 </div>
-              )}
 
-              <h3 className="text-lg font-semibold mt-3">
-                {selectedReview.publication.title}
-              </h3>
-
-              <p className="text-sm text-center text-gray-600 mt-1">
-                {selectedReview.publication.description}
-              </p>
-
-              <div className="text-sm text-gray-700 mt-3 space-y-1 w-full">
-                <p><strong>Fecha:</strong> {new Date(selectedReview.publication.publicationDate).toLocaleDateString("es-CL")}</p>
-                <p><strong>Tipo:</strong> {selectedReview.publication.types}</p>
-                
               </div>
 
-            </div>
+              {/* REVIEWS */}
+              <div className="col-span-2 space-y-6">
 
-            {/* =============== REVIEWS =============== */}
-            <div className="col-span-2 space-y-6">
+                {/* Oferente → Estudiante */}
+                <div className="border rounded-lg p-4 relative">
+                  <button
+                    onClick={async () => {
+                      const ok = await deleteReviewPart(
+                        selectedReview.review.idReview,
+                        false,
+                        true
+                      );
 
-              {/* ========= Oferente → Estudiante ========= */}
-              <div className="border rounded-lg p-4 relative">
-
-                {/* BOTÓN ELIMINAR RESEÑA (OFERENTE) */}
-                <button
-                onClick={async () => {
-                  const ok = await deleteReviewPart(
-                    selectedReview.review.idReview,
-                    false, // no borrar parte del estudiante
-                    true   // borrar parte del oferente
-                  );
-
-                  if (ok) {
-                    setSelectedReview({
-                      ...selectedReview,
-                      review: {
-                        ...selectedReview.review,
-                        commentForStudent: "",
+                      if (ok) {
+                        setSelectedReview({
+                          ...selectedReview,
+                          review: {
+                            ...selectedReview.review,
+                            commentForStudent: "",
+                          }
+                        });
                       }
-                    });
-                  }
-                }}
-                className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-2xl"
-              >
-                🗑️
-              </button>
+                    }}
+                    className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-2xl"
+                  >
+                    🗑️
+                  </button>
 
-                <p className="font-semibold text-gray-800 mb-1">Oferente</p>
+                  <p className="font-semibold text-gray-800 mb-1">Oferente</p>
 
-                <div className="flex items-center gap-2">
-                  <p className="text-yellow-500 text-lg">
-                    {selectedReview.review.ratingForStudent > 0
-                      ? "★".repeat(selectedReview.review.ratingForStudent)
-                      : "Sin puntuación"}
+                  <div className="flex items-center gap-2">
+                    <p className="text-yellow-500 text-lg">
+                      {selectedReview.review.ratingForStudent > 0
+                        ? "★".repeat(selectedReview.review.ratingForStudent)
+                        : "Sin puntuación"}
+                    </p>
+                    <span className="font-medium">{selectedReview.review.offerorName}</span>
+                  </div>
+
+                  <p className="mt-2 text-sm text-gray-700">
+                    {selectedReview.review.commentForStudent || "Sin reseña"}
                   </p>
-                  <span className="font-medium">{selectedReview.review.offerorName}</span>
                 </div>
 
-                <p className="mt-2 text-sm text-gray-700">
-                  {selectedReview.review.commentForStudent || "Sin reseña"}
-                </p>
-              </div>
+                {/* Estudiante → Oferente */}
+                <div className="border rounded-lg p-4 relative">
+                  <button
+                    onClick={async () => {
+                      const ok = await deleteReviewPart(
+                        selectedReview.review.idReview,
+                        true,
+                        false
+                      );
 
-              {/* ========= Estudiante → Oferente ========= */}
-              <div className="border rounded-lg p-4 relative">
+                      if (ok) {
+                        setSelectedReview({
+                          ...selectedReview,
+                          review: {
+                            ...selectedReview.review,
+                            commentForOfferor: "",
+                          }
+                        });
+                      }
+                    }}
+                    className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-2xl"
+                  >
+                    🗑️
+                  </button>
 
-                {/* BOTÓN ELIMINAR RESEÑA (ESTUDIANTE) */}
-                <button
-                  onClick={async () => {
-                    const ok = await deleteReviewPart(
-                      selectedReview.review.idReview,
-                      true,  // borrar parte del estudiante
-                      false  // no borrar parte del oferente
-                    );
+                  <p className="font-semibold text-gray-800 mb-1">Estudiante</p>
 
-                    if (ok) {
-                      setSelectedReview({
-                        ...selectedReview,
-                        review: {
-                          ...selectedReview.review,
-                          commentForOfferor: "",
-                        }
-                      });
-                    }
-                  }}
-                  className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-2xl"
-                >
-                  🗑️
-                </button>
+                  <div className="flex items-center gap-2">
+                    <p className="text-yellow-500 text-lg">
+                      {selectedReview.review.ratingForOfferor > 0
+                        ? "★".repeat(selectedReview.review.ratingForOfferor)
+                        : "Sin puntuación"}
+                    </p>
+                    <span className="font-medium">{selectedReview.review.studentName}</span>
+                  </div>
 
-
-                <p className="font-semibold text-gray-800 mb-1">Estudiante</p>
-
-                <div className="flex items-center gap-2">
-                  <p className="text-yellow-500 text-lg">
-                    {selectedReview.review.ratingForOfferor > 0
-                      ? "★".repeat(selectedReview.review.ratingForOfferor)
-                      : "Sin puntuación"}
+                  <p className="mt-2 text-sm text-gray-700">
+                    {selectedReview.review.commentForOfferor || "Sin reseña"}
                   </p>
-                  <span className="font-medium">{selectedReview.review.studentName}</span>
                 </div>
 
-                <p className="mt-2 text-sm text-gray-700">
-                  {selectedReview.review.commentForOfferor || "Sin reseña"}
-                </p>
-              </div>
-
-              {/* ========= CHECKBOXES ========= */}
-              <div className="text-sm text-gray-800 space-y-2 mt-4">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={selectedReview.review.atTime} disabled />
+                {/* CHECKBOXES */}
+                <div className="text-sm text-gray-800 space-y-4 mt-4">
+                 <label className="flex items-center gap-3">
+                  <span
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center 
+                      ${selectedReview.review.atTime
+                        ? "bg-purple-700 border-purple-800"
+                        : "bg-white border-gray-400"}
+                    `}
+                  >
+                    {selectedReview.review.atTime && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </span>
                   ¿Se presentó a trabajar en la hora acordada?
                 </label>
 
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={selectedReview.review.goodPresentation} disabled />
+                <label className="flex items-center gap-3">
+                  <span
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center 
+                      ${selectedReview.review.goodPresentation
+                        ? "bg-purple-700 border-purple-800"
+                        : "bg-white border-gray-400"}
+                    `}
+                  >
+                    {selectedReview.review.goodPresentation && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </span>
                   ¿Tuvo buena presentación personal?
                 </label>
-              </div>
+                </div>
 
-              {/* ========= BOTÓN CERRAR ========= */}
-              <div className="flex justify-end mt-6">
-                <button
-                  onClick={closeModal}
-                  className="px-5 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-                >
-                  Cerrar
-                </button>
-              </div>
 
+                <div className="flex justify-end mt-6">
+                  <button
+                    onClick={closeModal}
+                    className="px-5 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+
+              </div>
             </div>
-          </div>
 
+          </div>
         </div>
-      </div>
-    )}
+      )}
     </div>
   );
 }
