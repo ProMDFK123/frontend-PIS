@@ -239,6 +239,7 @@ export default function AdminReviewsPage() {
               className="border rounded-lg px-3 py-2 text-sm"
             >
               <option value="all">Todas</option>
+              <option value="5">★★★★★★ (6)</option>
               <option value="5">★★★★★ (5)</option>
               <option value="4">★★★★ (4)</option>
               <option value="3">★★★ (3)</option>

@@ -9,8 +9,7 @@ import {
   extractUserFromJwt,
   getRoleFromToken,
   logoutAndRedirect,
-  cn,
-  getProfileRoute
+  cn
 } from "@/lib";
 
 import { profileService } from "@/services/profileService";
@@ -28,11 +27,11 @@ const adminNavLinks = [
   { href: "/admin/publications/manage", label: "Administrar" },
 ];
 
-// DROPDOWN USER
+// DROPDOWN USER BASE
 const baseDropdownItems = [
   { href: "/profile", label: "Editar perfil" },
   { href: "/jobs/history", label: "Historial de postulaciones" },
-  { href: "/jobs/reports", label: "Historial de trabajos" },
+  { href: "/jobs/reports", label: "Historial de trabajos" }, // Se modifica dinámicamente
 ];
 
 function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
@@ -76,7 +75,7 @@ export default function SiteHeader() {
   useEffect(() => {
     const logged = isLoggedIn();
     const info = extractUserFromJwt();
-    const userRole = getRoleFromToken();
+    const userRole = getRoleFromToken(); // <-- AQUÍ LLEGA Student, Offerent o Admin
 
     setAuth({
       logged,
@@ -116,7 +115,22 @@ export default function SiteHeader() {
   const isAdmin = auth.role === "Admin";
   const mainLinks = isAdmin ? adminNavLinks : userLinks;
 
-  const dropdownItems = [...baseDropdownItems];
+  // Rutas para boton de historial de trabajos
+  const dropdownItems = baseDropdownItems.map(item => {
+    if (item.label !== "Historial de trabajos") return item;
+
+    let newHref = "/jobs/reviews/student"; // Ruta para estudiante
+
+    if (auth.role === "Offerent") {
+      newHref = "/jobs/reviews/employer"; // Ruta para oferente
+    }
+
+    if (auth.role === "Admin") {
+      newHref = "/jobs/reports"; // Ruta para admin
+    }
+
+    return { ...item, href: newHref };
+  });
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--card)]/85 backdrop-blur">
@@ -190,4 +204,3 @@ export default function SiteHeader() {
     </header>
   );
 }
-
