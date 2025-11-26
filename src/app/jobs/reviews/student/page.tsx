@@ -92,7 +92,8 @@ export default function StudentReviewsPage() {
   };
 
   /* ======= ENVIAR REVIEW DEL ESTUDIANTE AL OFERENTE ======= */
-  const submitOfferorReview = async () => {
+  /* ======= ENVIAR REVIEW DEL ESTUDIANTE AL OFERENTE ======= */
+const submitOfferorReview = async () => {
   if (!finishReview) return;
 
   if (!commentEmployer.trim() || rating === 0) {
@@ -106,17 +107,17 @@ export default function StudentReviewsPage() {
     return;
   }
 
-  // Combinar comentarios (el backend solo recibe uno)
+  // Combinar comentarios en el formato requerido por el backend
   const combinedComment =
-    `Experiencia en el trabajo: ${commentJob.trim() || "Sin comentario"} | ` +
-    `Relación con el empleador: ${commentEmployer.trim()}`;
+    `¿Cómo fue tu experiencia en este trabajo?: ${commentJob.trim() || "Sin comentario"}. ` +
+    `¿Cómo fue tu relación con el empleador?: ${commentEmployer.trim()}`;
 
   try {
     const body = {
       ratingForOfferor: rating,
       commentForOfferor: combinedComment,
       sendedAt: new Date(),
-      publicationId: finishReview.publication.idPublication
+      reviewId: finishReview.review.idReview   // ← AHORA SE USA REVIEW ID
     };
 
     await axios.post(
@@ -145,6 +146,7 @@ export default function StudentReviewsPage() {
     alert("Hubo un error al enviar tu reseña.");
   }
 };
+
 
 
   /* ======= UTIL ======= */
@@ -304,12 +306,12 @@ export default function StudentReviewsPage() {
 
             <span
               className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                review.isClosed
+                review.isCompleted
                   ? "bg-green-100 text-green-700"
                   : "bg-yellow-100 text-yellow-700"
               }`}
             >
-              {review.isClosed ? "Cerrada" : "Abierta"}
+              {review.isCompleted ? "Cerrada" : "Abierta"}
             </span>
           </div>
 
