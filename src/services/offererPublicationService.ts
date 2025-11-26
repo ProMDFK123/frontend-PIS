@@ -2,8 +2,10 @@ import api from "./Service";
 import { BaseApiService } from "./base-api-service";
 import { ApiResponse } from "@/models/generics";
 
-import type { CreatePublicationData} from "src/models/responses";
-import type{OffererPublication} from "src/models/generics";
+import type { CreatePublicationData, MyPublishedPublication } from "src/models/responses";
+import type { OffererPublication,
+  OfferDetail
+} from "src/models/generics";
 
 
 export class OffererPublicationService extends BaseApiService {
@@ -17,26 +19,61 @@ export class OffererPublicationService extends BaseApiService {
       data
     );
   }
-
+    //  mypublished PublicationsDTO
+    //     int IdPublication
+    //     int UserId 
+    //     string Title 
+    //     Types types 
+    //     string Description
+    //     DateTime PublicationDate
+    //     ICollection<Image> Images
+    //     bool IsActive
+    //     StatusValidation statusValidation
 
   getMyPublishedPublications() {
-    return this.httpClient.get<
-      ApiResponse<[]>
-    >(`${this.baseURL}/offerent/my-published`);
+    return this.httpClient.get<ApiResponse<MyPublishedPublication[]>>(
+      `${this.baseURL}/offerent/my-published`);
   }
+
+  
     getMyRejectedPublications() {
-    return this.httpClient.get<
-      ApiResponse<[]>
-    >(`${this.baseURL}/offerent/my-rejected`);
+    return this.httpClient.get<ApiResponse<MyPublishedPublication[]>>(
+      `${this.baseURL}/offerent/my-rejected`);
   }
   getPMyPendingPublications() {
-    return this.httpClient.get<
-      ApiResponse<[]>
-    >(`${this.baseURL}/offerent/my-pending`);
+    return this.httpClient.get<ApiResponse<MyPublishedPublication[]>>(
+      `${this.baseURL}/offerent/my-pending`);
   }
   
-}
+   //Endpoint: /api/publications/offerent/offer/{id}
+   getMyPublicationById(id: number) {
+    return this.httpClient.get<
+      ApiResponse<OfferDetail>
+    >(`${this.baseURL}/offerent/offer/${id}`);
 
+    // OfferDetailDto
+    // public int Id 
+    //  string Title 
+    //  string Description
+    //  string CompanyName 
+    //  string? Location 
+    //  DateTime PostDate 
+    //  DateTime EndDate 
+    //  int Remuneration 
+    //  string OfferType 
+
+
+  
+  }
+ //Endpoint: /api/publications/offerent/buysell/{id}
+
+   getMyBullSellById(id: number){
+    return this.httpClient.get<
+      ApiResponse<OffererPublication>
+    >(`${this.baseURL}/offerent/buysell/${id}`);
+
+  } 
+}
 export const offererPublicationService = new OffererPublicationService();
 
 /** 

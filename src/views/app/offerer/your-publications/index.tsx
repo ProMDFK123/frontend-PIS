@@ -7,7 +7,9 @@ import { offererPublicationService } from 'src/services/offererPublicationServic
 import { buildLoginUrl } from 'src/lib/auth';
 import { FormData } from 'src/models/generics';
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type {OffererPublication} from 'src/models/generics'
+import type {OffererPublication} from 'src/models/generics';
+import FilterBar from "@/views/app/offerer/your-publications/components/filter-bar";
+import { MyPublishedPublication } from '@/models/responses';
 
 interface PaginationProps {
   currentPage: number;
@@ -78,7 +80,7 @@ const getStatusBadge = (status: number) => {
 
 export default function YourPublicationsView() {
   const [isLoading, setIsLoading] = useState(true);
-  const [publications, setPublications] = useState<OffererPublication[]>([]);
+  const [publications, setPublications] = useState<MyPublishedPublication[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -96,7 +98,12 @@ export default function YourPublicationsView() {
       }
 
       try {
-        const response = await offererPublicationService. getMyPublishedPublications();
+        
+        const response = await offererPublicationService.getMyPublishedPublications(); // Assuming response.data is ApiResponse<MyPublishedPublication>
+        
+        console.log("1. Respuesta completa:", response);
+        console.log("2. Datos exactos:", response.data.data);
+        
         setPublications(response.data.data);
       } catch (err) {
         if (err instanceof AxiosError) {
@@ -140,14 +147,41 @@ export default function YourPublicationsView() {
     return (
       <div className="divide-y divide-gray-200">
         {publications.map((pub) => (
-          <div key={pub.id} className="grid grid-cols-2 gap-4 p-5 items-center hover:bg-gray-50 transition-colors">
+          <div key={pub.idPublication} 
+          onClick={() => router.push(`/offerer/create-publication/your-publications/${pub.idPublication}`)}
+          className="grid grid-cols-2 gap-4 p-5 items-center hover:bg-gray-50 transition-colors">
             <p className="font-medium text-gray-900 truncate">{pub.title}</p>
-            <div>{getStatusBadge(pub.status)}</div>
+            <div>{
+            getStatusBadge(
+              //pub.status
+              3
+              )
+            }</div>
           </div>
         ))}
       </div>
     );
   };
+  //  Id: number;
+  //   UserId: number;
+  //   Title: string;
+  //   types: PublicationType; // "Trabajo" | "Voluntariado" | "CompraVenta"
+  //   Description: string;
+  //   PublicationDate: string; // Formato de fecha ISO, ej: "2023-10-27T10:00:00Z"
+  //   Images: string[]; // Un arreglo de URLs de las imágenes
+  //   IsActive: boolean;
+  //   statusValidation: ValidationStatus;
+  
+    //  mypublished PublicationsDTO
+    //     int IdPublication
+    //     int UserId 
+    //     string Title 
+    //     Types types 
+    //     string Description
+    //     DateTime PublicationDate
+    //     ICollection<Image> Images
+    //     bool IsActive
+    //     StatusValidation statusValidation
 
   return (
     <div className="bg-gray-50">
