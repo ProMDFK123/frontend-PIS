@@ -4,12 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { 
+import {
   isLoggedIn,
   extractUserFromJwt,
   getRoleFromToken,
   logoutAndRedirect,
-  cn
+  cn,
 } from "@/lib";
 
 import { profileService } from "@/services/profileService";
@@ -31,12 +31,17 @@ const adminNavLinks = [
 const baseDropdownItems = [
   { href: "/profile", label: "Editar perfil" },
   { href: "/jobs/history", label: "Historial de postulaciones" },
-  { href: "/jobs/reports", label: "Historial de trabajos" }, // Se modifica dinámicamente
+  { href: "/jobs/reviews", label: "Historial de reseñas" }, // Se modifica dinámicamente
 ];
 
 function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
   const initials =
-    name?.trim()?.split(/\s+/).slice(0, 2).map(n => n[0]?.toUpperCase()).join("") || "U";
+    name
+      ?.trim()
+      ?.split(/\s+/)
+      .slice(0, 2)
+      .map((n) => n[0]?.toUpperCase())
+      .join("") || "U";
 
   return (
     <div className="flex items-center gap-2">
@@ -65,7 +70,7 @@ export default function SiteHeader() {
     logged: false,
     name: "Usuario",
     role: null as string | null,
-    photoUrl: null as string | null
+    photoUrl: null as string | null,
   });
 
   const [open, setOpen] = useState(false);
@@ -81,7 +86,7 @@ export default function SiteHeader() {
       logged,
       name: info?.userName || info?.email?.split("@")[0] || "Usuario",
       role: userRole,
-      photoUrl: null
+      photoUrl: null,
     });
 
     if (logged) {
@@ -89,9 +94,9 @@ export default function SiteHeader() {
         try {
           const res = await profileService.getProfilePhoto();
           if (res.data?.photoUrl) {
-            setAuth(prev => ({
+            setAuth((prev) => ({
               ...prev,
-              photoUrl: `${res.data.photoUrl}?v=${Date.now()}`
+              photoUrl: `${res.data.photoUrl}?v=${Date.now()}`,
             }));
           }
         } catch (err) {
@@ -115,9 +120,9 @@ export default function SiteHeader() {
   const isAdmin = auth.role === "Admin";
   const mainLinks = isAdmin ? adminNavLinks : userLinks;
 
-  // Rutas para boton de historial de trabajos
-  const dropdownItems = baseDropdownItems.map(item => {
-    if (item.label !== "Historial de trabajos") return item;
+  // Rutas para boton de historial de reseñas
+  const dropdownItems = baseDropdownItems.map((item) => {
+    if (item.label !== "Historial de reseñas") return item;
 
     let newHref = "/jobs/reviews/student"; // Ruta para estudiante
 
@@ -135,14 +140,14 @@ export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--card)]/85 backdrop-blur">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-
         <Link href="/" className="font-extrabold text-lg">
           <span className="text-[var(--ink)]">Bolsa</span>
-          <span className="ml-1 rounded-md bg-[var(--primary)] px-2 py-1 text-white">FEUCN</span>
+          <span className="ml-1 rounded-md bg-[var(--primary)] px-2 py-1 text-white">
+            FEUCN
+          </span>
         </Link>
 
         <div className="flex items-center gap-2">
-
           {mainLinks.map((l) => (
             <Link
               key={l.href}
@@ -166,19 +171,25 @@ export default function SiteHeader() {
           ) : (
             <div className="relative" ref={menuRef}>
               <button
-                onClick={() => setOpen(v => !v)}
+                onClick={() => setOpen((v) => !v)}
                 className="rounded-xl px-2 py-1 hover:bg-[var(--chip)] transition flex items-center gap-2"
               >
-                <UserAvatar name={auth.name} photoUrl={auth.photoUrl ?? undefined} />
-                <svg width="16" height="16" viewBox="0 0 20 20" className="text-[var(--ink)]/70">
+                <UserAvatar
+                  name={auth.name}
+                  photoUrl={auth.photoUrl ?? undefined}
+                />
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 20 20"
+                  className="text-[var(--ink)]/70"
+                >
                   <path d="M5 7l5 5 5-5" fill="currentColor" />
                 </svg>
               </button>
 
               {open && (
-                <div
-                  className="absolute right-0 mt-2 w-56 rounded-xl border border-[var(--border)] bg-white shadow-lg overflow-hidden"
-                >
+                <div className="absolute right-0 mt-2 w-56 rounded-xl border border-[var(--border)] bg-white shadow-lg overflow-hidden">
                   {dropdownItems.map((item) => (
                     <Link
                       key={item.href}
