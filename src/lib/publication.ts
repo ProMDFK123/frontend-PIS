@@ -5,10 +5,12 @@ import {
   AdminDetail,
   OfferDetailForAdmin,
   BuySellDetailForAdmin,
-  PublicationType
+  PublicationType,
+  PublishedItem,
+  ViewAppplicantsForAdmin
 } from "@/models/responses";
 
-function toOfferTypeForAdmin(o: PendingOffersForAdmin): OfferForAdmin["type"] {
+export function toOfferTypeForAdmin(o: PendingOffersForAdmin): OfferForAdmin["type"] {
   const typeValue = o.type ?? 0;
   if (typeValue === 0 || typeValue === 1) {
     return "Trabajo";
@@ -31,7 +33,33 @@ export function mapBuySellDtoToValidate(b: BuySellBasic): OfferForAdmin {
     type: "CompraVenta",
   };
 }
+// funcion exclusiva solo para mapOfferToManage y mapBuySellToManage
+function getPublicationTypeFromNumber(typeValue: number): AdminItemType {
+    if (typeValue === 0 || typeValue === 1) return "Compra/Venta";
+    return "Oferta de Trabajo";
+}
 
+export function mapOfferToManage(o: OfferDetailForAdmin): PublishedItem {
+    return {
+        id: o.id,
+        title: o.title,
+        type: getPublicationTypeFromNumber(o.type),
+        name: o.companyName && o.companyName.trim() !== "" ? o.companyName : "Empresa Desconocida",
+        publicationDate: o.publicationDate,
+        activa: o.activa ?? false,
+    };
+}
+
+export function mapBuySellToManage(b: BuySellDetailForAdmin): PublishedItem {
+    return {
+        id: b.id,
+        title: b.title,
+        type: getPublicationTypeFromNumber(b.type),
+        name: b.userName && b.userName.trim() !== "" ? b.userName : "Empresa Desconocida",
+        publicationDate: b.publicationDate,
+        activa: b.activa ?? true,
+    };
+}
 export function getOfferTypeDisplay(type: OfferForAdmin["type"]) {
   if (type === "CompraVenta") {
     return {
@@ -62,34 +90,34 @@ function getAdminDetailType(typeValue: any): PublicationType {
 }
 
 export function mapOfferToDetail(dto: any): AdminDetail {
-  const idValue = (dto as OfferDetailForAdmin).Id ?? dto.id;
+  const idValue = (dto as OfferDetailForAdmin).id ?? dto.id;
   const titleValue =
-    (dto as OfferDetailForAdmin).Title ?? dto.title ?? "Sin título";
+    (dto as OfferDetailForAdmin).title ?? dto.title ?? "Sin título";
   const descriptionValue =
-    (dto as OfferDetailForAdmin).Description ??
+    (dto as OfferDetailForAdmin).description ??
     dto.description ??
     "No hay descripción disponible.";
   const rawCompanyName =
-    (dto as OfferDetailForAdmin).CompanyName ?? dto.companyName;
+    (dto as OfferDetailForAdmin).companyName ?? dto.companyName;
   const companyNameValue =
     rawCompanyName && rawCompanyName.trim() !== ""
       ? rawCompanyName
       : "Empresa Desconocida";
   const remunerationRaw =
-    (dto as OfferDetailForAdmin).Remuneration ?? dto.remuneration ?? 0;
+    (dto as OfferDetailForAdmin).remuneration ?? dto.remuneration ?? 0;
   const cleanRemuneration = String(remunerationRaw).replace(/[^\d.]/g, "");
   const remunerationValue = parseFloat(cleanRemuneration) || 0;
   const publicationDateValue =
-    (dto as OfferDetailForAdmin).PublicationDate ?? dto.publicationDate;
+    (dto as OfferDetailForAdmin).publicationDate ?? dto.publicationDate;
   const statusValidationValue =
-    (dto as OfferDetailForAdmin).StatusValidation ??
+    (dto as OfferDetailForAdmin).statusValidation ??
     dto.statusValidation ??
     "Published";
   const activeValue =
-    (dto as OfferDetailForAdmin).Active ?? dto.active ?? false;
+    (dto as OfferDetailForAdmin).activa ?? dto.active ?? false;
   const imagesValue =
-    (dto as OfferDetailForAdmin).Images ?? dto.images ?? [];
-  const typeValue = (dto as OfferDetailForAdmin).Type ?? dto.type;
+    (dto as OfferDetailForAdmin).images ?? dto.images ?? [];
+  const typeValue = (dto as OfferDetailForAdmin).type ?? dto.type;
   const deadlineDateValue = (dto as any).DeadlineDate ?? dto.deadlineDate;
   const endDateValue = (dto as any).EndDate ?? dto.endDate;
   return {
@@ -110,24 +138,24 @@ export function mapOfferToDetail(dto: any): AdminDetail {
 }
 
 export function mapBuySellToDetail(dto: any): AdminDetail {
-  const idValue = (dto as BuySellDetailForAdmin).Id ?? dto.id;
+  const idValue = (dto as BuySellDetailForAdmin).id ?? dto.id;
   const titleValue =
-    (dto as BuySellDetailForAdmin).Title ?? dto.title ?? "Sin título";
+    (dto as BuySellDetailForAdmin).title ?? dto.title ?? "Sin título";
   const descriptionValue =
-    (dto as BuySellDetailForAdmin).Description ??
+    (dto as BuySellDetailForAdmin).description ??
     dto.description ??
     "No hay descripción disponible.";
   const rawUserName =
-    (dto as BuySellDetailForAdmin).UserName ?? dto.userName;
+    (dto as BuySellDetailForAdmin).userName ?? dto.userName;
   const userNameValue =
     rawUserName && rawUserName.trim() !== "" ? rawUserName : "Usuario UCN";
 
   const publicationDateValue =
-    (dto as BuySellDetailForAdmin).PublicationDate ??
+    (dto as BuySellDetailForAdmin).publicationDate ??
     dto.publicationDate ??
     undefined;
   const priceValue =
-    (dto as BuySellDetailForAdmin).Price ?? dto.price ?? undefined;
+    (dto as BuySellDetailForAdmin).price ?? dto.price ?? undefined;
 
   return {
     id: `bs-${String(idValue)}`,
@@ -152,4 +180,21 @@ export function getPublicRouteFromAdmin(adminPath: string): string {
     return "/offers";
   }
   return "/";
+}
+
+export type AdminItemType = "Oferta de Trabajo" | "Compra/Venta";
+
+export function getAdminItemTypeString(typeValue: number): AdminItemType {
+    if (typeValue === 0 || typeValue === 1) {
+        return "Compra/Venta";
+    }
+    return "Oferta de Trabajo";
+}
+
+export function mapApplicantToView(dto: ViewAppplicantsForAdmin): ViewAppplicantsForAdmin {
+    return {
+        id: dto.id,
+        applicant: dto.applicant,
+        status: dto.status as "Pending" | "Published" | "Rejected",
+    };
 }

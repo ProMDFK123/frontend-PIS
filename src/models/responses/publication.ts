@@ -3,30 +3,31 @@ export interface PendingOffersForAdmin {
     type: number; 
     id: number;
 }
-
+// Interfaz de entrada para todas las interfaces de salida que usen ofertas
 export interface OfferDetailForAdmin {
-    Id: number;
-    Title: string; 
-    Description: string;
-    Images: string[];
-    CompanyName: string;
-    PublicationDate: string;
-    Type: number;
-    StatusValidation: "Pending" | "Published" | "Rejected"; 
-    Remuneration: number; 
-    Active: boolean;
+    id: number;
+    title: string; 
+    description: string;
+    images: string[];
+    companyName: string;
+    publicationDate: string;
+    type: number;
+    statusValidation: "Pending" | "Published" | "Rejected"; 
+    remuneration: number; 
+    activa: boolean;
 }
-
+// Interfaz de entrada para todas las interfaces de salida que usen compras/ventas
 export interface BuySellDetailForAdmin {
-    Id: number;
-    Title: string;
-    Description: string;
-    Images: string[];
-    UserName: string;
-    PublicationDate: string;
-    Price: number;
-    StatusValidation: "Pending" | "Published" | "Rejected"; 
-    Active: boolean;
+    id: number;
+    title: string;
+    description: string;
+    images: string[];
+    userName: string;
+    publicationDate: string;
+    price: number;
+    type: number;
+    statusValidation: "Pending" | "Published" | "Rejected"; 
+    activa: boolean;
 }
 
 export type BuySellBasic = {
@@ -54,6 +55,15 @@ export interface ValidationItemFull {
     item: OfferForAdmin;
 }
 
+export interface PublishedItem {
+    title: string;
+    type: string;
+    name: string;
+    publicationDate: string;
+    activa: boolean;
+    id: number;
+}
+
 export type PublicationType = "Trabajo" | "Voluntariado" | "CompraVenta"; 
 export type ValidationStatus = "Pending" | "Published" | "Rejected";
 
@@ -78,7 +88,7 @@ export interface UseAdminDetailResult {
     loading: boolean;
     error: string | null;
     isMutating: boolean; 
-    handleAction: (action: 'publish' | 'reject') => void;
+    handleAction: (action: 'publish' | 'reject' | 'close_publication') => void;
     handleRetry: () => void;
 }
 
@@ -112,4 +122,24 @@ export interface MyPublishedPublication {
     images: string[];
     isActive: boolean;
     statusValidation: number; // Viene como número (0)
+}
+
+    //  mypublished PublicationsDTO
+export interface MyPublishedPublication {
+    idPublication: number;  // Antes tenías IdPublication o Id
+    userId: number;
+    title: string;          // Antes Title
+    types: number;          // Viene como número (0), no como string
+    description: string;    // Antes Description
+    publicationDate: string;
+    images: string[];
+    isActive: boolean;
+    statusValidation: number; // Viene como número (0)
+}
+
+// interfaz para ver los postulantes de una publicación
+export interface ViewAppplicantsForAdmin {
+  id: number;
+  applicant: string;
+  status: "Pending" | "Published" | "Rejected" | string;
 }

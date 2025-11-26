@@ -65,7 +65,7 @@ export function ValidationActionSection({
           disabled={isMutating}
           className="w-full flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition disabled:opacity-50"
         >
-                              {isMutating ? "Procesando..." : "Aceptar"}       
+                              {isMutating ? "Procesando..." : "Seleccionar"}       
                  {" "}
         </button>
                        {" "}
@@ -74,7 +74,7 @@ export function ValidationActionSection({
           disabled={isMutating}
           className="w-full flex items-center justify-center px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition disabled:opacity-50"
         >
-                              {isMutating ? "Procesando..." : "Rechazar"}       
+                              {isMutating ? "Procesando..." : "No Seleccionar"}       
                  {" "}
         </button>
                    {" "}
