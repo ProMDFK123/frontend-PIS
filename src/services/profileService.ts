@@ -1,0 +1,278 @@
+import api from "./Service";
+
+export interface StudentProfileDTO {
+  userName: string;
+  name: string;
+  lastName: string;
+  rut: string;
+  email: string;
+  phoneNumber: string;
+  rating: number;
+  aboutMe: string;
+  curriculumVitae?: string;
+  profilePhoto?: string;
+  profileBanner?: string;
+};
+
+export interface UpdateStudentProfileDTO {
+  userName?: string;
+  name?: string;
+  lastName?: string;
+  rut?: string;
+  email?: string;
+  phoneNumber?: string;
+  aboutMe?: string;
+};
+
+export interface IndividualProfileDTO {
+  userName: string;
+  name: string;
+  lastName: string;
+  rut: string;
+  email: string;
+  phoneNumber: string;
+  rating: number;
+  aboutMe: string;
+  profilePhoto?: string;
+  profileBanner?: string;
+};
+
+export interface UpdateIndividualProfileDTO {
+  userName?: string;
+  name?: string;
+  lastName?: string;
+  rut?: string;
+  email?: string;
+  phoneNumber?: string;
+  aboutMe?: string;
+};
+
+export interface CompanyProfileDTO {
+  userName: string;
+  companyName: string;
+  legalName: string;
+  rut: string;
+  email: string;
+  phoneNumber: string;
+  rating: number;
+  aboutMe: string;
+  profilePhoto?: string;
+  profileBanner?: string;
+};
+
+export interface UpdateCompanyProfileDTO {
+  userName?: string;
+  companyName?: string;
+  legalName?: string;
+  rut?: string;
+  email?: string;
+  phoneNumber?: string;
+  aboutMe?: string;
+};
+
+export interface AdminProfileDTO {
+  userName: string;
+  name: string;
+  lastName: string;
+  rut: string;
+  email: string;
+  phoneNumber: string;
+  aboutMe: string;
+  isSuperAdmin?: boolean;
+  profilePhoto?: string;
+  profileBanner?: string;
+};
+
+export interface UpdateAdminProfileDTO {
+  userName?: string;
+  name?: string;
+  lastName?: string;
+  rut?: string;
+  email?: string;
+  phoneNumber?: string;
+  aboutMe?: string;
+  isSuperAdmin?: boolean;
+};
+
+export interface GetPhotoDTO {
+    photoUrl: string;
+}
+
+export interface UpdatePhotoDTO {
+    photo: File;
+}
+export interface PhotoResponse {
+    message: string;
+    data: GetPhotoDTO;
+}
+
+export interface StudentResponse {
+    message: string;
+    data: StudentProfileDTO;
+};
+export interface IndividualResponse {
+    message: string;
+    data: IndividualProfileDTO;
+};
+export interface CompanyResponse {
+    message: string;
+    data: CompanyProfileDTO;
+};
+export interface AdminResponse {
+    message: string;
+    data: AdminProfileDTO;
+};
+
+export interface UpdateResponse {
+    message: string;
+    data: string;
+};
+
+export interface ChangePasswordDTO {
+    CurrentPassword: string;
+    NewPassword: string;
+    ConfirmNewPassword: string;
+}
+
+export const profileService = {
+    //Students
+    //GET api/user/profile/student
+    async getStudentProfile(): Promise<StudentResponse> {
+        const response = await api.get<StudentResponse>("/user/profile/student");
+        return response.data;   
+    },
+    //PATCH api/user/profile/student
+    async updateStudentProfile(data: UpdateStudentProfileDTO) {
+        const formData = new FormData();
+
+        Object.entries(data).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formData.append(key, value.toString());
+            }
+        });
+        const response = await api.patch<{ message: string; data: string }>(
+            "/user/profile/student",
+            formData, 
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+            }
+        );
+        return response.data;
+    },
+    //Individuals
+    //GET api/user/profile/individual
+    async getIndividualProfile(): Promise<IndividualResponse> {
+        const response = await api.get<IndividualResponse>("/user/profile/individual");
+        return response.data;   
+    },
+    //PATCH api/user/profile/individual
+    async updateIndividualProfile(data: UpdateIndividualProfileDTO) {
+        const formData = new FormData();
+
+        Object.entries(data).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formData.append(key, value.toString());
+            }
+        });
+        const response = await api.patch<{ message: string; data: string }>(
+            "/user/profile/individual",
+            formData, 
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+            }
+        );
+        return response.data;
+    },
+    //Companies
+    //GET api/user/profile/company
+    async getCompanyProfile(): Promise<CompanyResponse> {
+        const response = await api.get<CompanyResponse>("/user/profile/company");
+        return response.data;   
+    },
+    //PATCH api/user/profile/company
+    async updateCompanyProfile(data: UpdateCompanyProfileDTO) {
+        const formData = new FormData();
+
+        Object.entries(data).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formData.append(key, value.toString());
+            }
+        });
+        const response = await api.patch<{ message: string; data: string }>(
+            "/user/profile/company",
+            formData, 
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+            }
+        );
+        return response.data;
+    },
+    //Admins
+    //GET api/user/profile/admin
+    async getAdminProfile(): Promise<AdminResponse> {
+        const response = await api.get<AdminResponse>("/user/profile/admin");
+        return response.data;   
+    },
+    //PATCH api/user/profile/admin
+    async updateAdminProfile(data: UpdateAdminProfileDTO) {
+        const formData = new FormData();
+
+        Object.entries(data).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formData.append(key, value.toString());
+            }
+        });
+        const response = await api.patch<{ message: string; data: string }>(
+            "/user/profile/admin",
+            formData, 
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+            }
+        );
+        return response.data;
+    },
+
+    //GET api/user/profile/photo
+    async getProfilePhoto(): Promise<PhotoResponse> {
+        const response = await api.get<PhotoResponse>("/user/profile/photo");
+        return response.data;   
+    },
+    //PATCH api/user/profile/photo
+    async updateProfilePhoto(data: UpdatePhotoDTO) {
+        const formData = new FormData();
+        formData.append("Photo", data.photo);
+
+        const response = await api.patch<{ message: string; data: string }>(
+            "/user/profile/photo",
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+            }
+        );
+        return response.data;
+    },
+    //PATCH /api/user/profile/change-password
+    async changePassword(data: ChangePasswordDTO): Promise<UpdateResponse> {
+        const response = await api.patch<UpdateResponse>(
+            "/user/profile/change-password",
+            data,
+            {
+            headers: {
+                'Content-Type': 'application/json'
+                },
+            }
+        );
+        return response.data;
+    },
+};
+

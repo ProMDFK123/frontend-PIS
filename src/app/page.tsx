@@ -1,103 +1,166 @@
-import Image from "next/image";
+import HomeHero from "@/components/home/HomeHero";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main>
+      <HomeHero />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+      {/* Explora categorías */}
+      <section className="max-w-7xl mx-auto px-4 md:px-6 py-14">
+        <div className="grid md:grid-cols-2 gap-10 items-center">
+          <div>
+            <h2 className="text-4xl md:text-5xl font-extrabold">
+              Explora categorías
+            </h2>
+            <p className="mt-3 text-[var(--muted-ink)] text-lg">
+              Encuentra ofertas laborales y de compra/venta filtrando por categoría
+              para facilitar tu búsqueda.
+            </p>
+          </div>
+          {/* imagen: centrada, sin recorte, con radio interno */}
+          <div className="flex justify-center">
+            <img
+              src="/explora.png"
+              alt="Explora categorías"
+              className="w-[320px] md:w-[380px] max-w-full h-auto drop-shadow-sm"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </section>
+
+      {/* Postula fácil */}
+      <section className="max-w-7xl mx-auto px-4 md:px-6 pb-16">
+        <div className="grid md:grid-cols-2 gap-10 items-center">
+          <div className="order-2 md:order-1 flex justify-center">
+            <img
+              src="/postula.png"
+              alt="Postula fácil"
+              className="w-[320px] md:w-[380px] max-w-full h-auto drop-shadow-sm"
+            />
+          </div>
+
+          <div className="order-1 md:order-2">
+            <h2 className="text-4xl md:text-5xl font-extrabold">
+              Postula fácil
+            </h2>
+            <p className="mt-3 text-[var(--muted-ink)] text-lg">
+              Revisa los detalles de cada oferta y postúlate con un clic,
+              recibiendo notificaciones del estado.
+            </p>
+          </div>
+        </div>
+      </section>
+      {/* ¿Quiénes somos? */}
+      <section id="about" className="max-w-7xl mx-auto px-4 md:px-6 pb-24">
+        <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div>
+            <h3 className="text-3xl md:text-4xl font-extrabold text-[color:var(--foreground)]">
+              ¿Quiénes somos?
+            </h3>
+            <p className="mt-4 text-[color:var(--foreground)]/85 text-lg leading-relaxed">
+              Bolsa estudiantil FEUCN es una plataforma creada por la{" "}
+              <span className="font-semibold">Federación de Estudiantes de la Universidad Católica del Norte</span>{" "}
+              para conectar a estudiantes con oportunidades laborales y de servicios.
+              Nuestro propósito es apoyar el desarrollo profesional y el
+              emprendimiento dentro de la comunidad UCN.
+            </p>
+            <p className="mt-5 text-[color:var(--foreground)]/85 text-lg leading-relaxed">
+              Facilitamos la publicación, búsqueda y gestión de ofertas desde una
+              experiencia amigable y segura, enfocada en el crecimiento y bienestar
+              estudiantil de la Universidad Católica del Norte.
+            </p>
+          </div>
+
+          <div className="flex justify-center">
+            <img
+              src="/feucn_logo.png"
+              alt="Logo FEUCN"
+              className="w-[340px] md:w-[420px] max-w-full h-auto drop-shadow-xl"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Normas y buen uso */}
+      <section id="normas" className="max-w-7xl mx-auto px-4 md:px-6 pb-24">
+        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 md:p-10">
+          <h3 className="text-2xl md:text-3xl font-bold">Normas y buen uso</h3>
+          <p className="mt-2 text-[color:var(--foreground)]/80">
+            Este espacio busca conectar a estudiantes con oportunidades de trabajo y servicios dentro de la comunidad UCN.
+            Te pedimos mantener siempre un ambiente de respeto y apoyo mutuo.
+          </p>
+
+          <ul className="mt-5 space-y-2 text-[color:var(--foreground)]/90">
+            <li>• Usa la plataforma con respeto y empatía hacia todos.</li>
+            <li>• Publica solo información real y relacionada con trabajo o servicios.</li>
+            <li>• No compartas contenido ofensivo ni datos personales de otros.</li>
+            <li>• Si conoces nuevas oportunidades, ¡compártelas con la comunidad!</li>
+          </ul>
+
+          <div className="mt-6 flex items-start gap-3">
+            <input
+              id="accept"
+              type="checkbox"
+              className="mt-1 size-5 rounded border-[var(--border)] outline-none"
+            />
+            <label htmlFor="accept" className="text-[color:var(--foreground)]/80">
+              Acepto las normas de uso de la Plataforma Bolsa estudiantil FEUCN.
+            </label>
+          </div>
+
+          <div className="mt-6">
+           <a
+              href="#explora"
+              className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-[15px] font-semibold text-white
+                        bg-[var(--primary)] hover:opacity-95 transition"
+            >
+              Empezar a explorar
+            </a>
+          </div>
+        </div>
+      </section>
+      {/* Footer */}
+      <footer className="border-t border-[var(--border)] bg-[var(--card)] py-10 px-6">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-10 text-[color:var(--foreground)]/80">
+          <div>
+            <h4 className="font-bold text-[color:var(--foreground)] mb-3">FEUCN</h4>
+            <div className="flex gap-4 text-xl">
+              <a href="#" aria-label="Facebook"><i className="ri-facebook-fill" /></a>
+              <a href="#" aria-label="LinkedIn"><i className="ri-linkedin-fill" /></a>
+              <a href="#" aria-label="YouTube"><i className="ri-youtube-fill" /></a>
+              <a href="#" aria-label="Instagram"><i className="ri-instagram-fill" /></a>
+            </div>
+          </div>
+
+          <div>
+            <h5 className="font-semibold text-[color:var(--foreground)] mb-2">Navegación</h5>
+            <ul className="space-y-1">
+              <li><a href="/">Inicio</a></li>
+              <li><a href="/offers">Ofertas</a></li>
+              <li><a href="/publish">Publicar</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 className="font-semibold text-[color:var(--foreground)] mb-2">Ayuda</h5>
+            <ul className="space-y-1">
+              <li><a href="/faq">Preguntas frecuentes</a></li>
+              <li><a href="/contact">Contacto</a></li>
+              <li><a href="/support">Soporte</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 className="font-semibold text-[color:var(--foreground)] mb-2">Nosotros</h5>
+            <ul className="space-y-1">
+              <li><a href="/about">Misión</a></li>
+              <li><a href="/team">Equipo</a></li>
+              <li><a href="https://www.instagram.com/feucn">Federación UCN</a></li>
+            </ul>
+          </div>
+        </div>
       </footer>
-    </div>
+
+    </main>
   );
 }
