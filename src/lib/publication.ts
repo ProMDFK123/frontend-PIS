@@ -7,6 +7,7 @@ import {
   BuySellDetailForAdmin,
   PublicationType,
   PublishedItem,
+  ViewAppplicantsForAdmin
 } from "@/models/responses";
 
 export function toOfferTypeForAdmin(o: PendingOffersForAdmin): OfferForAdmin["type"] {
@@ -188,4 +189,12 @@ export function getAdminItemTypeString(typeValue: number): AdminItemType {
         return "Compra/Venta";
     }
     return "Oferta de Trabajo";
+}
+
+export function mapApplicantToView(dto: ViewAppplicantsForAdmin): ViewAppplicantsForAdmin {
+    return {
+        id: dto.id,
+        applicant: dto.applicant,
+        status: dto.status as "Pending" | "Published" | "Rejected",
+    };
 }

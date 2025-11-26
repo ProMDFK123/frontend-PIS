@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { mapOfferToManage, mapBuySellToManage, handleApiError, mapBuySellToDetail, mapOfferToDetail } from "@/lib";
+import { mapOfferToManage, mapBuySellToManage, handleApiError, mapBuySellToDetail, mapOfferToDetail, mapApplicantToView } from "@/lib";
 import { manageService } from "@/services/manageService";
 import { PublishedItem, OfferDetailForAdmin, BuySellDetailForAdmin, AdminDetail } from "@/models/responses";
 import { ClosePublicationVariables } from "@/models/requests";
@@ -89,13 +89,14 @@ export const useClosePublicationMutation = () => {
 };
 
 export const useGetPostulantsQuery = (publicationId: string | undefined) => {
-    return useQuery<any[], Error>({
-        queryKey: ["admin", "postulants", publicationId],
-        queryFn: async () => {
-            if (!publicationId) throw new Error("ID de publicación es requerido.");
-            const response = await manageService.getPostulants(publicationId);
-            return response.data.data;
-        },
-        enabled: !!publicationId,
-    });
+    return useQuery<any[], Error>({ 
+        queryKey: ["admin", "postulants", publicationId],
+        queryFn: async () => {
+            if (!publicationId) throw new Error("ID de publicación es requerido.");
+            const response = await manageService.getPostulants(publicationId);
+            const rawApplicants = response.data.data || [];
+            return rawApplicants.map(app => mapApplicantToView(app));
+        },
+        enabled: !!publicationId,
+    });
 };

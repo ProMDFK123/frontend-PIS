@@ -88,7 +88,7 @@ export interface UseAdminDetailResult {
     loading: boolean;
     error: string | null;
     isMutating: boolean; 
-    handleAction: (action: 'publish' | 'reject') => void;
+    handleAction: (action: 'publish' | 'reject' | 'close_publication') => void;
     handleRetry: () => void;
 }
 
@@ -109,4 +109,11 @@ export interface CreatePublicationData {
   ContactInfo?: string;
   ImagesURL: string[];
   IsCvRequired: boolean;
+}
+
+// interfaz para ver los postulantes de una publicación
+export interface ViewAppplicantsForAdmin {
+  id: number;
+  applicant: string;
+  status: "Pending" | "Published" | "Rejected" | string;
 }

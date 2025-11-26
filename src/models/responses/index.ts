@@ -14,4 +14,5 @@ export {
   type PublicationResponse,
   type CreatePublicationData,
   type PublishedItem,
+  type ViewAppplicantsForAdmin
 } from "./publication";

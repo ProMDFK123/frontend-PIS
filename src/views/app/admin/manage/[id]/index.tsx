@@ -2,88 +2,107 @@
 
 import { useRouter } from "next/navigation";
 import { ChevronLeft, AlertCircle } from "lucide-react";
-import React from 'react'; 
+import React from "react";
 
-import { useAdminPublicationDetailView } from "./hooks/use-manage-detail-view"; 
-import { handleApiError } from '@/lib';
+import { useAdminPublicationDetailView } from "./hooks/use-manage-detail-view";
+import { handleApiError } from "@/lib";
 
 import { ManageDetailSection } from "./components/manage-detail-section";
 import { ManageProfileSection } from "./components/manage-profile-section";
 
 export interface ManageDetailViewProps {
-  id: string;
+  id: string;
 }
 
-export default function ManageDetailView({
-  id,
-}: ManageDetailViewProps) {
-  const router = useRouter();
-  
-  const { detail, loading, error, isMutating, handleAction, handleRetry } =
-    useAdminPublicationDetailView(id);
+export default function ManageDetailView({ id }: ManageDetailViewProps) {
+  const router = useRouter();
 
-  const backRoute = "/admin/publications/manage";
+  const { detail, loading, error, isMutating, handleAction, handleRetry } =
+    useAdminPublicationDetailView(id);
 
-  if (loading)
-    return (
-      <div className="text-center mt-12 text-[var(--muted-ink)]">
-        Cargando detalles de gestión...
-      </div>
-    );
+  const backRoute = "/admin/publications/manage";
 
-  if (error) {
-    const errorDetails = error ? (handleApiError(error).details || error) : "Error desconocido.";
-    return (
-      <div className="max-w-xl mx-auto p-8 mt-12 bg-red-50 border border-red-200 rounded-lg text-center">
-        <h2 className="text-xl font-semibold text-red-600 mb-4 flex justify-center items-center gap-2">
-            <AlertCircle size={24} /> Error al cargar la publicación
-        </h2>
-        <p className="text-sm text-red-500 mb-6">{errorDetails}</p>
-        <button
-          onClick={handleRetry}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-bold"
-        >
-          Reintentar
-        </button>
-      </div>
-    );
-  }
-  
-  if (!detail)
-    return (
-      <div className="text-center mt-12 text-[var(--muted-ink)]">
-        No se encontró la publicación para gestionar.
-      </div>
-    );
-    
+  if (loading)
+    return (
+      <div className="text-center mt-12 text-[var(--muted-ink)]">
+        Cargando detalles de gestión...
+      </div>
+    );
+
+  if (error) {
+    const errorDetails = error
+      ? handleApiError(error).details || error
+      : "Error desconocido.";
+    return (
+      <div className="max-w-xl mx-auto p-8 mt-12 bg-red-50 border border-red-200 rounded-lg text-center">
+        <h2 className="text-xl font-semibold text-red-600 mb-4 flex justify-center items-center gap-2">
+          <AlertCircle size={24} /> Error al cargar la publicación
+        </h2>
+        <p className="text-sm text-red-500 mb-6">{errorDetails}</p>
+        <button
+          onClick={handleRetry}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-bold"
+        >
+          Reintentar
+        </button>
+      </div>
+    );
+  }
+
+  if (!detail)
+    return (
+      <div className="text-center mt-12 text-[var(--muted-ink)]">
+        No se encontró la publicación para gestionar.
+      </div>
+    );
+
   return (
     <main className="max-w-7xl mx-auto px-2 py-2">
-    <button
+      <button
         onClick={() => router.push(backRoute)}
         className="mb-3 text-[var(--primary)] hover:underline flex items-center gap-1"
-    >
+      >
         <ChevronLeft size={18} /> Volver
-    </button>
-    <h1 className="text-3xl font-bold text-[var(--ink)] mb-1">
+      </button>
+
+      <h1 className="text-3xl font-bold text-[var(--ink)] mb-1">
         {detail.title || "Sin Título"}
-    </h1>
-    <p className="text-base text-[var(--muted-ink)] mb-4">
-        Tipo:{" "}
-        {detail.type === "CompraVenta"
-        ? "Venta de Artículo"
-        : "Oferta de Trabajo"}
-    </p>
-      <div className="flex flex-col md:flex-row gap-6 items-start">
-        
-        <div className="w-full md:w-3/4 space-y-6">
-            <ManageDetailSection detail={detail} /> 
-        </div>
-        <div className="w-full md:w-1/4 space-y-6">
-            <ManageProfileSection
-              detail={detail}
-            />
-        </div>
-      </div>
-    </main>
-  );
+      </h1>
+
+      <p className="text-base text-[var(--muted-ink)] mb-4">
+        Tipo: {detail.type === "CompraVenta" ? "Venta de Artículo" : "Oferta de Trabajo"}
+      </p>
+
+      <div className="flex flex-col md:flex-row gap-6 items-start">
+        <div className="w-full md:w-3/4 space-y-6">
+          <ManageDetailSection detail={detail} />
+
+          <div className="flex gap-4 mt-4">
+            {detail.type === "Trabajo" && (
+              <button
+                onClick={() =>
+                  router.push(`/admin/publications/manage/${detail.id}/applicants`)
+                }
+                className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Ver Postulantes
+              </button>
+            )}
+
+            <button
+              onClick={() => handleAction("close_publication")}
+              disabled={isMutating}
+              className="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+            >
+              Cerrar Publicación
+            </button>
+          </div>
+        </div>
+
+        <div className="w-full md:w-1/4 space-y-6">
+          <ManageProfileSection detail={detail} />
+        </div>
+      </div>
+    </main>
+  );
 }

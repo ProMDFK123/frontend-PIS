@@ -23,6 +23,7 @@ export {
   mapBuySellToManage,
   toOfferTypeForAdmin,
   getAdminItemTypeString,
+  mapApplicantToView,
 } from "./publication";
 export {
   formatDate,

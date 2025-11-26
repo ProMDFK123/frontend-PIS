@@ -69,7 +69,6 @@ export const useGetAdminPublicationDetailQuery = (id: string | undefined) => {
                         if (!detailDto) throw new Error("Respuesta de API vacía o malformada.");
                         return { ...mapBuySellToDetail(detailDto), id };
                     } catch (innerError) {
-                        // Si falla la segunda vez, es un 404 real.
                         const apiError = handleApiError(innerError);
                         throw new Error(apiError.details || `Publicación con ID ${entityId} no encontrada.`);
                     }

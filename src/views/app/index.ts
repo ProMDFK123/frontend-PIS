@@ -3,3 +3,4 @@ export { default as AdminPublicationDetailView } from "@/views/app/admin/validat
 export { default as ManageView } from "@/views/app/admin/manage";
 export { default as PublicationFormView } from "@/views/app/offerer";
 export { default as ManageDetailView } from "@/views/app/admin/manage/[id]";
+export { default as ApplicantsView } from "@/views/app/admin/manage/[id]/applicants";
