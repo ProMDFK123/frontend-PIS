@@ -37,16 +37,9 @@ export default function HomePage() {
           </a>
         </div>
         <img 
-          src="/explora.png" 
+          src="/ucenin.png" 
           className="hero-img" 
           alt="hero"
-          style={{
-            width: "340px",
-            marginTop: "20px",
-            border: "6px solid #22c55e",
-            borderRadius: "16px",   
-            boxShadow: "0 8px 20px rgba(0,0,0,0.2)"
-          }}
         />
       </section>
 
