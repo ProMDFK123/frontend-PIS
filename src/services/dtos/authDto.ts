@@ -82,6 +82,7 @@ export interface StudentResponseDto{
 // Verify-Email
 // Request
 export interface VerifyEmailDto{
+    Email: string;
     VerificationCode: string;
 }
 // Response

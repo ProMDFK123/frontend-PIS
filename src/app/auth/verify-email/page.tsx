@@ -1,14 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { verifyEmail, resendVerification } from "@/services/authService";
-import type { VerifyEmailDto } from "@/services/dtos/authDto";
+import type { VerifyEmailDto, ResendVerificationDto } from "@/services/dtos/authDto";
 
 export default function VerifyEmailPage() {
-  const [code, setCode] = useState("");
+  const searchParams = useSearchParams();
+  const emailFromQuery = searchParams.get("email") || "";
+
+  const [form, setForm] = useState({
+    email: emailFromQuery,
+    VerificationCode: "",
+  });
+
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (emailFromQuery) {
+      setForm((prev) => ({ ...prev, email: emailFromQuery }));
+    }
+  }, [emailFromQuery]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleVerifyEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,15 +36,16 @@ export default function VerifyEmailPage() {
     setMessage(null);
 
     const payload: VerifyEmailDto = {
-      VerificationCode: code,
+      Email: form.email,
+      VerificationCode: form.VerificationCode,
     };
 
     try {
       const result = await verifyEmail(payload);
-      setMessage(result.message);
-    } catch (err: any) {
+      setMessage(result.info || result.message);
+    } catch (err) {
       console.error("Error verificando el correo:", err);
-      setError(err.message || "Error verificando el correo. Intenta nuevamente.");
+      setError("Error verificando el correo. Intenta nuevamente.");
     } finally {
       setLoading(false);
     }
@@ -36,12 +56,16 @@ export default function VerifyEmailPage() {
     setError(null);
     setMessage(null);
 
+    const payload: ResendVerificationDto = {
+      Email: form.email,
+    };
+
     try {
-      const result = await resendVerification();
-      setMessage(result.message);
-    } catch (err: any) {
+      const result = await resendVerification(payload);
+      setMessage(result.info || result.message);
+    } catch (err) {
       console.error("Error reenviando el código:", err);
-      setError(err.message || "No se pudo reenviar el código. Intenta más tarde.");
+      setError("No se pudo reenviar el código. Intenta más tarde.");
     } finally {
       setLoading(false);
     }
@@ -82,11 +106,21 @@ export default function VerifyEmailPage() {
         <form onSubmit={handleVerifyEmail} className="space-y-4">
           <div>
             <input
+              type="email"
+              name="email"
+              value={form.email}
+              readOnly
+              className="w-full px-4 py-2 border rounded-md bg-gray-100 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <input
               type="text"
               name="VerificationCode"
               placeholder="******"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
+              value={form.VerificationCode}
+              onChange={handleChange}
               required
               pattern="\d{6}"
               className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -102,18 +136,16 @@ export default function VerifyEmailPage() {
           </button>
         </form>
 
-        {/* Reenviar código */}
         <div className="mt-4 text-center">
           <button
             onClick={handleResendCode}
             disabled={loading}
-            className="text-blue-700 hover:underline text-sm disabled:opacity-60"
+            className="text-blue-700 hover:underline text-sm"
           >
             Reenviar código
           </button>
         </div>
 
-        {/* Volver */}
         <div className="mt-6 text-center">
           <a href="/" className="text-gray-500 hover:underline text-sm">
             ← Volver

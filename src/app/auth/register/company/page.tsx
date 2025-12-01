@@ -72,7 +72,7 @@ export default function RegisterCompanyPage() {
       const response = await registerCompany(payload);
         
       alert(response.message || "Registro exitoso. Revisa tu correo para verificar tu cuenta.");
-      router.push("/auth/verify-email");
+      router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
     }catch (error: any) {
       console.error("Error en el registro:", error);
 
