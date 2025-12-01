@@ -21,12 +21,6 @@ export default function RegisterPage() {
       title: "Empresa",
       desc: "Crea una cuenta para publicar oportunidades laborales",
     },
-    // Esta opción es auxiliar. Eliminar en cuanto se implemente el perfil de admin.
-    {
-      id: "admin",
-      title: "Administrador",
-      desc: "Gestión interna del sistema",
-    },
   ];
 
   return (

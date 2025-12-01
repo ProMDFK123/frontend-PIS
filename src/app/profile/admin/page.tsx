@@ -8,6 +8,7 @@ import { formatRut } from "src/utils/Util";
 import { profileService, AdminProfileDTO } from "@/services/profileService";
 import { validators } from "src/utils/AuthValidatorsUtil";
 import ChangePassword from "@/components/profile/ChangePassword";
+import RegisterAdminButton from "@/components/profile/RegisterAdminButton";
 
 export default function Page() {
   const [data, setData] = useState<AdminProfileDTO | null>(null);
@@ -363,8 +364,12 @@ export default function Page() {
         >
           {editing ? (saving ? "Guardando..." : "Guardar") : "Editar"}
         </Button>
+
+        <div className="w-full mt-2">
+          <RegisterAdminButton />
         </div>
       </div>
+    </div>
   
       {/* Right box - Profile Fields */}
       <div className="col-span-1 md:col-span-2 border rounded-md p-6">
