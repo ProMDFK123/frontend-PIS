@@ -62,7 +62,7 @@ export async function verifyEmail(payload: VerifyEmailDto | any) {
   return EmailVerificationAdapter.fromVerifyResponse(response.data);
 }
 
-export async function resendVerification() {
+export async function resendVerification(payload: ResendVerificationDto | any) {
   const response = await api.post<ResendVerificationResponseDto>("/auth/resend-verification");
   return EmailVerificationAdapter.fromResendResponse(response.data);
 }

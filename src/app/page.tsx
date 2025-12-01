@@ -1,166 +1,342 @@
-import HomeHero from "@/components/home/HomeHero";
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const router = useRouter();
+  const [accepted, setAccepted] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleExplore = () => {
+    if (!accepted) {
+      setError(true);
+      return;
+    }
+    router.push("/auth/register");
+  };
+
   return (
-    <main>
-      <HomeHero />
+    <>
+      <main className="page">
 
-      {/* Explora categorías */}
-      <section className="max-w-7xl mx-auto px-4 md:px-6 py-14">
-        <div className="grid md:grid-cols-2 gap-10 items-center">
-          <div>
-            <h2 className="text-4xl md:text-5xl font-extrabold">
-              Explora categorías
-            </h2>
-            <p className="mt-3 text-[var(--muted-ink)] text-lg">
-              Encuentra ofertas laborales y de compra/venta filtrando por categoría
-              para facilitar tu búsqueda.
-            </p>
-          </div>
-          {/* imagen: centrada, sin recorte, con radio interno */}
-          <div className="flex justify-center">
-            <img
-              src="/explora.png"
-              alt="Explora categorías"
-              className="w-[320px] md:w-[380px] max-w-full h-auto drop-shadow-sm"
-            />
-          </div>
+      {/* HERO */}
+      <section className="hero" style={{ 
+        background: "linear-gradient(135deg, #4f46e5, #ec4899)", color: "white", 
+        padding: "80px 40px", borderRadius: "20px", marginBottom: "40px" }}>
+        <div className="hero-text" style={{ maxWidth: "500px" }}>
+          <h1 style={{ fontSize: "40px", fontWeight: "800", lineHeight: 1.2,
+            color: "white", textShadow: "2px 2px 8px rgba(0,0,0,0.3)"
+           }}>
+            Encuentra oportunidades, servicios y proyectos estudiantiles
+          </h1>
+          <a href="/offers" className="btn-primary" style={{ background: "#22c55e", 
+            color: "white", padding: "12px 26px", borderRadius: "12px", 
+            display: "inline-block", marginTop: "20px", fontWeight: "600" }}>
+            Explorar
+          </a>
         </div>
+        <img 
+          src="/explora.png" 
+          className="hero-img" 
+          alt="hero"
+          style={{
+            width: "340px",
+            marginTop: "20px",
+            border: "6px solid #22c55e",
+            borderRadius: "16px",   
+            boxShadow: "0 8px 20px rgba(0,0,0,0.2)"
+          }}
+        />
       </section>
 
-      {/* Postula fácil */}
-      <section className="max-w-7xl mx-auto px-4 md:px-6 pb-16">
-        <div className="grid md:grid-cols-2 gap-10 items-center">
-          <div className="order-2 md:order-1 flex justify-center">
-            <img
-              src="/postula.png"
-              alt="Postula fácil"
-              className="w-[320px] md:w-[380px] max-w-full h-auto drop-shadow-sm"
-            />
+      {/* FEATURES */}
+      <section className="features" style={{ display: "grid", 
+        gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "24px", 
+        padding: "50px 40px" }}>
+        {[
+          { img: "/explora.png", title: "Explora categorías", 
+            text: "Encuentra trabajos, servicios, tutorías y más.", color: "#4f46e5" },
+          { img: "/postula.png", title: "Postula fácil", 
+            text: "Revisa detalles y postula en segundos.", color: "#ec4899" },
+          { img: "/feucn_logo.png", title: "Comunidad UCN", 
+            text: "Creado por y para estudiantes. 100% gratuito.", color: "#22c55e" }
+        ].map((card, i) => (
+          <div key={i} style={{ display: "flex", flexDirection: "column", 
+          alignItems: "center", textAlign: "center", padding: "24px", 
+          borderRadius: "16px", background: "white", 
+          boxShadow: "0 4px 14px rgba(0,0,0,0.1)", gap: "14px" }}>
+            <img src={card.img} style={{ width: "120px" }} />
+            <h3 style={{ fontSize: "20px", color: card.color }}>{card.title}</h3>
+            <p style={{ color: "#1f2937" }}>{card.text}</p>
           </div>
-
-          <div className="order-1 md:order-2">
-            <h2 className="text-4xl md:text-5xl font-extrabold">
-              Postula fácil
-            </h2>
-            <p className="mt-3 text-[var(--muted-ink)] text-lg">
-              Revisa los detalles de cada oferta y postúlate con un clic,
-              recibiendo notificaciones del estado.
-            </p>
-          </div>
-        </div>
-      </section>
-      {/* ¿Quiénes somos? */}
-      <section id="about" className="max-w-7xl mx-auto px-4 md:px-6 pb-24">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
-          <div>
-            <h3 className="text-3xl md:text-4xl font-extrabold text-[color:var(--foreground)]">
-              ¿Quiénes somos?
-            </h3>
-            <p className="mt-4 text-[color:var(--foreground)]/85 text-lg leading-relaxed">
-              Bolsa estudiantil FEUCN es una plataforma creada por la{" "}
-              <span className="font-semibold">Federación de Estudiantes de la Universidad Católica del Norte</span>{" "}
-              para conectar a estudiantes con oportunidades laborales y de servicios.
-              Nuestro propósito es apoyar el desarrollo profesional y el
-              emprendimiento dentro de la comunidad UCN.
-            </p>
-            <p className="mt-5 text-[color:var(--foreground)]/85 text-lg leading-relaxed">
-              Facilitamos la publicación, búsqueda y gestión de ofertas desde una
-              experiencia amigable y segura, enfocada en el crecimiento y bienestar
-              estudiantil de la Universidad Católica del Norte.
-            </p>
-          </div>
-
-          <div className="flex justify-center">
-            <img
-              src="/feucn_logo.png"
-              alt="Logo FEUCN"
-              className="w-[340px] md:w-[420px] max-w-full h-auto drop-shadow-xl"
-            />
-          </div>
-        </div>
+        ))}
       </section>
 
-      {/* Normas y buen uso */}
-      <section id="normas" className="max-w-7xl mx-auto px-4 md:px-6 pb-24">
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 md:p-10">
-          <h3 className="text-2xl md:text-3xl font-bold">Normas y buen uso</h3>
-          <p className="mt-2 text-[color:var(--foreground)]/80">
-            Este espacio busca conectar a estudiantes con oportunidades de trabajo y servicios dentro de la comunidad UCN.
-            Te pedimos mantener siempre un ambiente de respeto y apoyo mutuo.
+      {/* ABOUT */}
+      <section className="about" style={{ display: "flex", alignItems: "center", 
+        justifyContent: "center", gap: "40px", flexWrap: "wrap", 
+        padding: "60px 40px", background: "#f0f4f8", borderRadius: "20px", 
+        marginBottom: "40px" }}>
+        <img src="/feucn_logo.png" style={{ width: "320px", flexShrink: 0 }} 
+          alt="Logo FEUCN" />
+        <div style={{ maxWidth: "600px", textAlign: "left" }}>
+          <h2 style={{ fontSize: "30px", fontWeight: 700, color: "#4f46e5", 
+            marginBottom: "20px" }}>¿Quiénes somos?</h2>
+          <p style={{ marginTop: "10px", color: "#1f2937" }}>
+            Somos la <b>Federación de Estudiantes de la Universidad Católica del Norte</b>, 
+            y nuestro objetivo es conectar a estudiantes con oportunidades reales
+            que impulsen su crecimiento académico, laboral y personal.
           </p>
-
-          <ul className="mt-5 space-y-2 text-[color:var(--foreground)]/90">
-            <li>• Usa la plataforma con respeto y empatía hacia todos.</li>
-            <li>• Publica solo información real y relacionada con trabajo o servicios.</li>
-            <li>• No compartas contenido ofensivo ni datos personales de otros.</li>
-            <li>• Si conoces nuevas oportunidades, ¡compártelas con la comunidad!</li>
-          </ul>
-
-          <div className="mt-6 flex items-start gap-3">
-            <input
-              id="accept"
-              type="checkbox"
-              className="mt-1 size-5 rounded border-[var(--border)] outline-none"
-            />
-            <label htmlFor="accept" className="text-[color:var(--foreground)]/80">
-              Acepto las normas de uso de la Plataforma Bolsa estudiantil FEUCN.
-            </label>
-          </div>
-
-          <div className="mt-6">
-           <a
-              href="#explora"
-              className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-[15px] font-semibold text-white
-                        bg-[var(--primary)] hover:opacity-95 transition"
-            >
-              Empezar a explorar
-            </a>
-          </div>
+          <p style={{ marginTop: "10px", color: "#1f2937" }}>
+            Aquí podrás encontrar ofertas laborales, servicios estudiantiles,
+            emprendimientos y espacios de apoyo mutuo.
+          </p>
         </div>
       </section>
-      {/* Footer */}
-      <footer className="border-t border-[var(--border)] bg-[var(--card)] py-10 px-6">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-10 text-[color:var(--foreground)]/80">
-          <div>
-            <h4 className="font-bold text-[color:var(--foreground)] mb-3">FEUCN</h4>
-            <div className="flex gap-4 text-xl">
-              <a href="#" aria-label="Facebook"><i className="ri-facebook-fill" /></a>
-              <a href="#" aria-label="LinkedIn"><i className="ri-linkedin-fill" /></a>
-              <a href="#" aria-label="YouTube"><i className="ri-youtube-fill" /></a>
-              <a href="#" aria-label="Instagram"><i className="ri-instagram-fill" /></a>
-            </div>
-          </div>
 
-          <div>
-            <h5 className="font-semibold text-[color:var(--foreground)] mb-2">Navegación</h5>
-            <ul className="space-y-1">
-              <li><a href="/">Inicio</a></li>
-              <li><a href="/offers">Ofertas</a></li>
-              <li><a href="/publish">Publicar</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h5 className="font-semibold text-[color:var(--foreground)] mb-2">Ayuda</h5>
-            <ul className="space-y-1">
-              <li><a href="/faq">Preguntas frecuentes</a></li>
-              <li><a href="/contact">Contacto</a></li>
-              <li><a href="/support">Soporte</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h5 className="font-semibold text-[color:var(--foreground)] mb-2">Nosotros</h5>
-            <ul className="space-y-1">
-              <li><a href="/about">Misión</a></li>
-              <li><a href="/team">Equipo</a></li>
-              <li><a href="https://www.instagram.com/feucn">Federación UCN</a></li>
-            </ul>
-          </div>
+      {/* RULES */}
+      <section className="rules" style={{ background: "#ec4899", color: "white", 
+        padding: "60px 40px", textAlign: "center", borderRadius: "20px" }}>
+        <h2 style={{ fontSize: "28px", marginBottom: "20px" }}>Normas y buen uso</h2>
+        <ul style={{ listStyle: "none", margin: "20px auto", maxWidth: "500px", textAlign: "left" }}>
+          <li style={{ margin: "10px 0", fontSize: "17px" }}>
+            💙 Respeto y empatía siempre.</li>
+          <li style={{ margin: "10px 0", fontSize: "17px" }}>
+            📌 Publica información real y útil.</li>
+          <li style={{ margin: "10px 0", fontSize: "17px" }}>
+            ❌ No compartas datos personales de terceros.</li>
+          <li style={{ margin: "10px 0", fontSize: "17px" }}>
+            🚀 Comparte oportunidades con tu comunidad.</li>
+        </ul>
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "15px" }}>
+          <label style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <input type="checkbox" checked={accepted} onChange={() => 
+              { setAccepted(!accepted); setError(false); }} />
+            <span>Acepto las normas de buen uso</span>
+          </label>
         </div>
-      </footer>
+        {error && <p style={{ color: "#facc15", marginTop: "10px", fontSize: "15px" }}>
+          Debes aceptar las normas antes de continuar.</p>}
+        <button onClick={handleExplore} style={{ display: "inline-block", 
+          marginTop: "20px", background: "#22c55e", color: "white", 
+          padding: "12px 26px", fontWeight: "600", borderRadius: "10px", 
+          cursor: "pointer" }}>
+          Empezar a explorar
+        </button>
+      </section>
 
-    </main>
+        {/* FOOTER */}
+        <footer className="footer">
+          <p>© 2025 Bolsa Estudiantil FEUCN · Comunidad estudiantil UCN</p>
+        </footer>
+      </main>
+
+      {/* --- ESTILOS COMPLETOS EN EL MISMO ARCHIVO --- */}
+      <style jsx>{`
+        /* BASE */
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        body, .page {
+          font-family: "Inter", sans-serif;
+          background: #f7f8fc;
+          color: #222;
+        }
+
+        a {
+          text-decoration: none;
+        }
+
+        /* NAVBAR */
+        .navbar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px 40px;
+          background: #ffffff;
+          border-bottom: 2px solid #e3e6ef;
+          position: sticky;
+          top: 0;
+          z-index: 50;
+        }
+
+        .brand {
+          font-size: 22px;
+          font-weight: 700;
+          color: #0066ff;
+        }
+
+        .links a {
+          margin-left: 20px;
+          color: #333;
+          font-weight: 500;
+        }
+
+        .links a:hover {
+          color: #0066ff;
+        }
+
+        /* HERO */
+        .hero {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 80px 40px;
+          flex-wrap: wrap;
+        }
+
+        .hero-text {
+          max-width: 500px;
+        }
+
+        .hero h1 {
+          font-size: 40px;
+          font-weight: 800;
+          line-height: 1.2;
+          background: linear-gradient(90deg, #0066ff, #ff4dd2);
+          -webkit-background-clip: text;
+          color: transparent;
+        }
+
+        .hero p {
+          margin-top: 12px;
+          font-size: 17px;
+          color: #555;
+        }
+
+        .btn-primary {
+          display: inline-block;
+          margin-top: 20px;
+          padding: 12px 26px;
+          background: #0066ff;
+          color: white;
+          border-radius: 10px;
+          font-weight: 600;
+        }
+
+        .hero-img {
+          width: 340px;
+          margin-top: 20px;
+        }
+
+        /* FEATURE CARDS */
+        .features {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 24px;
+          padding: 50px 40px;
+        }
+
+        .feature-card {
+          background: white;
+          padding: 24px;
+          border-radius: 16px;
+          text-align: center;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+        }
+
+        .fc-img {
+          width: 120px;
+          margin-bottom: 14px;
+        }
+
+        .feature-card h3 {
+          font-size: 20px;
+          color: #0066ff;
+        }
+
+        .feature-card p {
+          margin-top: 8px;
+          color: #444;
+        }
+
+        /* ABOUT */
+        .about {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 60px 40px;
+          gap: 40px;
+          flex-wrap: wrap;
+        }
+
+        .about h2 {
+          font-size: 30px;
+          font-weight: 700;
+          color: #0066ff;
+        }
+
+        .about p {
+          margin-top: 10px;
+          color: #555;
+        }
+
+        .about-img {
+          width: 320px;
+        }
+
+        /* RULES */
+        .rules {
+          background: #0066ff;
+          color: white;
+          padding: 60px 40px;
+          text-align: center;
+        }
+
+        .rules h2 {
+          font-size: 28px;
+          margin-bottom: 20px;
+        }
+
+        .rules ul {
+          list-style: none;
+          margin: 20px auto;
+          max-width: 500px;
+          text-align: left;
+        }
+
+        .rules li {
+          margin: 10px 0;
+          font-size: 17px;
+        }
+
+        .btn-secondary {
+          display: inline-block;
+          margin-top: 20px;
+          background: white;
+          color: #0066ff;
+          padding: 12px 26px;
+          font-weight: 600;
+          border-radius: 10px;
+          cursor: pointer;
+        }
+
+        /* FOOTER */
+        .footer {
+          padding: 20px;
+          text-align: center;
+          background: #ffffff;
+          border-top: 2px solid #e3e6ef;
+          margin-top: 40px;
+          color: #666;
+          font-size: 14px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 800px) {
+          .hero {
+            text-align: center;
+            justify-content: center;
+          }
+          .hero-img {
+            margin-top: 40px;
+          }
+        }
+      `}</style>
+    </>
   );
 }
