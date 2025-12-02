@@ -8,31 +8,6 @@ function formatPrice(clp: number | undefined | null): string {
   return `$${thousandSeparatorPipe(clp)} CLP`;
 }
 
-function translateStatus(
-  status: AdminDetail["statusValidation"] | string
-): string {
-  const map: Record<string, string> = {
-    Pending: "Pendiente",
-    Published: "Publicado",
-    Rejected: "Rechazado",
-  };
-  return map[status] || status;
-}
-
-const getStatusColor = (
-  status: AdminDetail["statusValidation"] | string
-): string => {
-  switch (status) {
-    case "Published":
-      return "text-green-600";
-    case "Rejected":
-      return "text-red-600";
-    case "Pending":
-    default:
-      return "text-orange-600";
-  }
-};
-
 interface ValidationDetailSectionProps {
   detail: AdminDetail;
 }
@@ -87,11 +62,8 @@ export function ValidationDetailSection({
               Estado Validación:
             </dt>
             <dd
-              className={`mt-1 font-semibold ${getStatusColor(
-                detail.statusValidation
-              )}`}
             >
-              {translateStatus(detail.statusValidation)}
+              {"Pendiente"}
             </dd>
           </div>
 

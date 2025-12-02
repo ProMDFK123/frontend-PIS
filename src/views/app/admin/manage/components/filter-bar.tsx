@@ -2,14 +2,14 @@
 
 import React from 'react';
 
-type ValidationType = "Todos" | "Oferta de Trabajo" | "Voluntariado" | "Compra/Venta";
+type ManageType = "Todos" | "Oferta de Trabajo" | "Voluntariado" | "Compra/Venta";
 type SortType = "recientes" | "titulo";
 
 interface FilterBarProps {
     text: string;
     setText: (text: string) => void;
-    type: ValidationType;
-    setType: (type: ValidationType) => void;
+    type: ManageType;
+    setType: (type: ManageType) => void;
     sort: SortType;
     setSort: (sort: SortType) => void;
 }
@@ -39,7 +39,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
             {/* 2. Selector de Tipo (Select HTML) */}
             <select
                 value={type}
-                onChange={(e) => setType(e.target.value as ValidationType)}
+                onChange={(e) => setType(e.target.value as ManageType)}
                 className="md:w-1/4 p-2 border border-input bg-background rounded-md text-sm shadow-sm cursor-pointer"
             >
                 <option value="Todos">Todos los tipos</option>

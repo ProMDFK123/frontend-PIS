@@ -7,7 +7,7 @@ import { Button, Card, CardContent } from "@/components/ui";
 import { handleApiError } from "@/lib";
 import { useManageView } from "./hooks";
 import PublishedCard from "./components/published-card";
-import FilterBar from "@/components/offers/FilterBar";
+import FilterBar from "./components/filter-bar";
 
 export default function ManageView() {
     const {

@@ -10,9 +10,7 @@ export interface ValidationDetailViewProps {
   id: string;
 }
 
-export default function ValidationDetailView({
-  id,
-}: ValidationDetailViewProps) {
+export default function ValidationDetailView({ id }: ValidationDetailViewProps) {
   const router = useRouter();
   const { detail, loading, error, isMutating, handleAction, handleRetry } =
     useAdminPublicationDetailView(id);
@@ -42,12 +40,14 @@ export default function ValidationDetailView({
       </div>
     );
   }
+
   if (!detail)
     return (
       <div className="text-center mt-12 text-[var(--muted-ink)]">
         No se encontró la publicación pendiente.
       </div>
     );
+
   return (
     <main className="max-w-6xl mx-auto px-4 py-10">
       <button
@@ -60,20 +60,42 @@ export default function ValidationDetailView({
       <h1 className="text-4xl font-extrabold text-[var(--ink)] mb-1">
         {detail.title || "Sin Título"}
       </h1>
+
       <p className="text-lg text-[var(--muted-ink)] mb-6">
-        Tipo:{" "}
-        {getPresentationType(detail.type)}
-      </p>
+        Tipo: {getPresentationType(detail.type)}
+      </p>
+
       <div className="flex flex-col md:flex-row gap-6 items-start">
         <div className="w-full md:w-2/3">
           <ValidationDetailSection detail={detail} />
         </div>
+
         <div className="w-full md:w-1/3">
+          {/* Perfil del contacto */}
           <ValidationActionSection
             detail={detail}
             isMutating={isMutating}
             handleAction={handleAction}
           />
+
+          {/* BOTONES */}
+          <div className="mt-6 grid grid-cols-2 gap-4 w-full">
+            <button
+              onClick={() => handleAction("publish")}
+              disabled={isMutating}
+              className="w-full flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition disabled:opacity-50"
+            >
+              {isMutating ? "Procesando..." : "Publicar"}
+            </button>
+
+            <button
+              onClick={() => handleAction("reject")}
+              disabled={isMutating}
+              className="w-full flex items-center justify-center px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition disabled:opacity-50"
+            >
+              {isMutating ? "Procesando..." : "No Publicar"}
+            </button>
+          </div>
         </div>
       </div>
     </main>
