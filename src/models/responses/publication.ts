@@ -11,7 +11,7 @@ export interface OfferDetailForAdmin {
     images: string[];
     companyName: string;
     publicationDate: string;
-    type: number;
+    offerType: number;
     statusValidation: "Pending" | "Published" | "Rejected"; 
     remuneration: number; 
     activa: boolean;
@@ -77,7 +77,7 @@ export interface ValidationItemFull {
 
 export interface PublishedItem {
     title: string;
-    type: string;
+    offerType: string;
     name: string;
     publicationDate: string;
     activa: boolean;

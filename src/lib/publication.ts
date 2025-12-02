@@ -1,5 +1,3 @@
-import { Badge } from '@/components/ui';
-import { Offer } from 'src/components/offers/OfferCard';
 import {
   OfferForAdmin,
   PendingOffersForAdmin,
@@ -15,19 +13,19 @@ import {
 } from "@/models/responses";
 import { OfferSubType } from '@/models/responses/publication';
 
-export function toOfferTypeForAdmin(o: PendingOffersForAdmin): OfferSubType {
-    const typeValue = o.offerType ?? 0;
-    if (typeValue === 1) {
-        return "Voluntariado";
-    }
-    return "Oferta de Trabajo";
+export function toOfferTypeForAdmin(offerTypeNumber: number): OfferSubType {
+    const typeValue = offerTypeNumber ?? 0;
+    if (typeValue === 1) {
+        return "Voluntariado";
+    }
+    return "Oferta de Trabajo";
 }
 
 export function mapOfferDtoToValidate(o: PendingOffersForAdmin): OfferForAdmin {
   return {
     id: String(o.id),
     title: o.title,
-    offerType: toOfferTypeForAdmin(o),
+    offerType: toOfferTypeForAdmin(o.offerType),
   };
 }
 
@@ -38,17 +36,13 @@ export function mapBuySellDtoToValidate(b: BuySellBasic): BuySellForAdmin {
     type: "Compra/Venta",
   };
 }
-// funcion exclusiva solo para mapOfferToManage y mapBuySellToManage
-function getPublicationTypeFromNumber(typeValue: number): AdminItemType {
-    if (typeValue === 0 || typeValue === 1) return "Compra/Venta";
-    return "Oferta de Trabajo";
-}
 
 export function mapOfferToManage(o: OfferDetailForAdmin): PublishedItem {
+    console.log("id:", o.id, "tipo de oferta", o.offerType);
     return {
         id: o.id,
         title: o.title,
-        type: getPublicationTypeFromNumber(o.type),
+        offerType: toOfferTypeForAdmin(o.offerType),
         name: o.companyName && o.companyName.trim() !== "" ? o.companyName : "Empresa Desconocida",
         publicationDate: o.publicationDate,
         activa: o.activa ?? false,
@@ -59,7 +53,7 @@ export function mapBuySellToManage(b: BuySellDetailForAdmin): PublishedItem {
     return {
         id: b.id,
         title: b.title,
-        type: getPublicationTypeFromNumber(b.type),
+        offerType: "Compra/Venta",
         name: b.userName && b.userName.trim() !== "" ? b.userName : "Empresa Desconocida",
         publicationDate: b.publicationDate,
         activa: b.activa ?? true,
@@ -106,6 +100,7 @@ function getAdminDetailType(typeValue: any): PublicationType {
 }
 
 export function mapOfferToDetail(dto: any): AdminDetail {
+  console.log("Valor de dto.offerType:", dto.offerType);
   const idValue = (dto as OfferDetailForAdmin).id ?? dto.id;
   const titleValue =
     (dto as OfferDetailForAdmin).title ?? dto.title ?? "Sin título";
@@ -133,7 +128,7 @@ export function mapOfferToDetail(dto: any): AdminDetail {
     (dto as OfferDetailForAdmin).activa ?? dto.active ?? false;
   const imagesValue =
     (dto as OfferDetailForAdmin).images ?? dto.images ?? [];
-  const typeValue = (dto as OfferDetailForAdmin).type ?? dto.type;
+  const offerSubtypeValue = (dto as any).offerType;
   const deadlineDateValue = (dto as any).DeadlineDate ?? dto.deadlineDate;
   const endDateValue = (dto as any).EndDate ?? dto.endDate;
   return {
@@ -143,7 +138,7 @@ export function mapOfferToDetail(dto: any): AdminDetail {
     companyName: companyNameValue, 
     publicationDate: publicationDateValue,
     remuneration: remunerationValue,
-    type: getAdminDetailType(typeValue),
+    type: getAdminDetailType(offerSubtypeValue),
     statusValidation: statusValidationValue,
     active: activeValue,
     images: imagesValue,
@@ -214,3 +209,18 @@ export function mapApplicantToView(dto: ViewAppplicantsForAdmin): ViewAppplicant
         status: dto.status as "Pending" | "Published" | "Rejected",
     };
 }
+
+export const getPresentationType = (modelType: string | undefined): string => {
+    if (!modelType) return "Tipo Desconocido";
+
+    switch (modelType) {
+        case "Trabajo":
+            return "Oferta de Trabajo";
+        case "Voluntariado":
+            return "Voluntariado";
+        case "CompraVenta":
+            return "Compra y Venta";
+        default:
+            return modelType;
+    }
+};

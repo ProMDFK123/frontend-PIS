@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { useAdminPublicationDetailView } from "./hooks/use-validation-detail-view";
 import { ValidationDetailSection, ValidationActionSection } from "./components";
+import { getPresentationType } from "@/lib";
 
 export interface ValidationDetailViewProps {
   id: string;
@@ -60,11 +61,9 @@ export default function ValidationDetailView({
         {detail.title || "Sin Título"}
       </h1>
       <p className="text-lg text-[var(--muted-ink)] mb-6">
-        Tipo:{" "}
-        {detail.type === "Compra/Venta"
-          ? "Venta de Artículo"
-          : "Oferta de Trabajo"}
-      </p>
+        Tipo:{" "}
+        {getPresentationType(detail.type)}
+      </p>
       <div className="flex flex-col md:flex-row gap-6 items-start">
         <div className="w-full md:w-2/3">
           <ValidationDetailSection detail={detail} />

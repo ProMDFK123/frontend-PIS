@@ -16,8 +16,8 @@ interface PublishedItemCardProps {
 }
 
 export default function PublishedCard({ item, onViewDetail }: PublishedItemCardProps) {
-    const { id, title, type, name, publicationDate, activa } = item; 
-    const typeText = typeof type === 'string' ? type : 'CompraVenta'; 
+    const { id, title, offerType, name, publicationDate, activa } = item; 
+    const typeText = typeof offerType === 'string' ? offerType : 'Compra/Venta'; 
     const statusClasses = activa
         ? { icon: CheckCircleIcon, text: "ACTIVA", color: "bg-green-100 text-green-800" }
         : { icon: XCircleIcon, text: "INACTIVA", color: "bg-red-100 text-red-800" };

@@ -96,7 +96,7 @@ export function ManageDetailSection({
           </div>
 
           {/* Fila 3: Fecha Límite (Condicional) */}
-          {detail.type !== "CompraVenta" && (
+          {detail.type !== "Compra/Venta" && (
             <div>
               <dt className="font-semibold text-[var(--ink)]">
                 Fecha Límite:
@@ -107,8 +107,7 @@ export function ManageDetailSection({
             </div>
           )}
 
-          {/* Fila 4: Fecha de Término (Est.) (Condicional) */}
-          {detail.type !== "CompraVenta" && (
+          {detail.type !== "Compra/Venta" && (
             <div>
               <dt className="font-semibold text-[var(--ink)]">
                 Fecha de Término:
@@ -122,7 +121,7 @@ export function ManageDetailSection({
           {/* Fila 5: Remuneración / Precio Solicitado */}
           <div>
             <dt className="font-semibold text-[var(--ink)]">
-              {detail.type === "CompraVenta"
+              {detail.type === "Compra/Venta"
                 ? "Precio Solicitado:"
                 : "Remuneración:"}
             </dt>

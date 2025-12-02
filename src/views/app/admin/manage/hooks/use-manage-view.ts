@@ -21,7 +21,7 @@ export const useManageView = () => {
         let list = [...allPublications];
         if (type !== "Todos") {
             list = list.filter((o) => {
-                return o.type === type;
+                return o.offerType === type;
             });
         }
         if (text.trim()) {
