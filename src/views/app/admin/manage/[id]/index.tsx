@@ -3,10 +3,8 @@
 import { useRouter } from "next/navigation";
 import { ChevronLeft, AlertCircle } from "lucide-react";
 import React from "react";
-
 import { useAdminPublicationDetailView } from "./hooks/use-manage-detail-view";
-import { handleApiError } from "@/lib";
-
+import { handleApiError, getPresentationType } from "@/lib";
 import { ManageDetailSection } from "./components/manage-detail-section";
 import { ManageProfileSection } from "./components/manage-profile-section";
 
@@ -70,8 +68,8 @@ export default function ManageDetailView({ id }: ManageDetailViewProps) {
       </h1>
 
       <p className="text-base text-[var(--muted-ink)] mb-4">
-        Tipo: {detail.type === "Compra/Venta" ? "Venta de Artículo" : "Oferta de Trabajo"}
-      </p>
+        Tipo: {getPresentationType(detail.type)}
+      </p>
 
       <div className="flex flex-col md:flex-row gap-6 items-start">
         <div className="w-full md:w-3/4 space-y-6">

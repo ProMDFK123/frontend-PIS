@@ -1,15 +1,6 @@
 import { PublishedItem } from "@/models/responses";
 import { ClockIcon, UserIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/20/solid';
 
-function peso(clp: number): string {
-    if (clp <= 0) return "No disponible";
-    return clp.toLocaleString("es-CL", {
-        style: "currency",
-        currency: "CLP",
-        maximumFractionDigits: 0,
-    });
-}
-
 interface PublishedItemCardProps {
     item: PublishedItem;
     onViewDetail: (id: number) => void;
