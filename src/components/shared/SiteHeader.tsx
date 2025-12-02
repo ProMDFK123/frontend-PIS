@@ -35,6 +35,13 @@ const baseDropdownItems = [
   { href: "/jobs/reports", label: "Historial de trabajos" }, // Se modifica dinámicamente
 ];
 
+// LINKS DE COMPAÑIA Y INDIVIDUAL
+const offererNavLinks = [
+  { href: "/offers", label: "Inicio" },
+  { href: "/offerer/create-publication", label: "Publicar" },
+  { href: "/offerer/create-publication/your-publications", label: "Mis Publicaciones" },
+];
+
 function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
   const initials =
     name?.trim()?.split(/\s+/).slice(0, 2).map(n => n[0]?.toUpperCase()).join("") || "U";
@@ -112,7 +119,10 @@ export default function SiteHeader() {
       { href: getProfileRoute(auth.userType ?? undefined), label: "Editar perfil"},
       { href: "/jobs/history", label: "Historial de postulaciones" },
       { href: "/jobs/reports", label: "Historial de trabajos" },
+      { href: "/offerer/create-publication", label: "Publicar" },
+      { href: "/offerer/create-publication/your-publications", label: "Mis Publicaciones" },
     ];
+
     return baseItems.map(item => {
       if (item.label !== "Historial de trabajos") return item;
 
@@ -140,9 +150,10 @@ export default function SiteHeader() {
   }, [open]);
 
   const isAdmin = auth.role === "Admin";
-  const mainLinks = isAdmin ? adminNavLinks : userLinks;
+  const isOfferer = auth.role === "Offerent";
+  const mainLinks = isAdmin ? adminNavLinks : isOfferer ? offererNavLinks : userLinks;
 
-  return (
+return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--card)]/85 backdrop-blur">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
 
