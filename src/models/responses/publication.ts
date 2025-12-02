@@ -1,6 +1,6 @@
 export interface PendingOffersForAdmin {
-    title: string; 
-    type: number; 
+    title: string;
+    offerType: number;
     id: number;
 }
 // Interfaz de entrada para todas las interfaces de salida que usen ofertas
@@ -40,19 +40,39 @@ export type BuySellBasic = {
   userName: string;        
 };
 
-export type AdminItemType = "Trabajo" | "CompraVenta"; 
+export type AdminItemType = OfferSubType | "Compra/Venta";
 
 export type ValidationType = "Todos" | AdminItemType;
 
+export interface BuySellForAdmin {
+    id: string;
+    title: string;
+    type: "Compra/Venta";
+}
 export interface OfferForAdmin {
     id: string;
     title: string;
-    type: AdminItemType; 
+    offerType: OfferSubType;
+}
+// solo se usa para que se vea bien el tipo en la pagina
+export interface AdminItemBase {
+    id: string;
+    title: string;
+    type: "Oferta de Trabajo" | "Voluntariado" | "Compra/Venta"; 
+}
+export type AdminItem = OfferForAdmin | BuySellForAdmin;
+
+export type OfferSubType = "Oferta de Trabajo" | "Voluntariado";
+
+export interface OfferTypeForAdmin {
+    id: string;
+    title: string;
+    offerType: OfferSubType; 
 }
 
 export interface ValidationItemFull {
     id: string; 
-    item: OfferForAdmin;
+    item: AdminItem;
 }
 
 export interface PublishedItem {
@@ -64,7 +84,7 @@ export interface PublishedItem {
     id: number;
 }
 
-export type PublicationType = "Trabajo" | "Voluntariado" | "CompraVenta"; 
+export type PublicationType = "Trabajo" | "Voluntariado" | "Compra/Venta"; 
 export type ValidationStatus = "Pending" | "Published" | "Rejected";
 
 export interface AdminDetail {
@@ -83,12 +103,21 @@ export interface AdminDetail {
     endDate?: string;
 }
 
-export interface UseAdminDetailResult {
+export interface UseAdminDetailValidateResult {
     detail: AdminDetail | null;
     loading: boolean;
     error: string | null;
     isMutating: boolean; 
-    handleAction: (action: 'publish' | 'reject' | 'close_publication') => void;
+    handleAction: (action: 'publish' | 'reject') => void;
+    handleRetry: () => void;
+}
+
+export interface UseAdminDetailManageResult {
+    detail: AdminDetail | null;
+    loading: boolean;
+    error: string | null;
+    isMutating: boolean; 
+    handleAction: (action: 'close_publication') => void;
     handleRetry: () => void;
 }
 

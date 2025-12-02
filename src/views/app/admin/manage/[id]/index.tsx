@@ -70,7 +70,7 @@ export default function ManageDetailView({ id }: ManageDetailViewProps) {
       </h1>
 
       <p className="text-base text-[var(--muted-ink)] mb-4">
-        Tipo: {detail.type === "CompraVenta" ? "Venta de Artículo" : "Oferta de Trabajo"}
+        Tipo: {detail.type === "Compra/Venta" ? "Venta de Artículo" : "Oferta de Trabajo"}
       </p>
 
       <div className="flex flex-col md:flex-row gap-6 items-start">

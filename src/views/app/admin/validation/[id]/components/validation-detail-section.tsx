@@ -96,7 +96,7 @@ export function ValidationDetailSection({
           </div>
 
           {/* Fila 3: Fecha Límite (Condicional) */}
-          {detail.type !== "CompraVenta" && (
+          {detail.type !== "Compra/Venta" && (
             <div>
               <dt className="font-semibold text-[var(--ink)]">
                 Fecha Límite:
@@ -108,10 +108,10 @@ export function ValidationDetailSection({
           )}
 
           {/* Fila 4: Fecha de Término (Est.) (Condicional) */}
-          {detail.type !== "CompraVenta" && (
+          {detail.type !== "Compra/Venta" && (
             <div>
               <dt className="font-semibold text-[var(--ink)]">
-                Fecha de Término (Est.):
+                Fecha de Término:
               </dt>
               <dd className="mt-1 text-[var(--muted-ink)]">
                 {formatDate(detail.endDate || "")}
@@ -122,7 +122,7 @@ export function ValidationDetailSection({
           {/* Fila 5: Remuneración / Precio Solicitado */}
           <div>
             <dt className="font-semibold text-[var(--ink)]">
-              {detail.type === "CompraVenta"
+              {detail.type === "Compra/Venta"
                 ? "Precio Solicitado:"
                 : "Remuneración:"}
             </dt>

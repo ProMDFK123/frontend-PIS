@@ -41,19 +41,14 @@ export default function ValidationDetailView({
       </div>
     );
   }
-  
   if (!detail)
     return (
       <div className="text-center mt-12 text-[var(--muted-ink)]">
         No se encontró la publicación pendiente.
       </div>
     );
-    
   return (
     <main className="max-w-6xl mx-auto px-4 py-10">
-      {/* CAMBIO: Usamos router.push(backRoute) para garantizar que siempre navegue a la lista de validación, 
-        incluso si el historial del navegador está vacío o incorrecto. 
-      */}
       <button
         onClick={() => router.push(backRoute)}
         className="mb-6 text-[var(--primary)] hover:underline flex items-center gap-1"
@@ -66,7 +61,7 @@ export default function ValidationDetailView({
       </h1>
       <p className="text-lg text-[var(--muted-ink)] mb-6">
         Tipo:{" "}
-        {detail.type === "CompraVenta"
+        {detail.type === "Compra/Venta"
           ? "Venta de Artículo"
           : "Oferta de Trabajo"}
       </p>

@@ -2,13 +2,13 @@
 "use client";
 
 import React from "react";
-import { AdminDetail, UseAdminDetailResult } from "@/models/responses";
+import { AdminDetail, UseAdminDetailValidateResult } from "@/models/responses";
 import { Button } from "@/components/ui";
 
 interface ValidationActionSectionProps {
   detail: AdminDetail;
-  isMutating: UseAdminDetailResult["isMutating"];
-  handleAction: UseAdminDetailResult["handleAction"];
+  isMutating: UseAdminDetailValidateResult["isMutating"];
+  handleAction: UseAdminDetailValidateResult["handleAction"];
 }
 
 export function ValidationActionSection({

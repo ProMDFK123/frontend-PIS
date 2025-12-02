@@ -1,3 +1,5 @@
+import { Badge } from '@/components/ui';
+import { Offer } from 'src/components/offers/OfferCard';
 import {
   OfferForAdmin,
   PendingOffersForAdmin,
@@ -7,31 +9,34 @@ import {
   BuySellDetailForAdmin,
   PublicationType,
   PublishedItem,
-  ViewAppplicantsForAdmin
+  ViewAppplicantsForAdmin,
+  OfferTypeForAdmin,
+  BuySellForAdmin,
 } from "@/models/responses";
+import { OfferSubType } from '@/models/responses/publication';
 
-export function toOfferTypeForAdmin(o: PendingOffersForAdmin): OfferForAdmin["type"] {
-  const typeValue = o.type ?? 0;
-  if (typeValue === 0 || typeValue === 1) {
-    return "Trabajo";
-  }
-  return "Trabajo";
+export function toOfferTypeForAdmin(o: PendingOffersForAdmin): OfferSubType {
+    const typeValue = o.offerType ?? 0;
+    if (typeValue === 1) {
+        return "Voluntariado";
+    }
+    return "Oferta de Trabajo";
 }
 
 export function mapOfferDtoToValidate(o: PendingOffersForAdmin): OfferForAdmin {
   return {
     id: String(o.id),
     title: o.title,
-    type: toOfferTypeForAdmin(o),
+    offerType: toOfferTypeForAdmin(o),
   };
 }
 
-export function mapBuySellDtoToValidate(b: BuySellBasic): OfferForAdmin {
-  return {
-    id: `bs-${String(b.id)}`,
-    title: b.title,
-    type: "CompraVenta",
-  };
+export function mapBuySellDtoToValidate(b: BuySellBasic): BuySellForAdmin {
+  return {
+    id: `bs-${String(b.id)}`,
+    title: b.title,
+    type: "Compra/Venta",
+  };
 }
 // funcion exclusiva solo para mapOfferToManage y mapBuySellToManage
 function getPublicationTypeFromNumber(typeValue: number): AdminItemType {
@@ -60,17 +65,28 @@ export function mapBuySellToManage(b: BuySellDetailForAdmin): PublishedItem {
         activa: b.activa ?? true,
     };
 }
-export function getOfferTypeDisplay(type: OfferForAdmin["type"]) {
-  if (type === "CompraVenta") {
-    return {
-      text: "Compra y Venta",
-      className: "bg-purple-100 text-purple-800 hover:bg-purple-200",
-    };
-  }
-  return {
-    text: "Oferta de Trabajo",
-    className: "bg-blue-100 text-blue-800 hover:bg-blue-200",
-  };
+
+type BadgeDisplayType = "Oferta de Trabajo" | "Voluntariado" | "Compra/Venta";
+
+export function getOfferTypeDisplay(type: BadgeDisplayType) {
+switch (type) {
+    case "Voluntariado":
+      return {
+        text: "Voluntariado",
+        className: "bg-green-100 text-green-800 hover:bg-green-200", 
+      };
+    case "Compra/Venta":
+      return {
+        text: "Compra y Venta",
+        className: "bg-purple-100 text-purple-800 hover:bg-purple-200",
+      };
+    case "Oferta de Trabajo":
+    default:
+      return {
+        text: "Oferta de Trabajo",
+        className: "bg-blue-100 text-blue-800 hover:bg-blue-200",
+      };
+  }
 }
 
 function getAdminDetailType(typeValue: any): PublicationType {
@@ -164,7 +180,7 @@ export function mapBuySellToDetail(dto: any): AdminDetail {
     companyName: userNameValue,
     publicationDate: publicationDateValue,
     price: priceValue,
-    type: "CompraVenta",
+    type: "Compra/Venta",
     remuneration: undefined,
     images: [],
     active: false,
