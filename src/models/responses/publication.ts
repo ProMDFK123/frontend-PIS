@@ -172,3 +172,15 @@ export interface ViewAppplicantsForAdmin {
   applicant: string;
   status: "Pending" | "Published" | "Rejected" | string;
 }
+
+export interface PostulantDetailForAdmin {
+  id: number;
+  studentName: string;
+  email: string;
+  phoneNumber: string;
+  status: "Pending" | "Published" | "Rejected" | string;
+  curriculumVitae?: string;
+  rating?: string;
+  motivationLetter?: string;
+  disability?: string;
+}

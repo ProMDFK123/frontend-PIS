@@ -81,7 +81,7 @@ export default function ManageDetailView({ id }: ManageDetailViewProps) {
                 onClick={() =>
                   router.push(`/admin/publications/manage/${detail.id}/applicants`)
                 }
-                className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                className="w-1/2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
                 Ver Postulantes
               </button>
@@ -90,7 +90,7 @@ export default function ManageDetailView({ id }: ManageDetailViewProps) {
             <button
               onClick={() => handleAction("close_publication")}
               disabled={isMutating}
-              className="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+              className="w-1/2 px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
             >
               Cerrar Publicación
             </button>

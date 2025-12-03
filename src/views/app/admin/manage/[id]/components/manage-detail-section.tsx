@@ -87,11 +87,8 @@ export function ManageDetailSection({
               Estado Validación:
             </dt>
             <dd
-              className={`mt-1 font-semibold ${getStatusColor(
-                detail.statusValidation
-              )}`}
             >
-              {translateStatus(detail.statusValidation)}
+              {"Publicado"}
             </dd>
           </div>
 

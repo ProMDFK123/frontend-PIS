@@ -58,7 +58,7 @@ export default function ValidationView() {
                     <ValidationRowLink 
                         key={o.id} 
                         itemId={o.id}
-                        item={o.item}
+                        item={o.item as any}
                     />
                 ))}
             </section>

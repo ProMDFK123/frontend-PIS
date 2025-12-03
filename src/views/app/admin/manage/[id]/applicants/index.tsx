@@ -30,7 +30,7 @@ export default function ApplicantsView({ id }: ApplicantsViewProps) {
   const { filterType, setFilterType, text, setText } = filterState;
 
   const handleViewDetail = (applicantId: number) => {
-    router.push(`/admin/publications/manage/${id}/applicants/${applicantId}/detail`);
+    router.push(`/admin/publications/manage/${id}/applicants/${applicantId}`);
   };
 
   const renderContent = () => {
@@ -85,7 +85,7 @@ export default function ApplicantsView({ id }: ApplicantsViewProps) {
         onClick={() => router.push(backRoute)}
         className="mb-4 text-[var(--primary)] hover:underline flex items-center gap-1"
       >
-        <ChevronLeft size={20} /> Volver al detalle
+        <ChevronLeft size={20} /> Volver
       </button>
 
       <h1 className="text-3xl font-extrabold text-[var(--ink)] mb-1">

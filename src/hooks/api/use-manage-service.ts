@@ -100,3 +100,14 @@ export const useGetPostulantsQuery = (publicationId: string | undefined) => {
         enabled: !!publicationId,
     });
 };
+
+export const useGetPostulantDetailQuery = (id: string | undefined) => {
+    return useQuery<any, Error>({ 
+        queryKey: ["admin", "postulantDetail", id],
+        queryFn: async () => {
+            if (!id) throw new Error("ID de postulante es requerido.");
+            const response = await manageService.getPostulantDetail(id);
+            return response.data.data;
+        }
+    });
+}

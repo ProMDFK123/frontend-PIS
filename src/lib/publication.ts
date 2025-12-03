@@ -8,8 +8,8 @@ import {
   PublicationType,
   PublishedItem,
   ViewAppplicantsForAdmin,
-  OfferTypeForAdmin,
   BuySellForAdmin,
+  PostulantDetailForAdmin,
 } from "@/models/responses";
 import { OfferSubType } from '@/models/responses/publication';
 
@@ -224,3 +224,17 @@ export const getPresentationType = (modelType: string | undefined): string => {
             return modelType;
     }
 };
+
+export const getApplicantDetailForAdmin = (dto: any): PostulantDetailForAdmin => {
+    return {
+        id: dto.id,
+        studentName: dto.studentName,
+        email: dto.email,
+        phoneNumber: dto.phoneNumber,
+        status: dto.status,
+        curriculumVitae: dto.curriculumVitae,
+        rating: dto.rating,
+        motivationLetter: dto.motivationLetter,
+        disability: dto.disability
+    };
+}
