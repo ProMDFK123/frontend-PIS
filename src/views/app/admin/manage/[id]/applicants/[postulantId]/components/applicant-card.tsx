@@ -6,6 +6,8 @@ import Image from "next/image";
 import { PostulantDetailForAdmin } from "@/models/responses";
 
 export function ApplicantCard({ postulant }: { postulant: PostulantDetailForAdmin }) {
+  const hasCV = !!postulant.curriculumVitae;
+
   return (
     <Card className="w-full">
       <CardContent className="flex flex-col items-center py-6 space-y-4">
@@ -18,6 +20,7 @@ export function ApplicantCard({ postulant }: { postulant: PostulantDetailForAdmi
             height={128}
             alt="Foto postulante"
             className="object-cover"
+            unoptimized
           />
         </div>
 
@@ -26,14 +29,19 @@ export function ApplicantCard({ postulant }: { postulant: PostulantDetailForAdmi
           {postulant.studentName}
         </p>
 
-        {/* BOTONES */}
-        <Button className="w-full bg-blue-600 hover:bg-blue-700">
-          Descargar CV
+        {/* BOTON DESCARGAR CV */}
+        <Button
+          className={`w-full font-bold ${
+            hasCV
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
+          disabled={!hasCV}
+          onClick={() => hasCV && window.open(postulant.curriculumVitae!, "_blank")}
+        >
+          {hasCV ? "Descargar CV" : "Sin CV disponible"}
         </Button>
 
-        <Button className="w-full bg-purple-600 hover:bg-purple-700">
-          Ver Carta de Motivación
-        </Button>
       </CardContent>
     </Card>
   );

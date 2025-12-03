@@ -11,6 +11,13 @@ export function ApplicantInfoForm({
 }: {
   postulant: PostulantDetailForAdmin;
 }) {
+  const statusColor =
+    postulant.status === "Aceptada"
+      ? "bg-green-600"
+      : postulant.status === "Rechazada"
+      ? "bg-red-600"
+      : "bg-yellow-500";
+
   return (
     <Card className="w-full">
       <CardContent className="grid grid-cols-1 gap-4 py-6">
@@ -33,9 +40,13 @@ export function ApplicantInfoForm({
             <Input value={postulant.phoneNumber} readOnly />
           </div>
 
-          <div>
+          <div className="flex flex-col">
             <Label>Estado</Label>
-            <Input value={postulant.status} readOnly />
+            <span
+              className={`${statusColor} text-white px-3 py-2 mt-[2px] rounded-md font-semibold`}
+            >
+              {postulant.status}
+            </span>
           </div>
         </div>
 
