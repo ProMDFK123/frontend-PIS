@@ -16,7 +16,7 @@ export default function ApplicantDetailView({
   const router = useRouter();
 
   const { postulant, loading, error, handleRetry } =
-    useAdminPostulantDetail(id);
+    useAdminPostulantDetail(postulantId);
 
   const backRoute = `/admin/publications/manage/${id}/applicants`;
 

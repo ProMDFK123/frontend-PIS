@@ -54,7 +54,7 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
         onClick={() => router.push(backRoute)}
         className="mb-6 text-[var(--primary)] hover:underline flex items-center gap-1"
       >
-        <ChevronLeft size={20} /> Volver a la lista de pendientes
+        <ChevronLeft size={20} /> Volver
       </button>
 
       <h1 className="text-4xl font-extrabold text-[var(--ink)] mb-1">

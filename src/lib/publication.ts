@@ -54,7 +54,7 @@ export function mapBuySellToManage(b: BuySellDetailForAdmin): PublishedItem {
         id: b.id,
         title: b.title,
         offerType: "Compra/Venta",
-        name: b.userName && b.userName.trim() !== "" ? b.userName : "Empresa Desconocida",
+        name: b.nameOwner,
         publicationDate: b.publicationDate,
         activa: b.activa ?? true,
     };
@@ -100,7 +100,7 @@ function getAdminDetailType(typeValue: any): PublicationType {
 }
 
 export function mapOfferToDetail(dto: any): AdminDetail {
-  console.log("Valor de dto.offerType:", dto.offerType);
+  console.log("contact info dto:", dto.contactInfo);
   const idValue = (dto as OfferDetailForAdmin).id ?? dto.id;
   const titleValue =
     (dto as OfferDetailForAdmin).title ?? dto.title ?? "Sin título";
@@ -145,6 +145,9 @@ export function mapOfferToDetail(dto: any): AdminDetail {
     price: undefined,
     deadlineDate: deadlineDateValue,
     endDate: endDateValue,
+    location: dto.location,
+    requirements: dto.requirements,
+    contactInfo: dto.contactInfo
   };
 }
 
@@ -157,7 +160,7 @@ export function mapBuySellToDetail(dto: any): AdminDetail {
     dto.description ??
     "No hay descripción disponible.";
   const rawUserName =
-    (dto as BuySellDetailForAdmin).userName ?? dto.userName;
+    (dto as BuySellDetailForAdmin).nameOwner ?? dto.userName;
   const userNameValue =
     rawUserName && rawUserName.trim() !== "" ? rawUserName : "Usuario UCN";
 
@@ -180,6 +183,9 @@ export function mapBuySellToDetail(dto: any): AdminDetail {
     images: [],
     active: false,
     statusValidation: "Published",
+    location: dto.location,
+    requirements: undefined,
+    contactInfo: dto.contactInfo
   };
 }
 

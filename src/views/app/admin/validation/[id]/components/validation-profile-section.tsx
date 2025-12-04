@@ -20,30 +20,28 @@ export function ValidationActionSection({
           Perfil del Contacto
         </h2>
 
-        {/* Detalles */}
+        {/* PERFIL */}
         <div className="flex flex-col items-center text-center space-y-3 pt-2">
           <div className="w-20 h-20 bg-blue-200 rounded-full flex items-center justify-center text-blue-600 text-3xl font-bold">
             {detail.companyName ? detail.companyName[0] : "U"}
           </div>
 
-          <p className="font-bold text-xl text-[var(--ink)]">
+          <p className="font-bold text-xl text-[var(--ink)] break-words px-2">
             {detail.companyName || "Usuario UCN"}
           </p>
         </div>
 
+        {/* INFO DETALLADA */}
         <div className="mt-6 pt-4 border-t border-[var(--border)] text-sm text-[var(--ink)] space-y-3">
-          <p>
-            Docente de la Universidad Católica del Norte y ha participado
-            activamente en iniciativas...
-          </p>
 
-          <p>
-            <strong>Correo electrónico:</strong> usuario@ucn.cl
-          </p>
+          {/* INFORMACIÓN DE CONTACTO (igual que el otro componente) */}
+          {detail.contactInfo && (
+            <div className="flex flex-col">
+              <span className="font-semibold mb-1">Información de contacto:</span>
+              <span className="break-all">{detail.contactInfo}</span>
+            </div>
+          )}
 
-          <p>
-            <strong>Teléfono:</strong> +56 9 1234 5678
-          </p>
         </div>
       </div>
     </section>

@@ -41,8 +41,8 @@ export default function PublishedCard({ item, onViewDetail }: PublishedItemCardP
                     <li className="flex items-center gap-2">
                         <ClockIcon className="w-4 h-4" />
                         <span>
-                            Fecha: <strong className="text-[var(--ink)]">
-                                {publicationDate && new Date(publicationDate).getTime() > 0 
+                            Fecha de Publicación: <strong className="text-[var(--ink)]">
+                                {publicationDate && new Date(publicationDate).getTime() > 0
                                     ? new Date(publicationDate).toLocaleDateString("es-CL")
                                     : "Fecha no disponible"}
                             </strong>

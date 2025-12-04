@@ -42,6 +42,7 @@ export function ManageDetailSection({
 }: ManageDetailSectionProps) {
   return (
     <section className="w-full bg-white p-6 rounded-xl shadow-lg border border-[var(--border)] space-y-6">
+      
       {/* Imagen */}
       <div className="mb-4 overflow-hidden rounded-md max-h-96">
         <img
@@ -55,23 +56,43 @@ export function ManageDetailSection({
         />
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-[var(--primary)] mb-4">
-          Detalles de la Publicación
-        </h2>
-        {/* Descripción - Eliminado el "Descripción Completa" y arreglado el padding/sangría */}
-        <p className="text-[var(--ink)] leading-relaxed">
+      {/* TÍTULO */}
+      <h2 className="text-2xl font-bold text-[var(--primary)] mb-4">
+        Detalles de la Publicación
+      </h2>
+
+      {/* DESCRIPCIÓN */}
+      <div className="space-y-2">
+        <h3 className="text-xl font-bold text-[var(--primary)]">
+          Descripción
+        </h3>
+
+        <p className="text-[var(--ink)] leading-relaxed whitespace-pre-line">
           {detail.description || "No hay descripción detallada proporcionada."}
         </p>
       </div>
 
+      {/* REQUISITOS */}
+      {detail.type !== "Compra/Venta" && detail.requirements && (
+        <div className="pt-4 border-t border-[var(--border)] space-y-2">
+          <h3 className="text-xl font-bold text-[var(--primary)]">
+            Requisitos
+          </h3>
+          <p className="text-[var(--ink)] whitespace-pre-line">
+            {detail.requirements}
+          </p>
+        </div>
+      )}
+
+      {/* BLOQUE DE INFORMACIÓN GENERAL */}
       <div className="pt-4 border-t border-[var(--border)]">
         <h3 className="text-xl font-bold text-[var(--primary)] mb-4">
-          Información Adicional
+          Información General
         </h3>
-        {/* Información Adicional - Usando dl para una mejor estructura y manejo del diseño */}
+
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
-          {/* Fila 1: Fecha de Publicación */}
+
+          {/* Fecha de Publicación */}
           <div>
             <dt className="font-semibold text-[var(--ink)]">
               Fecha de Publicación:
@@ -81,29 +102,25 @@ export function ManageDetailSection({
             </dd>
           </div>
 
-          {/* Fila 2: Estado Validación */}
+          {/* Estado Validación */}
           <div>
             <dt className="font-semibold text-[var(--ink)]">
               Estado Validación:
             </dt>
-            <dd
-            >
               {"Publicado"}
-            </dd>
           </div>
 
-          {/* Fila 3: Fecha Límite (Condicional) */}
+          {/* Fecha Límite */}
           {detail.type !== "Compra/Venta" && (
             <div>
-              <dt className="font-semibold text-[var(--ink)]">
-                Fecha Límite:
-              </dt>
+              <dt className="font-semibold text-[var(--ink)]">Fecha Límite:</dt>
               <dd className="mt-1 text-[var(--muted-ink)]">
                 {formatDate(detail.deadlineDate || "")}
               </dd>
             </div>
           )}
 
+          {/* Fecha de Término */}
           {detail.type !== "Compra/Venta" && (
             <div>
               <dt className="font-semibold text-[var(--ink)]">
@@ -115,7 +132,15 @@ export function ManageDetailSection({
             </div>
           )}
 
-          {/* Fila 5: Remuneración / Precio Solicitado */}
+          {/* Localidad */}
+            <div>
+              <dt className="font-semibold text-[var(--ink)]">Localidad:</dt>
+              <dd className="mt-1 text-[var(--muted-ink)]">
+                {detail.location || "No especificada"}
+              </dd>
+            </div>
+
+          {/* Remuneración / Precio */}
           <div>
             <dt className="font-semibold text-[var(--ink)]">
               {detail.type === "Compra/Venta"
@@ -130,6 +155,7 @@ export function ManageDetailSection({
               )}
             </dd>
           </div>
+
         </dl>
       </div>
     </section>

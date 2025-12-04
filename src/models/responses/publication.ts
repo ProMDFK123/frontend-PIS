@@ -15,6 +15,8 @@ export interface OfferDetailForAdmin {
     statusValidation: "Pending" | "Published" | "Rejected"; 
     remuneration: number; 
     activa: boolean;
+    location: string;
+    requirements: string;
 }
 // Interfaz de entrada para todas las interfaces de salida que usen compras/ventas
 export interface BuySellDetailForAdmin {
@@ -22,7 +24,7 @@ export interface BuySellDetailForAdmin {
     title: string;
     description: string;
     images: string[];
-    userName: string;
+    nameOwner: string;
     publicationDate: string;
     price: number;
     type: number;
@@ -101,6 +103,9 @@ export interface AdminDetail {
     remuneration?: number;
     deadlineDate?: string; 
     endDate?: string;
+    location?: string;
+    requirements?: string;
+    contactInfo: string;
 }
 
 export interface UseAdminDetailValidateResult {
@@ -170,7 +175,7 @@ export interface MyPublishedPublication {
 export interface ViewAppplicantsForAdmin {
   id: number;
   applicant: string;
-  status: "Pending" | "Published" | "Rejected" | string;
+  status: "Pendiente" | "Aceptada" | "Rechazada" | string;
 }
 
 export interface PostulantDetailForAdmin {

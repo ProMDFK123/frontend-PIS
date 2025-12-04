@@ -9,11 +9,11 @@ interface ApplicantCardProps {
 
 const getStatusBadge = (status: ViewAppplicantsForAdmin['status']) => {
   switch (status) {
-    case 'Published':
-      return { text: 'Seleccionado', color: 'bg-indigo-500 text-white' };
-    case 'Rejected':
-      return { text: 'No Seleccionado', color: 'bg-red-500 text-white' };
-    case 'Pending':
+    case 'Aceptada':
+      return { text: 'Aceptada', color: 'bg-green-500 text-white' };
+    case 'Rechazada':
+      return { text: 'Rechazada', color: 'bg-red-500 text-white' };
+    case 'Pendiente':
     default:
       return { text: 'Pendiente', color: 'bg-yellow-100 text-yellow-800' };
   }

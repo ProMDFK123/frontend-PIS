@@ -76,7 +76,7 @@ export default function ManageDetailView({ id }: ManageDetailViewProps) {
           <ManageDetailSection detail={detail} />
 
           <div className="flex gap-4 mt-4">
-            {detail.type === "Trabajo" && (
+            {(detail.type === "Trabajo" || detail.type === "Voluntariado") &&  (
               <button
                 onClick={() =>
                   router.push(`/admin/publications/manage/${detail.id}/applicants`)
