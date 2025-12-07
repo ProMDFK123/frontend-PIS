@@ -1,29 +1,29 @@
 // src/services/adapters/authAdapter.ts
 
-import { 
+import {
   AdminResponseDto,
-  AdminRequestDto, 
-  CompanyResponsetDto, 
+  AdminRequestDto,
+  CompanyResponsetDto,
   CompanyRequestDto,
-  IndividualResponseDto, 
+  IndividualResponseDto,
   IndividualRequestDto,
   StudentResponseDto,
   StudentRequestDto,
-  LoginResponseDto, 
-  ResendVerificationResponseDto, 
-  VerifyEmailResponseDto 
+  LoginResponseDto,
+  ResendVerificationResponseDto,
+  VerifyEmailResponseDto
 } from "../dtos/authDto";
 
 //Interfaces
-export interface StudentForm{
-    nombre: string;
-    apellido: string;
-    email: string;
-    rut: string;
-    telefono: string;
-    password: string;
-    confirmPassword: string;
-    discapacidad: string;
+export interface StudentForm {
+  nombre: string;
+  apellido: string;
+  email: string;
+  rut: string;
+  telefono: string;
+  password: string;
+  confirmPassword: string;
+  discapacidad: string;
 }
 
 export interface CompanyForm {
@@ -54,7 +54,7 @@ export interface AdminForm {
   telefono: string;
   password: string;
   confirmPassword: string;
-  superAdmin: boolean;
+  isSuperAdmin: boolean;
 }
 
 // Login Adapter
@@ -76,7 +76,7 @@ export const AdminAdapter = {
       PhoneNumber: formData.telefono,
       Password: formData.password,
       ConfirmPassword: formData.confirmPassword,
-      SuperAdmin: formData.superAdmin,
+      IsSuperAdmin: formData.isSuperAdmin,
     };
   },
   fromResponse(dto: AdminResponseDto): { message: string } {

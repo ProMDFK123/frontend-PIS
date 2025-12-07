@@ -22,7 +22,7 @@ const individualValidationRules = {
   rut: (value: string) => validators.rut(value, "RUT"),
   telefono: (value: string) => validators.phone(value),
   password: (value: string) => validators.password(value, "Contraseña"),
-  confirmPassword: (value: string, formData: any) => 
+  confirmPassword: (value: string, formData: any) =>
     validators.confirmPassword(value, formData?.password || ""),
 };
 
@@ -45,7 +45,7 @@ export default function RegisterAdminPage() {
       telefono: "",
       password: "",
       confirmPassword: "",
-      superAdmin: false,
+      isSuperAdmin: false,
     },
     individualValidationRules
   );
@@ -69,20 +69,20 @@ export default function RegisterAdminPage() {
     }
 
     try {
-          const payload = AdminAdapter.toDTO(formData);
-          const response = await registerAdmin(payload);
-    
-          alert(response.message || "Registro exitoso. Revisa tu correo para verificar tu cuenta.");
-          router.push("/auth/verify-email");
-    }catch (error: any) {
+      const payload = AdminAdapter.toDTO(formData);
+      const response = await registerAdmin(payload);
+
+      alert(response.message || "Registro exitoso. Revisa tu correo para verificar tu cuenta.");
+      router.push("/auth/verify-email");
+    } catch (error: any) {
       console.error("Error en el registro:", error);
 
       const backendError = error?.response?.data;
       let errorMessage = "Error al registrarse. Por favor, inténtalo nuevamente.";
 
       if (backendError.details) {
-          errorMessage += `\n${backendError.details}`;
-        }
+        errorMessage += `\n${backendError.details}`;
+      }
 
       if (backendError?.errors) {
         errorMessage = Object.entries(backendError.errors)
@@ -151,15 +151,14 @@ export default function RegisterAdminPage() {
                   error={errors.apellido ?? undefined}
                   touched={touched.apellido}
                 />
-                
+
                 <div>
                   <label htmlFor="email" className="text-sm font-medium text-gray-700 block mb-1">
                     Correo Personal *
                   </label>
                   <div
-                    className={`flex items-center border ${
-                      touched.email && errors.email ? "border-red-500" : "border-gray-300"
-                    } rounded-md px-2 focus-within:ring-1 focus-within:ring-blue-500`}
+                    className={`flex items-center border ${touched.email && errors.email ? "border-red-500" : "border-gray-300"
+                      } rounded-md px-2 focus-within:ring-1 focus-within:ring-blue-500`}
                   >
                     <input
                       id="email"
@@ -200,7 +199,7 @@ export default function RegisterAdminPage() {
                   error={errors.telefono ?? undefined}
                   touched={touched.telefono}
                 />
-                
+
                 <PasswordField
                   id="password"
                   label="Contraseña"
@@ -225,12 +224,12 @@ export default function RegisterAdminPage() {
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    id="superAdmin"
-                    name="superAdmin"
-                    checked={formData.superAdmin}
+                    id="isSuperAdmin"
+                    name="isSuperAdmin"
+                    checked={formData.isSuperAdmin}
                     onChange={handleChange}
                   />
-                  <label htmlFor="superAdmin" className="text-sm text-gray-700">
+                  <label htmlFor="isSuperAdmin" className="text-sm text-gray-700">
                     ¿Es SuperAdmin?
                   </label>
                 </div>

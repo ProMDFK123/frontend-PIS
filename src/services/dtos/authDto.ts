@@ -24,16 +24,16 @@ export interface AdminRequestDto {
     LastName: string;
     Rut: string;
     PhoneNumber: string;
-    SuperAdmin: boolean;
+    IsSuperAdmin: boolean;
 }
 // Response
-export interface AdminResponseDto{
+export interface AdminResponseDto {
     message: string;
     data?: any;
 }
 // Company
 // Request
-export interface CompanyRequestDto{
+export interface CompanyRequestDto {
     CompanyName: string;
     LegalName: string;
     Email: string;
@@ -43,12 +43,12 @@ export interface CompanyRequestDto{
     ConfirmPassword: string;
 }
 // Response
-export interface CompanyResponsetDto{
+export interface CompanyResponsetDto {
     message: string;
 }
 // Individual
 // Request
-export interface IndividualRequestDto{
+export interface IndividualRequestDto {
     Name: string;
     LastName: string;
     Email: string;
@@ -58,12 +58,12 @@ export interface IndividualRequestDto{
     ConfirmPassword: string;
 }
 // Response
-export interface IndividualResponseDto{
+export interface IndividualResponseDto {
     message: string;
 }
 // Student
 // Request
-export interface StudentRequestDto{
+export interface StudentRequestDto {
     Name: string;
     LastName: string;
     Email: string;
@@ -74,28 +74,28 @@ export interface StudentRequestDto{
     Disability: string;
 }
 // Response
-export interface StudentResponseDto{
+export interface StudentResponseDto {
     message: string;
 }
 
 // Email Verification DTOs
 // Verify-Email
 // Request
-export interface VerifyEmailDto{
+export interface VerifyEmailDto {
     VerificationCode: string;
 }
 // Response
-export interface VerifyEmailResponseDto{
+export interface VerifyEmailResponseDto {
     message: string;
     data?: string;
 }
 // Resend-Verification
 // Request
-export interface ResendVerificationDto{
+export interface ResendVerificationDto {
     Email: string;
 }
 // Response
-export interface ResendVerificationResponseDto{
+export interface ResendVerificationResponseDto {
     message: string;
     data?: string;
 }
@@ -103,21 +103,21 @@ export interface ResendVerificationResponseDto{
 // Reset Password DTOs
 // Reset
 // Request
-export interface ResetPasswordDto{
+export interface ResetPasswordDto {
     Email: string;
 }
 // Response
-export interface ResetPasswordResponseDto{
+export interface ResetPasswordResponseDto {
     message: string;
 }
 // Verification
 // Request
-export interface VerifyResetCodeDto{
+export interface VerifyResetCodeDto {
     Email: string;
     verificationCode: string;
     password: string;
 }
 // Response
-export interface VerifyResetCodeResponseDto{
+export interface VerifyResetCodeResponseDto {
     message: string;
 }
