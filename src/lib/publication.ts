@@ -100,7 +100,6 @@ function getAdminDetailType(typeValue: any): PublicationType {
 }
 
 export function mapOfferToDetail(dto: any): AdminDetail {
-  console.log("contact info dto:", dto.contactInfo);
   const idValue = (dto as OfferDetailForAdmin).id ?? dto.id;
   const titleValue =
     (dto as OfferDetailForAdmin).title ?? dto.title ?? "Sin título";
@@ -135,7 +134,7 @@ export function mapOfferToDetail(dto: any): AdminDetail {
     id: String(idValue),
     title: titleValue,
     description: descriptionValue,
-    companyName: companyNameValue, 
+    companyName: companyNameValue,
     publicationDate: publicationDateValue,
     remuneration: remunerationValue,
     type: getAdminDetailType(offerSubtypeValue),
@@ -147,7 +146,8 @@ export function mapOfferToDetail(dto: any): AdminDetail {
     endDate: endDateValue,
     location: dto.location,
     requirements: dto.requirements,
-    contactInfo: dto.contactInfo
+    contactInfo: dto.contactInfo,
+    aboutMe: dto.aboutMe
   };
 }
 
@@ -185,7 +185,8 @@ export function mapBuySellToDetail(dto: any): AdminDetail {
     statusValidation: "Published",
     location: dto.location,
     requirements: undefined,
-    contactInfo: dto.contactInfo
+    contactInfo: dto.contactInfo,
+    aboutMe: dto.aboutMe
   };
 }
 

@@ -12,7 +12,7 @@ export function ManageProfileSection({ detail }: ManageProfileSectionProps) {
     <section className="w-full bg-white p-6 rounded-xl shadow-lg border border-[var(--border)]">
       
       {/* TÍTULO */}
-      <h2 className="text-2xl font-bold text-[var(--primary)] mb-6 text-center">
+      <h2 className="text-2xl font-bold text-black mb-6 text-center">
         Perfil del Contacto
       </h2>
 
@@ -38,6 +38,14 @@ export function ManageProfileSection({ detail }: ManageProfileSectionProps) {
             <div className="flex flex-col">
               <span className="font-semibold mb-1">Información de contacto:</span>
               <span className="break-all">{detail.contactInfo}</span>
+          </div>
+        )}
+        
+        {/* DESCRIPCION */}
+        {detail.aboutMe && (
+          <div className="flex flex-col">
+            <span className="font-semibold mb-1">Acerca de mí:</span>
+            <span className="break-words">{detail.aboutMe}</span>
           </div>
         )}
       </div>

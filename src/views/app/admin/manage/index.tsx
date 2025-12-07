@@ -1,13 +1,16 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button, Card, CardContent } from "@/components/ui"; 
 import { handleApiError } from "@/lib";
 import { useManageView } from "./hooks";
 import PublishedCard from "./components/published-card";
 import FilterBar from "./components/filter-bar";
+import { NotificationBanner } from "@/components/ui";
+import { useNotification } from "@/hooks/common/use-notification";
 
 export default function ManageView() {
     const {
@@ -19,6 +22,24 @@ export default function ManageView() {
         filters,
         actions
     } = useManageView();
+
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const { notification, isVisible, show, close } = useNotification();
+    useEffect(() => {
+        const notificationParam = searchParams.get("notification");
+
+        if (notificationParam === "closed") {
+            show(
+                "¡Publicación Cerrada!",
+                "La publicación ha sido cerrada correctamente y ya no está visible para los usuarios.",
+                "success"
+            );
+            router.replace("/admin/publications/manage", { scroll: false });
+        }
+    }, [searchParams, show, router]);
+
+
     const apiErrorDetails = error ? handleApiError(error).details : null;
     const renderContent = () => {
         if (isLoading) {
@@ -59,9 +80,18 @@ export default function ManageView() {
             </section>
         );
     };
+
     return (
         <Suspense fallback={<div>Cargando...</div>}>
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col min-h-screen relative">
+                
+                {/* --- NOTIFICACIÓN --- */}
+                <NotificationBanner 
+                    data={notification} 
+                    isVisible={isVisible} 
+                    onClose={close} 
+                />
+
                 <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     <header className="mb-6">
                         <Link href="/admin/publications"> 

@@ -2,11 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { ChevronLeft, AlertCircle } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { useAdminPublicationDetailView } from "./hooks/use-manage-detail-view";
 import { handleApiError, getPresentationType } from "@/lib";
 import { ManageDetailSection } from "./components/manage-detail-section";
 import { ManageProfileSection } from "./components/manage-profile-section";
+import { ConfirmDialog } from "@/components/ui";
+import { toast } from "sonner";
 
 export interface ManageDetailViewProps {
   id: string;
@@ -14,11 +16,27 @@ export interface ManageDetailViewProps {
 
 export default function ManageDetailView({ id }: ManageDetailViewProps) {
   const router = useRouter();
-
   const { detail, loading, error, isMutating, handleAction, handleRetry } =
     useAdminPublicationDetailView(id);
 
   const backRoute = "/admin/publications/manage";
+  const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
+
+  const handleCloseConfirm = async () => {
+    setIsCloseDialogOpen(false);
+    const toastId = toast.loading("Cerrando publicación...");
+    try {
+      await handleAction("close_publication");
+      toast.dismiss(toastId);
+      // Redirigimos con la notificacion
+      router.push(`${backRoute}?notification=closed`);
+    } catch (e) {
+      toast.error("Error al cerrar publicación", {
+        id: toastId,
+        description: "No se pudo completar la acción. Revisa la consola.",
+      });
+    }
+  };
 
   if (loading)
     return (
@@ -68,18 +86,20 @@ export default function ManageDetailView({ id }: ManageDetailViewProps) {
       </h1>
 
       <p className="text-base text-[var(--muted-ink)] mb-4">
-        Tipo: {getPresentationType(detail.type)}
-      </p>
+        Tipo: {getPresentationType(detail.type)}
+      </p>
 
       <div className="flex flex-col md:flex-row gap-6 items-start">
         <div className="w-full md:w-3/4 space-y-6">
           <ManageDetailSection detail={detail} />
 
           <div className="flex gap-4 mt-4">
-            {(detail.type === "Trabajo" || detail.type === "Voluntariado") &&  (
+            {(detail.type === "Trabajo" || detail.type === "Voluntariado") && (
               <button
                 onClick={() =>
-                  router.push(`/admin/publications/manage/${detail.id}/applicants`)
+                  router.push(
+                    `/admin/publications/manage/${detail.id}/applicants`
+                  )
                 }
                 className="w-1/2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
@@ -88,11 +108,11 @@ export default function ManageDetailView({ id }: ManageDetailViewProps) {
             )}
 
             <button
-              onClick={() => handleAction("close_publication")}
+              onClick={() => setIsCloseDialogOpen(true)}
               disabled={isMutating}
-              className="w-1/2 px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+              className="w-full md:w-1/2 px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
             >
-              Cerrar Publicación
+              {isMutating ? "Procesando..." : "Cerrar Publicación"}
             </button>
           </div>
         </div>
@@ -101,6 +121,18 @@ export default function ManageDetailView({ id }: ManageDetailViewProps) {
           <ManageProfileSection detail={detail} />
         </div>
       </div>
+
+      {/* CONFIRM DIALOG */}
+      <ConfirmDialog
+        open={isCloseDialogOpen}
+        onOpenChange={setIsCloseDialogOpen}
+        title="¿Cerrar esta publicación?"
+        description="Esta acción hará que la publicación deje de estar disponible para los usuarios."
+        confirmText="Cerrar"
+        cancelText="Cancelar"
+        onConfirm={handleCloseConfirm}
+        onCancel={() => setIsCloseDialogOpen(false)}
+      />
     </main>
   );
 }

@@ -18,6 +18,9 @@
   --chip:         #EDE9FE; /* pill violeta muy suave */
   --ring:         #C7D2FE; /* focus ring suave */
   --border:       #E5E7EB;
+
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
 }
 
 .dark {
@@ -31,6 +34,9 @@
   --pop: #FF8FA1;
   --border: #1F2937;
   --ring: #4C51BF;
+
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 100%;
 }
 html {
   scroll-behavior: smooth;
@@ -48,4 +54,11 @@ html {
 .checkbox-purple:disabled {
   opacity: 0.9 !important;
   accent-color: #a248ec !important;
+}
+
+.dialog-solid {
+  background: white !important;
+}
+.dark .dialog-solid {
+  background: #0F172A !important;
 }

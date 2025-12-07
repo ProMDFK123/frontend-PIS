@@ -106,6 +106,7 @@ export interface AdminDetail {
     location?: string;
     requirements?: string;
     contactInfo: string;
+    aboutMe?: string;
 }
 
 export interface UseAdminDetailValidateResult {

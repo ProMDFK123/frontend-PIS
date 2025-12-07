@@ -16,7 +16,7 @@ export function ValidationActionSection({
   return (
     <section className="w-full bg-white p-6 rounded-xl shadow-lg border border-[var(--border)] flex flex-col justify-between">
       <div>
-        <h2 className="text-2xl font-bold text-[var(--primary)] mb-4 text-center">
+        <h2 className="text-2xl font-bold text-black mb-4 text-center">
           Perfil del Contacto
         </h2>
 
@@ -42,6 +42,13 @@ export function ValidationActionSection({
             </div>
           )}
 
+          {/* DESCRIPCION */}
+          {detail.aboutMe && (
+            <div className="flex flex-col">
+              <span className="font-semibold mb-1">Acerca de mí:</span>
+              <span className="break-words">{detail.aboutMe}</span>
+          </div>
+        )}
         </div>
       </div>
     </section>

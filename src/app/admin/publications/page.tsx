@@ -3,47 +3,53 @@ import { CheckCircle, Settings } from 'lucide-react';
 
 const AdminHero = () => (
   <section
-    className="relative h-[85vh] flex items-center justify-center text-white p-4 overflow-hidden"
-    style={{
-      backgroundImage: 'url(/campusucnadmin.jpg)',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-    }}
+    className="relative h-[85vh] flex items-center justify-center text-white p-4 overflow-hidden bg-gradient-to-r from-violet-700 via-purple-600 to-fuchsia-600"
   >
-    <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm"></div>
+    <div
+      className="absolute inset-0 z-0 bg-cover bg-center opacity-[0.5] mix-blend-soft-light pointer-events-none"
+      style={{
+        backgroundImage: 'url(/campusucnadmin.jpg)',
+      }}
+    ></div>
 
-    <div className="relative text-center max-w-4xl space-y-8 z-10">
+    <div className="relative text-center max-w-4xl space-y-8 z-10 flex flex-col items-center">
+
+      <div className="relative mb-6 group">
+        <img
+          src="/feucn_logo.png"
+          alt="Logo FEUCN"
+          className="mx-auto w-48 h-48 md:w-56 md:h-56 rounded-full object-cover shadow-2xl border-4 border-white/20"
+        />
+      </div>
+      {/* --------------------------- */}
+
       <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight drop-shadow-lg">
         Panel de Administración
       </h1>
 
-      <p className="text-xl md:text-2xl text-gray-200 drop-shadow-md">
-        Gestión centralizada de publicaciones y configuración de la plataforma FEUCN.
+      <p className="text-xl md:text-2xl text-gray-100 drop-shadow-md max-w-2xl">
+        Gestión integral de las publicaciones del sistema BolsaFEUCN
       </p>
 
       {/* BOTONES */}
-      <div className="flex flex-col sm:flex-row justify-center gap-6 pt-4">
-        
-        {/* Botón Validar Publicaciones */}
+      <div className="flex flex-col sm:flex-row justify-center gap-6 pt-4 w-full">
         <a
           href='/admin/publications/validate'
           className="flex items-center justify-center px-8 py-4 rounded-xl text-lg font-semibold transition duration-300 shadow-xl
-                     bg-white text-black hover:bg-gray-200 hover:scale-[1.02] transform transition-all group"
+                     bg-white text-black hover:bg-gray-100 hover:scale-[1.02] transform transition-all group w-full sm:w-auto"
         >
           <CheckCircle className="mr-3 size-6 text-black group-hover:rotate-6 transition" />
           Validar Publicaciones
         </a>
 
-        {/* Botón Administrar Publicaciones */}
         <a
           href='/admin/publications/manage'
           className="flex items-center justify-center px-8 py-4 rounded-xl text-lg font-semibold transition duration-300 shadow-xl
-                     bg-white text-black hover:bg-gray-200 hover:scale-[1.02] transform transition-all group"
+                     bg-white text-black hover:bg-gray-100 hover:scale-[1.02] transform transition-all group w-full sm:w-auto"
         >
           <Settings className="mr-3 size-6 text-black group-hover:rotate-6 transition" />
           Administrar Publicaciones
         </a>
-
       </div>
     </div>
   </section>

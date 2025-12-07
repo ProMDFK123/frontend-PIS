@@ -24,7 +24,7 @@ export function ValidationDetailSection({
           src={
             detail.images && detail.images.length > 0
               ? detail.images[0]
-              : "/generic.png"
+              : "/logo_feucn_extendido.png"
           }
           alt={detail.title}
           className="w-full object-cover h-64 md:h-96"
@@ -32,13 +32,13 @@ export function ValidationDetailSection({
       </div>
 
       {/* TÍTULO */}
-      <h2 className="text-2xl font-bold text-[var(--primary)] mb-4">
+      <h2 className="text-2xl font-bold text-black mb-4">
         Detalles de la Publicación
       </h2>
 
       {/* DESCRIPCIÓN */}
       <div className="space-y-2">
-        <h3 className="text-xl font-bold text-[var(--primary)]">
+        <h3 className="text-xl font-bold text-black">
           Descripción
         </h3>
 
@@ -50,7 +50,7 @@ export function ValidationDetailSection({
       {/* REQUISITOS (Ahora como bloque propio) */}
       {detail.type !== "Compra/Venta" && detail.requirements && (
         <div className="pt-4 border-t border-[var(--border)] space-y-2">
-          <h3 className="text-xl font-bold text-[var(--primary)]">
+          <h3 className="text-xl font-bold text-black">
             Requisitos
           </h3>
           <p className="text-[var(--ink)] whitespace-pre-line">
@@ -61,7 +61,7 @@ export function ValidationDetailSection({
 
       {/* BLOQUE DE INFORMACIÓN GENERAL */}
       <div className="pt-4 border-t border-[var(--border)]">
-        <h3 className="text-xl font-bold text-[var(--primary)] mb-4">
+        <h3 className="text-xl font-bold text-black mb-4">
           Información General
         </h3>
 
@@ -108,14 +108,12 @@ export function ValidationDetailSection({
           )}
 
           {/* Localidad */}
-          {detail.type !== "Compra/Venta" && (
             <div>
               <dt className="font-semibold text-[var(--ink)]">Localidad:</dt>
               <dd className="mt-1 text-[var(--muted-ink)]">
                 {detail.location || "No especificada"}
               </dd>
             </div>
-          )}
 
           {/* Remuneración / Precio */}
           <div>

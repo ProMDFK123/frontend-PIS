@@ -43,7 +43,7 @@ export default function ApplicantCard({ applicant, onViewDetail }: ApplicantCard
 
         <button
           onClick={() => onViewDetail(id)}
-          className="flex items-center px-3 py-2 bg-[var(--primary)] text-white rounded-md font-medium hover:bg-[var(--primary-dark)] transition text-sm"
+          className="flex items-center px-3 py-2 bg-[var(--primary)] text-white rounded-md font-medium transition text-sm"
         >
           Ver Detalles
           <ChevronRight className="ml-1 w-4 h-4" />

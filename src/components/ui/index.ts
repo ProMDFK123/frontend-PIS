@@ -20,3 +20,7 @@ export {
   Input
 } from "./input";
 export { Label } from "./label";
+export { ConfirmDialog } from "./confirm-dialog";
+export { 
+  NotificationBanner
+ } from "./notification";
