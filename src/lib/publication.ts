@@ -242,6 +242,7 @@ export const getApplicantDetailForAdmin = (dto: any): PostulantDetailForAdmin =>
         curriculumVitae: dto.curriculumVitae,
         rating: dto.rating,
         motivationLetter: dto.motivationLetter,
-        disability: dto.disability
+        disability: dto.disability,
+        profilePicture: dto.ProfilePicture,
     };
 }

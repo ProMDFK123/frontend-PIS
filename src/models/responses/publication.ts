@@ -189,4 +189,5 @@ export interface PostulantDetailForAdmin {
   rating?: string;
   motivationLetter?: string;
   disability?: string;
+  profilePicture?: string;
 }
