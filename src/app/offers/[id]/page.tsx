@@ -204,6 +204,14 @@ export default function OfferDetailPage() {
 
   return (
     <main className="relative max-w-4xl mx-auto p-4 md:p-6 space-y-6">
+
+      <button
+        onClick={() => router.back()}
+        className="mb-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:bg-slate-100 transition"
+      >
+        ← Volver
+      </button>
+      
       {/* Banner flotante arriba (esquina derecha) */}
       {banner && (
         <div
@@ -281,7 +289,7 @@ export default function OfferDetailPage() {
         </div>
         <div className="hidden sm:block">
           <img
-            src="/generic.png"
+            src="/generic22.png"
             alt="Publicación"
             className="w-20 h-20 rounded-xl object-cover border border-[var(--border)]"
           />
