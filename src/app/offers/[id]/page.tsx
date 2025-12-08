@@ -207,7 +207,7 @@ export default function OfferDetailPage() {
       {/* Banner flotante arriba (esquina derecha) */}
       {banner && (
         <div
-          className={`fixed top-4 right-4 z-50 w-full max-w-sm px-4 transition-all duration-800 ease-out
+          className={`fixed top-4 right-4 z-50 w-full max-w-sm px-4 transition-all duration-1600 ease-out
             ${
               bannerVisible
                 ? "translate-y-0 opacity-100"
@@ -254,7 +254,7 @@ export default function OfferDetailPage() {
       {/* Popup de celebración liviano */}
       {showCelebration && (
         <div
-          className={`fixed left-1/2 top-120 z-40 -translate-x-1/2 transition-all duration-800 ease-out
+          className={`fixed left-1/2 top-120 z-40 -translate-x-1/2 transition-all duration-1600 ease-out
             ${
               celebrationVisible
                 ? "translate-y-0 opacity-100"
