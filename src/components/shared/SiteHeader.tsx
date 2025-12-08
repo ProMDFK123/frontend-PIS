@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { getProfileRoute, getUserFromToken } from "@/lib";
+import { ChevronDown } from "lucide-react";
 
 import { 
   isLoggedIn,
@@ -15,27 +16,17 @@ import {
 
 import { profileService } from "@/services/profileService";
 
-// LINKS DE USUARIO
 const userLinks = [
   { href: "/", label: "Inicio" },
   { href: "/offers", label: "Explorar" },
 ];
 
-// LINKS DE ADMIN
 const adminNavLinks = [
   { href: "/admin/publications", label: "Inicio" },
   { href: "/admin/publications/validate", label: "Validar" },
   { href: "/admin/publications/manage", label: "Administrar" },
 ];
 
-// DROPDOWN USER BASE
-const baseDropdownItems = [
-  { href: "/profile", label: "Editar perfil" },
-  { href: "/jobs/history", label: "Historial de postulaciones" },
-  { href: "/jobs/reports", label: "Historial de trabajos" }, // Se modifica dinámicamente
-];
-
-// LINKS DE COMPAÑIA Y INDIVIDUAL
 const offererNavLinks = [
   { href: "/offers", label: "Inicio" },
   { href: "/offerer/create-publication", label: "Publicar" },
@@ -48,21 +39,16 @@ function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
 
   return (
     <div className="flex items-center gap-2">
-      <div className="size-8 rounded-full bg-[var(--chip)] grid place-items-center text-[var(--ink)]/80 text-sm font-bold overflow-hidden">
-        {photoUrl ? (
-          <img
-            src={photoUrl}
-            alt="Foto de perfil"
-            className="w-full h-full object-cover rounded-full"
-          />
-        ) : (
-          <span className="text-[var(--ink)]/80">{initials}</span>
-        )}
+      <div className="size-9 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--pop)] p-0.5">
+        <div className="w-full h-full rounded-full bg-white grid place-items-center overflow-hidden">
+          {photoUrl ? (
+            <img src={photoUrl} alt="Foto" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-[var(--primary)] font-bold text-sm">{initials}</span>
+          )}
+        </div>
       </div>
-
-      <span className="hidden sm:inline text-[var(--ink)]/90 font-medium">
-        {name ?? "Usuario"}
-      </span>
+      <span className="hidden sm:inline text-[var(--ink)] font-medium">{name ?? "Usuario"}</span>
     </div>
   );
 }
@@ -80,11 +66,10 @@ export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // CARGAR AUTH Y FOTO DE PERFIL
   useEffect(() => {
     const logged = isLoggedIn();
     const info = extractUserFromJwt();
-    const userRole = getRoleFromToken(); // <-- AQUÍ LLEGA Student, Offerent o Admin
+    const userRole = getRoleFromToken();
     const tokenData = getUserFromToken();
 
     setAuth({
@@ -100,10 +85,7 @@ export default function SiteHeader() {
         try {
           const res = await profileService.getProfilePhoto();
           if (res.data?.photoUrl) {
-            setAuth(prev => ({
-              ...prev,
-              photoUrl: `${res.data.photoUrl}?v=${Date.now()}`
-            }));
+            setAuth(prev => ({ ...prev, photoUrl: `${res.data.photoUrl}?v=${Date.now()}` }));
           }
         } catch (err) {
           console.error("Error obteniendo foto:", err);
@@ -113,10 +95,9 @@ export default function SiteHeader() {
     }
   }, [pathname]);
 
-  // Calculo dinamico de rutas
   const dropdownItems = useMemo(() => {
     const baseItems = [
-      { href: getProfileRoute(auth.userType ?? undefined), label: "Editar perfil"},
+      { href: getProfileRoute(auth.userType ?? undefined), label: "Editar perfil" },
       { href: "/jobs/history", label: "Historial de postulaciones" },
       { href: "/jobs/reports", label: "Historial de trabajos" },
       { href: "/offerer/create-publication", label: "Publicar" },
@@ -125,25 +106,16 @@ export default function SiteHeader() {
 
     return baseItems.map(item => {
       if (item.label !== "Historial de trabajos") return item;
-
-      let newHref = "/jobs/reviews/student"; // Ruta para estudiante
-
-      if (auth.role === "Offerent") {
-        newHref = "/jobs/reviews/employer"; // Ruta para oferente
-      }
-
-      if (auth.role === "Admin") {
-        newHref = "/jobs/reports"; // Ruta para admin
-      }
+      let newHref = "/jobs/reviews/student";
+      if (auth.role === "Offerent") newHref = "/jobs/reviews/employer";
+      if (auth.role === "Admin") newHref = "/jobs/reports";
       return { ...item, href: newHref };
     });
   }, [auth.userType, auth.role]);
 
-  // CERRAR DROPDOWN CLICK FUERA
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
-      if (!menuRef.current) return;
-      if (!menuRef.current.contains(e.target as Node)) setOpen(false);
+      if (!menuRef.current?.contains(e.target as Node)) setOpen(false);
     };
     if (open) document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
@@ -153,24 +125,24 @@ export default function SiteHeader() {
   const isOfferer = auth.role === "Offerent";
   const mainLinks = isAdmin ? adminNavLinks : isOfferer ? offererNavLinks : userLinks;
 
-return (
-    <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--card)]/85 backdrop-blur">
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-[var(--border)] bg-white/80 backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-
-        <Link href="/" className="font-extrabold text-lg">
+        
+        <Link href="/" className="flex items-center gap-2 font-extrabold text-xl group">
           <span className="text-[var(--ink)]">Bolsa</span>
-          <span className="ml-1 rounded-md bg-[var(--primary)] px-2 py-1 text-white">FEUCN</span>
+          <span className="px-3 py-1 rounded-xl bg-white text-[var(--primary)] border border-[var(--primary)] font-bold shadow-sm">
+            FEUCN
+          </span>
         </Link>
-
-        <div className="flex items-center gap-2">
-
+        <div className="flex items-center gap-1">
           {mainLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               className={cn(
-                "rounded-xl px-4 py-2 text-[var(--ink)]/85 hover:bg-[var(--chip)] transition",
-                pathname === l.href && "bg-[var(--chip)] text-[var(--ink)]"
+                "rounded-xl px-4 py-2.5 text-sm font-medium text-[var(--muted-ink)] hover:text-[var(--ink)] hover:bg-[var(--chip)] transition-all",
+                pathname === l.href && "bg-[var(--chip)] text-[var(--primary)] font-semibold"
               )}
             >
               {l.label}
@@ -180,39 +152,35 @@ return (
           {!auth.logged ? (
             <Link
               href="/auth/login"
-              className="rounded-xl px-4 py-2 font-semibold text-white bg-[var(--primary)] hover:opacity-95 transition"
+              className="ml-2 rounded-xl px-5 py-2.5 font-semibold text-white bg-gradient-to-r from-[var(--primary)] to-[var(--pop)] hover:opacity-90 transition-all shadow-md hover:shadow-lg"
             >
               Ingresar
             </Link>
           ) : (
-            <div className="relative" ref={menuRef}>
+            <div className="relative ml-2" ref={menuRef}>
               <button
                 onClick={() => setOpen(v => !v)}
-                className="rounded-xl px-2 py-1 hover:bg-[var(--chip)] transition flex items-center gap-2"
+                className="flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-[var(--chip)] transition-all"
               >
                 <UserAvatar name={auth.name} photoUrl={auth.photoUrl ?? undefined} />
-                <svg width="16" height="16" viewBox="0 0 20 20" className="text-[var(--ink)]/70">
-                  <path d="M5 7l5 5 5-5" fill="currentColor" />
-                </svg>
+                <ChevronDown className={cn("w-4 h-4 text-[var(--muted-ink)] transition-transform", open && "rotate-180")} />
               </button>
 
               {open && (
-                <div
-                  className="absolute right-0 mt-2 w-56 rounded-xl border border-[var(--border)] bg-white shadow-lg overflow-hidden"
-                >
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-[var(--border)] bg-white shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
                   {dropdownItems.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
+                      className="block px-4 py-3 text-sm text-[var(--ink)] hover:bg-[var(--chip)] transition-colors"
                     >
                       {item.label}
                     </Link>
                   ))}
-
+                  <div className="border-t border-[var(--border)]" />
                   <button
                     onClick={() => logoutAndRedirect("/")}
-                    className="w-full text-left px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--chip)]"
+                    className="w-full text-left px-4 py-3 text-sm text-[var(--pop)] font-medium hover:bg-red-50 transition-colors"
                   >
                     Cerrar sesión
                   </button>

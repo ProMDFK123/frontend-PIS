@@ -51,7 +51,7 @@ export default function BuySellDetailPage() {
   if (loading) return <main className="max-w-6xl mx-auto px-4 md:px-6 py-8">Cargando…</main>;
   if (err || !data) return <main className="max-w-6xl mx-auto px-4 md:px-6 py-8">{err ?? "No encontrada."}</main>;
 
-  const imgSrc = data.firstImageUrl || "/generic.png";
+  const imgSrc = data.firstImageUrl || "/generic22.png";
   const isEmail = !!data.contactInfo && /@/.test(data.contactInfo);
   const isPhone = !!data.contactInfo && /\+?\d/.test(data.contactInfo) && !isEmail;
 
@@ -68,6 +68,14 @@ export default function BuySellDetailPage() {
 
   return (
     <main className="max-w-6xl mx-auto px-4 md:px-6 py-8">
+
+      <button
+        onClick={() => window.history.back()}
+        className="mb-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:bg-slate-100 transition"
+      >
+        ← Volver
+      </button>
+      
       {/* Título + vendedor */}
       <header className="mb-6">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{data.title}</h1>
