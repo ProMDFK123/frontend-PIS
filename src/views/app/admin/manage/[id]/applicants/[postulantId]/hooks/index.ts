@@ -1,0 +1,1 @@
+export { useAdminPostulantDetail } from "./use-applicant-detail"

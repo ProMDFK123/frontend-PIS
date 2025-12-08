@@ -31,7 +31,12 @@ export class ManageService extends BaseApiService {
 
   getPostulants(publicationId: string) {
     const endpoint = `${this.baseURL}/offers/${publicationId}/applicants`;
-    return this.httpClient.get<ApiResponse<any[]>>(endpoint); 
+    return this.httpClient.get<ApiResponse<any[]>>(endpoint);
+  }
+
+  getPostulantDetail(id: string) {
+    const endpoint = `${this.baseURL}/applications/${id}/details`;
+    return this.httpClient.get<ApiResponse<any[]>>(endpoint);
   }
 }
 

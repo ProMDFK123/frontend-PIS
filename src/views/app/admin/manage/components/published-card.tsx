@@ -1,23 +1,14 @@
 import { PublishedItem } from "@/models/responses";
 import { ClockIcon, UserIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/20/solid';
 
-function peso(clp: number): string {
-    if (clp <= 0) return "No disponible";
-    return clp.toLocaleString("es-CL", {
-        style: "currency",
-        currency: "CLP",
-        maximumFractionDigits: 0,
-    });
-}
-
 interface PublishedItemCardProps {
     item: PublishedItem;
     onViewDetail: (id: number) => void;
 }
 
 export default function PublishedCard({ item, onViewDetail }: PublishedItemCardProps) {
-    const { id, title, type, name, publicationDate, activa } = item; 
-    const typeText = typeof type === 'string' ? type : 'CompraVenta'; 
+    const { id, title, offerType, name, publicationDate, activa } = item; 
+    const typeText = typeof offerType === 'string' ? offerType : 'Compra/Venta'; 
     const statusClasses = activa
         ? { icon: CheckCircleIcon, text: "ACTIVA", color: "bg-green-100 text-green-800" }
         : { icon: XCircleIcon, text: "INACTIVA", color: "bg-red-100 text-red-800" };
@@ -50,8 +41,8 @@ export default function PublishedCard({ item, onViewDetail }: PublishedItemCardP
                     <li className="flex items-center gap-2">
                         <ClockIcon className="w-4 h-4" />
                         <span>
-                            Fecha: <strong className="text-[var(--ink)]">
-                                {publicationDate && new Date(publicationDate).getTime() > 0 
+                            Fecha de Publicación: <strong className="text-[var(--ink)]">
+                                {publicationDate && new Date(publicationDate).getTime() > 0
                                     ? new Date(publicationDate).toLocaleDateString("es-CL")
                                     : "Fecha no disponible"}
                             </strong>

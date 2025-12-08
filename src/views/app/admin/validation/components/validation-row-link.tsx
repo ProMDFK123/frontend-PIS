@@ -3,16 +3,15 @@ import Link from 'next/link';
 import { Card, Badge, CardContent } from "@/components/ui"; 
 import { cn } from 'src/lib'; 
 import { getOfferTypeDisplay } from '@/lib'; 
-import { OfferForAdmin, ValidationItemFull } from '@/models/responses/publication'; 
+import { OfferForAdmin, ValidationItemFull, AdminItemBase } from '@/models/responses'; 
 
 interface ValidationRowLinkProps {
     itemId: string;
-    item: OfferForAdmin; 
+    item: AdminItemBase;
 }
 
 export default function ValidationRowLink({ itemId, item }: ValidationRowLinkProps) {
     const { text, className: badgeClasses } = getOfferTypeDisplay(item.type);
-    
     const detailUrl = `/admin/publications/validate/${itemId}`; 
 
     return (

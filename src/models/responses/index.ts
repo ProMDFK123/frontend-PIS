@@ -1,3 +1,4 @@
+import { AdminItem } from '@/models/responses/publication';
 export {
   type PendingOffersForAdmin,
   type OfferDetailForAdmin,
@@ -10,10 +11,15 @@ export {
   type PublicationType,
   type ValidationStatus,
   type AdminDetail,
-  type UseAdminDetailResult,
+  type UseAdminDetailValidateResult,
+  type UseAdminDetailManageResult,
   type PublicationResponse,
   type CreatePublicationData,
   type MyPublishedPublication,
   type PublishedItem,
-  type ViewAppplicantsForAdmin
+  type ViewAppplicantsForAdmin,
+  type OfferTypeForAdmin,
+  type BuySellForAdmin,
+  type AdminItemBase,
+  type PostulantDetailForAdmin,
 } from "./publication";

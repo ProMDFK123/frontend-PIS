@@ -6,5 +6,6 @@ export { default as ApplicantsView } from "@/views/app/admin/manage/[id]/applica
 export { default as  PublicationFormView } from "@/views/app/offerer";
 export { default as YourPublicationsView } from "@/views/app/offerer/your-publications";
 export { default as YourPublicationDetailView ,} from "@/views/app/offerer/your-publications/[id]";
+export { default as ApplicantDetailView } from "@/views/app/admin/manage/[id]/applicants/[postulantId]";
 
  

@@ -1,5 +1,7 @@
-import React from 'react';
-import { Search } from 'lucide-react';
+"use client";
+
+import React from "react";
+import { Search } from "lucide-react";
 import { ApplicantFilterType } from "@/views/app/admin/manage/[id]/applicants/hooks";
 
 interface Props {
@@ -9,19 +11,27 @@ interface Props {
   setFilterType: (v: ApplicantFilterType) => void;
 }
 
-export default function ApplicantFilterBar({ text, setText, filterType, setFilterType }: Props) {
+export default function ApplicantFilterBar({
+  text,
+  setText,
+  filterType,
+  setFilterType,
+}: Props) {
   const statusOptions: { value: ApplicantFilterType; label: string }[] = [
-    { value: "All", label: "Todos" },
-    { value: "Published", label: "Seleccionados" },
-    { value: "Rejected", label: "No Seleccionados" },
-    { value: "Pending", label: "Pendientes" },
+    { value: "Todos", label: "Todos" },
+    { value: "Aceptada", label: "Aceptados" },
+    { value: "Rechazada", label: "Rechazados" },
+    { value: "Pendiente", label: "Pendientes" },
   ];
 
   return (
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 md:p-5">
       <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-5">
+
+        {/* INPUT BUSCADOR — IGUAL DISEÑO */}
         <div className="relative md:col-span-3 lg:col-span-4">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-ink)]" />
+
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -30,6 +40,7 @@ export default function ApplicantFilterBar({ text, setText, filterType, setFilte
           />
         </div>
 
+        {/* SELECT — MISMO ESTILO */}
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value as ApplicantFilterType)}
@@ -41,6 +52,7 @@ export default function ApplicantFilterBar({ text, setText, filterType, setFilte
             </option>
           ))}
         </select>
+
       </div>
     </div>
   );
