@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export type NotificationType = "success" | "error";
 
@@ -11,17 +11,20 @@ export interface NotificationState {
 export function useNotification() {
   const [notification, setNotification] = useState<NotificationState | null>(null);
   const [isVisible, setIsVisible] = useState(false);
-
-  const show = useCallback((title: string, message: string, type: NotificationType = "success") => {
-    setNotification({ title, message, type });
-    setIsVisible(true);
-  }, []);
-
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const close = useCallback(() => {
     setIsVisible(false);
-    setTimeout(() => setNotification(null), 200);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setTimeout(() => setNotification(null), 200); 
   }, []);
-
+  const show = useCallback((title: string, message: string, type: NotificationType = "success") => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setNotification({ title, message, type });
+    setIsVisible(true);
+    timerRef.current = setTimeout(() => {
+      close();
+    }, 5000); 
+  }, [close]);
   return {
     notification,
     isVisible,

@@ -8,7 +8,7 @@ const AdminHero = () => (
     <div
       className="absolute inset-0 z-0 bg-cover bg-center opacity-[0.5] mix-blend-soft-light pointer-events-none"
       style={{
-        backgroundImage: 'url(/campusucnadmin.jpg)',
+        backgroundImage: 'url(/fondo.png)',
       }}
     ></div>
 

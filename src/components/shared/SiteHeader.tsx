@@ -25,6 +25,7 @@ const adminNavLinks = [
   { href: "/admin/publications", label: "Inicio" },
   { href: "/admin/publications/validate", label: "Validar" },
   { href: "/admin/publications/manage", label: "Administrar" },
+  { href: "/offerer/create-publication", label: "Publicar" },
 ];
 
 const offererNavLinks = [
