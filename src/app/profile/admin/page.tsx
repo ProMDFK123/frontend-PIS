@@ -9,6 +9,8 @@ import { profileService, AdminProfileDTO } from "@/services/profileService";
 import { validators } from "src/utils/AuthValidatorsUtil";
 import ChangePassword from "@/components/profile/ChangePassword";
 import RegisterAdminButton from "@/components/profile/RegisterAdminButton";
+// 1. IMPORTA EL SKELETON AQUÍ
+import ProfileSkeleton from "./components/profile-skeleton"; 
 
 export default function Page() {
   const [data, setData] = useState<AdminProfileDTO | null>(null);
@@ -31,16 +33,12 @@ export default function Page() {
     email: "",
     phoneNumber: "",
     aboutMe: "",
-    //isSuperAdmin: false,
   });
 
-  // Manejo de subida de archivos (Foto de perfil)
-    const profilePhotoRef = useRef<HTMLInputElement | null>(null);
-    const [uploadingPhoto, setUploadingPhoto] = useState(false);
-    const [photoUploadStatus, setPhotoUploadStatus] = useState<string | null>(null);
-
-  //Errores del formulario
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const profilePhotoRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoUploadStatus, setPhotoUploadStatus] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let mounted = true;
@@ -62,7 +60,6 @@ export default function Page() {
           email: response.data.email || "",
           phoneNumber: response.data.phoneNumber || "",
           aboutMe: response.data.aboutMe || "",
-          //isSuperAdmin: response.data.isSuperAdmin || false,
           });
         } else {
           setError(response.message || "Error al cargar perfil");
@@ -79,11 +76,9 @@ export default function Page() {
       return () => {
         mounted = false;
       };
-      }, []);
+  }, []);
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target as HTMLInputElement;
     let newValue = value;
     if (name === "rut") newValue = formatRut(value);
@@ -96,46 +91,38 @@ export default function Page() {
       });
     }
     setForm((prev) => ({ ...prev, [name]: newValue }));
-    }
+  }
   
-    // Validación de campos
-    function validateForm(): boolean {
+  function validateForm(): boolean {
     const errors: Record<string, string> = {};
   
-    // Nombre de usuario
     const userNameError = validators.required(form.userName, "Nombre de usuario") ||
                 validators.minLenght(form.userName, 3, "Nombre de usuario") ||
                 validators.maxLenght(form.userName, 50, "Nombre de usuario");
     if (userNameError) errors.userName = userNameError;
   
-    // Nombre
     const nameError = validators.name(form.name, "Nombre");
     if (nameError) errors.name = nameError;
   
-    // Apellido
     const lastNameError = validators.name(form.lastName, "Apellido");
     if (lastNameError) errors.lastName = lastNameError;
   
-    // RUT
     const rutError = validators.rut(form.rut);
     if (rutError) errors.rut = rutError;
   
-    // Correo
     const emailError = validators.regularEmail(form.email, "Correo");
     if (emailError) errors.email = emailError;
   
-    // Teléfono
     const phoneError = validators.phone(form.phoneNumber);
     if (phoneError) errors.phoneNumber = phoneError;
   
-    // Descripción
     if (form.aboutMe && form.aboutMe.length > 500) {
       errors.aboutMe = "La descripción no puede exceder 500 caracteres";
     }
   
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
-    }
+  }
 
   async function handleSave() {
     setStatus({ type: "", text: "" });
@@ -156,7 +143,6 @@ export default function Page() {
       email: form.email,
       phoneNumber: form.phoneNumber,
       aboutMe: form.aboutMe,
-      //isSuperAdmin: form.isSuperAdmin,
     };
   
     try {
@@ -167,7 +153,6 @@ export default function Page() {
       type: "success",
       text: response.message || "Perfil actualizado",
       });
-  
   
       setData((prev) => ({
       ...prev!,
@@ -185,19 +170,17 @@ export default function Page() {
       setFieldErrors({});
     } catch (err: any) {
       console.error(err);
-  
       const errorMessage = err.response?.data?.message || 
                 err.response?.data?.Message ||
                 err.message || 
                 "Error al guardar el perfil";
-  
       setStatus({ type: "error", text: errorMessage });
     } finally {
       setSaving(false);
     }
-    }
+  }
 
-    async function handleProfilePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleProfilePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
       const file = e.target.files?.[0];
       if (!file) return;
     
@@ -221,16 +204,13 @@ export default function Page() {
     
       try {
       const response = await profileService.updateProfilePhoto(payload);
-      
       setPhotoUploadStatus("Foto actualizada correctamente");
-      
       if (response.data) {
         setData((prev) => ({
         ...prev!,
         profilePhoto: response.data!,
         }));
       }
-    
       setTimeout(() => setPhotoUploadStatus(null), 3000);
       } catch (err: any) {
       console.error("Photo upload failed:", err);
@@ -240,7 +220,7 @@ export default function Page() {
       } finally {
       setUploadingPhoto(false);
       }
-    }
+  }
 
   function handlePasswordChangeSuccess() {
     setStatus({
@@ -248,22 +228,14 @@ export default function Page() {
       text: "Contraseña actualizada correctamente",
     });
     setTimeout(() => setStatus({ type: "", text: "" }), 5000);
-    }
+  }
   
-    if (loading) {
-    return (
-      <div className="container mx-auto p-4">
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Cargando perfil...</p>
-        </div>
-      </div>
-      </div>
-    );
-    }
+  // 2. REEMPLAZO: Si está cargando, mostramos el Skeleton en lugar del spinner
+  if (loading) {
+    return <ProfileSkeleton />;
+  }
   
-    if (error) {
+  if (error) {
     return (
       <div className="container mx-auto p-4">
       <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -275,13 +247,12 @@ export default function Page() {
       </div>
       </div>
     );
-    }
+  }
   
-    return (
+  return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-semibold mb-4">Perfil — Administrador</h1>
   
-      {/*Cambio contraseña*/}
       <ChangePassword
       open={passwordDialogOpen}
       onOpenChange={setPasswordDialogOpen}
@@ -291,7 +262,6 @@ export default function Page() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Left box - Avatar & Actions */}
       <div className="col-span-1 border rounded-md px-6 py-8 flex flex-col items-center gap-4">
-        {/* Profile Picture */}
         <div className="relative w-28 h-28 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-3xl font-bold overflow-hidden">
         {data?.profilePhoto ? (
           <img
@@ -562,5 +532,5 @@ export default function Page() {
       </div>
       </div>
     </div>
-    );
-  }
+  );
+}
