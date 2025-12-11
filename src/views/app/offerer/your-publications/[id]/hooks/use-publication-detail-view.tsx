@@ -31,39 +31,43 @@ export const useYourPublicationDetailView = (id: number) => {
     }
   }, [id]);
 
-   useEffect(() => {
-     if (id) {
-       fetchDetail();
-     }
-   }, [id, fetchDetail]);
+  useEffect(() => {
+    if (id) {
+      fetchDetail();
+    }
+  }, [id, fetchDetail]);
 
-   const handleAction = async (action: PublicationAction, reason?: string) => {
-     if (!detail) return;
+  const handleAction = async (action: PublicationAction, reason?: string) => {
+    if (!detail) return;
 
-     setIsMutating(true);
-     try {
-       if (action === "postulantes") {
-          //Redirigir a la página de edición
-         router.push(`/offerer/create-publication/your-publications/${id}/postulantes`);
-       }
-        // else if (action === "delete") {
-        //  if (window.confirm("¿Estás seguro de que quieres eliminar esta publicación? Esta acción no se puede deshacer.")) {
-        //     Lógica para eliminar la publicación
-        //    await offererPublicationService.deletePublication(id);
-        //    alert("Publicación eliminada correctamente.");
-        //    router.push("/offerer/create-publication/your-publications");
-        //  }
-       }
-      catch (err: any) {
-       alert("Error al realizar la acción: " + (err.response?.data?.message || err.message));
-     } finally {
-       setIsMutating(false);
-     }
-   };
+    setIsMutating(true);
+    try {
+      if (action === "postulantes") {
+        //Redirigir a la página de edición
+        router.push(
+          `/offerer/your-publications/${id}/applicants`
+        );
+      }
+      // else if (action === "delete") {
+      //  if (window.confirm("¿Estás seguro de que quieres eliminar esta publicación? Esta acción no se puede deshacer.")) {
+      //     Lógica para eliminar la publicación
+      //    await offererPublicationService.deletePublication(id);
+      //    alert("Publicación eliminada correctamente.");
+      //    router.push("/offerer/your-publications");
+      //  }
+    } catch (err: any) {
+      alert(
+        "Error al realizar la acción: " +
+          (err.response?.data?.message || err.message)
+      );
+    } finally {
+      setIsMutating(false);
+    }
+  };
 
-   const handleRetry = () => {
-     fetchDetail();
-   };
+  const handleRetry = () => {
+    fetchDetail();
+  };
 
   return {
     detail,

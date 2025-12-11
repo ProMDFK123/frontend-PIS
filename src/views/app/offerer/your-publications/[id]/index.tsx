@@ -67,6 +67,7 @@ export default function YourPublicationDetailView({
       </button>
 
       <h1 className="text-4xl font-extrabold text-gray-900 mb-1">{detail.title}</h1>
+      //todo: poner logica en para ver que tipo de oferta esta
       <p className="text-lg text-gray-500 mb-6">Tipo: Oferta de trabajo</p>{/*tipo de publicacion*/}
 
       <div className="flex flex-col md:flex-row gap-6 items-start">
@@ -75,7 +76,7 @@ export default function YourPublicationDetailView({
         </div>
         <div className="w-Full md:w-1/3">
           <PublicationActionSection
-            detail={detail}
+            detail={detail} 
             isMutating={isMutating} handleAction={handleAction}    //        handleAction={handleAction}
           />
         </div>

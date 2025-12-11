@@ -2,7 +2,7 @@ import api from "./Service";
 import { BaseApiService } from "./base-api-service";
 import { ApiResponse } from "@/models/generics";
 
-import type { CreatePublicationData, MyPublishedPublication } from "src/models/responses";
+import type { CreatePublicationData, MyPublishedPublication, ApplicantResponse} from "src/models/responses";
 import type { OffererPublication,
   OfferDetail
 } from "src/models/generics";
@@ -73,7 +73,59 @@ export class OffererPublicationService extends BaseApiService {
     >(`${this.baseURL}/offerent/buysell/${id}`);
 
   } 
+// =========================================================
+  //  NUEVOS MÉTODOS IMPLEMENTADOS
+  // =========================================================
+
+  /**
+   * Método: GetOfferApplicantsForOfferer
+   * Endpoint: /api/publications/offerent/my-offer/{offerId}/applicants
+   * Descripción: Lista los postulantes de una oferta específica (dueño de la oferta).
+   */
+  getOfferApplicantsForOfferer(offerId: number | string) {
+    return this.httpClient.get<ApiResponse<any[]>>(
+      `${this.baseURL}/offerent/my-offer/${offerId}/applicants`
+    );
+  }
+
+  /**
+   * Método: GetApplicantDetail
+   * Endpoint: /api/publications/offerent/my-offer/{offerId}/applicants/{studentId}
+   * Descripción: Obtiene el detalle de un postulante específico.
+   */
+  getApplicantDetail(offerId: number | string, studentId: number | string) {
+    return this.httpClient.get<ApiResponse<any[]>>(
+      `${this.baseURL}/offerent/my-offer/${offerId}/applicants/${studentId}`
+    );
+  }
+
+  /**
+   * Método: AcceptApplicationOfferent (Actualización por estado)
+   * Endpoint: /api/publications/offerent/my-offer/applicants/{status}
+   * Descripción: Actualizar estado de postulaciones según "status".
+   * Nota: Como es un PATCH, se suele enviar un body con los IDs a afectar, 
+   * aquí pongo `data` como opcional por si el endpoint lo requiere.
+   */
+  updateApplicationsBatchStatus(status: string, data?: any) {
+    return this.httpClient.patch<ApiResponse<any[]>>(
+      `${this.baseURL}/offerent/my-offer/applicants/${status}`,
+      data || {} // Enviamos objeto vacío si no hay data, necesario en axios.patch
+    );
+  }
+
+  /**
+   * Método: AcceptApplication
+   * Endpoint: /api/publications/offerent/applications/{applicationId}/accept
+   * Descripción: Acepta una postulación específica.
+   */
+  acceptApplication(applicationId: number | string) {
+    return this.httpClient.patch<ApiResponse<any[]>>(
+      `${this.baseURL}/offerent/applications/${applicationId}/accept`,
+      {} // Body vacío requerido para la firma de PATCH
+    );
+  }
 }
+
 export const offererPublicationService = new OffererPublicationService();
 
 /** 

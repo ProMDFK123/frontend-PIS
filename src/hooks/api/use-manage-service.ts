@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { mapOfferToManage, mapBuySellToManage, handleApiError, mapBuySellToDetail, mapOfferToDetail, mapApplicantToView } from "@/lib";
 import { manageService } from "@/services/manageService";
-import { PublishedItem, OfferDetailForAdmin, BuySellDetailForAdmin, AdminDetail } from "@/models/responses";
+import { PublishedItem, OfferDetailForAdmin, BuySellDetailForAdmin, AdminDetail,ApplicantResponse } from "@/models/responses";
 import { ClosePublicationVariables } from "@/models/requests";
 import { AxiosError } from "axios";
+import { offererPublicationService } from "@/services/offererPublicationService";
 
 // centraliza la lógica para obtener publicaciones publicadas (ofertas y compras/ventas)
 
@@ -96,6 +97,19 @@ export const useGetPostulantsQuery = (publicationId: string | undefined) => {
             const response = await manageService.getPostulants(publicationId);
             const rawApplicants = response.data.data || [];
             return rawApplicants.map(app => mapApplicantToView(app));
+        },
+        enabled: !!publicationId,
+    });
+};
+
+export const useGetOffererPostulantsQuery = (publicationId: string | undefined) => {
+    return useQuery<any[], Error>({ 
+        queryKey: ["offerer", "postulants", publicationId],
+        queryFn: async () => {
+            if (!publicationId) throw new Error("ID de publicación es requerido.");
+            const response = await offererPublicationService.getOfferApplicantsForOfferer(publicationId);
+            const rawApplicants = response.data.data || [];
+            return rawApplicants.map((app: any) => mapApplicantToView(app));
         },
         enabled: !!publicationId,
     });

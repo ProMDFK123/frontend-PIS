@@ -148,7 +148,7 @@ export default function YourPublicationsView() {
       <div className="divide-y divide-gray-200">
         {publications.map((pub) => (
           <div key={pub.idPublication} 
-          onClick={() => router.push(`/offerer/create-publication/your-publications/${pub.idPublication}`)}
+          onClick={() => router.push(`/offerer/your-publications/${pub.idPublication}`)}
           className="grid grid-cols-2 gap-4 p-5 items-center hover:bg-gray-50 transition-colors">
             <p className="font-medium text-gray-900 truncate">{pub.title}</p>
             <div>{

@@ -15,5 +15,7 @@ export {
   type CreatePublicationData,
   type MyPublishedPublication,
   type PublishedItem,
-  type ViewAppplicantsForAdmin
+  type ViewAppplicantsForAdmin,
+  type ApplicantResponse,
+  type PostulantView
 } from "./publication";

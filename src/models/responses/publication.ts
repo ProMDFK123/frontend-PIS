@@ -143,3 +143,32 @@ export interface ViewAppplicantsForAdmin {
   applicant: string;
   status: "Pending" | "Published" | "Rejected" | string;
 }
+
+
+
+//while dev
+
+
+// types/postulants.ts (o donde tengas tus tipos)
+ // La interfaz que creamos antes
+
+// Esta es la estructura que tu componente visual (la Tabla o Lista) espera recibir
+export interface PostulantView {
+    id: number; // applicationId
+    studentId: number;
+    name: string; // Mapeado de 'applicantName'
+    status: string;
+    submittedAt: string; // Fecha formateada
+    cvUrl: string | null;
+}
+
+
+export interface ApplicantResponse{
+    applicationId: number;
+    studentId: number;
+    applicantName: string;
+    // Si conoces todos los estados posibles, es mejor usar un Union Type en vez de string
+    status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
+    applicationDate: string; // Viene como ISO string desde el backend
+    curriculumVitaeUrl: string;
+}

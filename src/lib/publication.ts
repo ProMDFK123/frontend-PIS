@@ -7,7 +7,9 @@ import {
   BuySellDetailForAdmin,
   PublicationType,
   PublishedItem,
-  ViewAppplicantsForAdmin
+  ViewAppplicantsForAdmin,
+  ApplicantResponse,
+  PostulantView
 } from "@/models/responses";
 
 export function toOfferTypeForAdmin(o: PendingOffersForAdmin): OfferForAdmin["type"] {
@@ -198,3 +200,17 @@ export function mapApplicantToView(dto: ViewAppplicantsForAdmin): ViewAppplicant
         status: dto.status as "Pending" | "Published" | "Rejected",
     };
 }
+    // Función transformadora (Mapper)
+export const mapOffererApplicantToView = (dto: ApplicantResponse): PostulantView => {
+    return {
+        id: dto.applicationId,
+        studentId: dto.studentId,
+        name: dto.applicantName,
+        status: dto.status,
+        // Formateamos la fecha aquí para no hacerlo en el HTML
+        submittedAt: new Date(dto.applicationDate).toLocaleDateString('es-CL', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        }),
+        cvUrl: dto.curriculumVitaeUrl || null
+    };
+};
