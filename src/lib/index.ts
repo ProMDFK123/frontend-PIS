@@ -25,6 +25,8 @@ export {
   toOfferTypeForAdmin,
   getAdminItemTypeString,
   mapApplicantToView,
+  getPresentationType,
+  getApplicantDetailForAdmin
 } from "./publication";
 export {
   formatDate,

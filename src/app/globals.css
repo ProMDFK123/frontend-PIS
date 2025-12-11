@@ -1,51 +1,35 @@
 @import "tailwindcss";
 
-
-
 :root {
   --radius: 0.75rem;
 
-  /* 🎨 Colores “estudiantiles” (menos corporativos) */
-  --primary:      #6D5EF7; /* violeta U */
-  --secondary:    #FFD166; /* amarillo suave */
-  --accent:       #7EE0E4; /* menta */
-  --pop:          #FF7A90; /* coral */
-  --ink:          #1F2937; /* texto principal */
-  --muted-ink:    #64748B; /* texto secundario */
+  /* 🎨 Colores estudiantiles - TEMA CLARO */
+  --primary:      #6D5EF7;
+  --secondary:    #FFD166;
+  --accent:       #7EE0E4;
+  --pop:          #FF7A90;
+  --ink:          #1F2937;
+  --muted-ink:    #64748B;
 
-  --bg:           #F8FAFC; /* fondo claro */
-  --card:         #FFFFFF; /* tarjeta */
-  --chip:         #EDE9FE; /* pill violeta muy suave */
-  --ring:         #C7D2FE; /* focus ring suave */
+  --bg:           #FFFFFF;
+  --card:         #FFFFFF;
+  --chip:         #F3F0FF;
+  --ring:         #C7D2FE;
   --border:       #E5E7EB;
+
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
 }
 
-.dark {
-  --bg:    #0B1020;
-  --card:  #0F172A;
-  --ink:   #E5E7EB;
-  --muted-ink: #94A3B8;
-  --primary: #8B82F9;
-  --secondary: #FFC94D;
-  --accent: #5AD6DA;
-  --pop: #FF8FA1;
-  --border: #1F2937;
-  --ring: #4C51BF;
-}
 html {
   scroll-behavior: smooth;
 }
-/* Base */
+
 @layer base {
   * { @apply outline-[var(--ring)]/50; }
   body { @apply bg-[var(--bg)] text-[var(--ink)]; }
 }
 
-/* Checkbox para modal de reviews */
 .checkbox-purple {
-  accent-color: #a248ec !important; /* purple-800 */
-}
-.checkbox-purple:disabled {
-  opacity: 0.9 !important;
-  accent-color: #a248ec !important;
+  accent-color: #6D5EF7 !important;
 }

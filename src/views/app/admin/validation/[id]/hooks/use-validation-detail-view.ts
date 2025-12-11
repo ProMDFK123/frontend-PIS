@@ -3,13 +3,13 @@
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { handleApiError } from '@/lib'; 
-import { UseAdminDetailResult } from '@/models/responses';
+import { UseAdminDetailValidateResult } from '@/models/responses';
 import { 
     useGetAdminPublicationDetailQuery,
     useValidationActionMutation
 } from '@/hooks/api/use-validation-service';
 
-export function useAdminPublicationDetailView(id: string): UseAdminDetailResult {
+export function useAdminPublicationDetailView(id: string): UseAdminDetailValidateResult {
     const router = useRouter();
     
     const detailQuery = useGetAdminPublicationDetailQuery(id);

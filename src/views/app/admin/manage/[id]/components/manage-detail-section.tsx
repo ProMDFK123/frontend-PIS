@@ -8,31 +8,6 @@ function formatPrice(clp: number | undefined | null): string {
   return `$${thousandSeparatorPipe(clp)} CLP`;
 }
 
-function translateStatus(
-  status: AdminDetail["statusValidation"] | string
-): string {
-  const map: Record<string, string> = {
-    Pending: "Pendiente",
-    Published: "Publicado",
-    Rejected: "Rechazado",
-  };
-  return map[status] || status;
-}
-
-const getStatusColor = (
-  status: AdminDetail["statusValidation"] | string
-): string => {
-  switch (status) {
-    case "Published":
-      return "text-green-600";
-    case "Rejected":
-      return "text-red-600";
-    case "Pending":
-    default:
-      return "text-orange-600";
-  }
-};
-
 interface ManageDetailSectionProps {
   detail: AdminDetail;
 }
@@ -48,30 +23,50 @@ export function ManageDetailSection({
           src={
             detail.images && detail.images.length > 0
               ? detail.images[0]
-              : "/generic.png"
+              : "/logo_feucn_extendido.png"
           }
           alt={detail.title}
           className="w-full object-cover h-64 md:h-96"
         />
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-[var(--primary)] mb-4">
-          Detalles de la Publicación
-        </h2>
-        {/* Descripción - Eliminado el "Descripción Completa" y arreglado el padding/sangría */}
-        <p className="text-[var(--ink)] leading-relaxed">
+      {/* TÍTULO */}
+      <h2 className="text-2xl font-bold text-black mb-4">
+        Detalles de la Publicación
+      </h2>
+
+      {/* DESCRIPCIÓN */}
+      <div className="space-y-2">
+        <h3 className="text-xl font-bold text-black">
+          Descripción
+        </h3>
+
+        <p className="text-[var(--ink)] leading-relaxed whitespace-pre-line">
           {detail.description || "No hay descripción detallada proporcionada."}
         </p>
       </div>
 
+      {/* REQUISITOS */}
+      {detail.type !== "Compra/Venta" && detail.requirements && (
+        <div className="pt-4 border-t border-[var(--border)] space-y-2">
+          <h3 className="text-xl font-bold text-black">
+            Requisitos
+          </h3>
+          <p className="text-[var(--ink)] whitespace-pre-line">
+            {detail.requirements}
+          </p>
+        </div>
+      )}
+
+      {/* BLOQUE DE INFORMACIÓN GENERAL */}
       <div className="pt-4 border-t border-[var(--border)]">
-        <h3 className="text-xl font-bold text-[var(--primary)] mb-4">
-          Información Adicional
+        <h3 className="text-xl font-bold text-black mb-4">
+          Información General
         </h3>
-        {/* Información Adicional - Usando dl para una mejor estructura y manejo del diseño */}
+
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
-          {/* Fila 1: Fecha de Publicación */}
+
+          {/* Fecha de Publicación */}
           <div>
             <dt className="font-semibold text-[var(--ink)]">
               Fecha de Publicación:
@@ -81,34 +76,26 @@ export function ManageDetailSection({
             </dd>
           </div>
 
-          {/* Fila 2: Estado Validación */}
+          {/* Estado Validación */}
           <div>
             <dt className="font-semibold text-[var(--ink)]">
               Estado Validación:
             </dt>
-            <dd
-              className={`mt-1 font-semibold ${getStatusColor(
-                detail.statusValidation
-              )}`}
-            >
-              {translateStatus(detail.statusValidation)}
-            </dd>
+              {"Publicado"}
           </div>
 
-          {/* Fila 3: Fecha Límite (Condicional) */}
-          {detail.type !== "CompraVenta" && (
+          {/* Fecha Límite */}
+          {detail.type !== "Compra/Venta" && (
             <div>
-              <dt className="font-semibold text-[var(--ink)]">
-                Fecha Límite:
-              </dt>
+              <dt className="font-semibold text-[var(--ink)]">Fecha Límite:</dt>
               <dd className="mt-1 text-[var(--muted-ink)]">
                 {formatDate(detail.deadlineDate || "")}
               </dd>
             </div>
           )}
 
-          {/* Fila 4: Fecha de Término (Est.) (Condicional) */}
-          {detail.type !== "CompraVenta" && (
+          {/* Fecha de Término */}
+          {detail.type !== "Compra/Venta" && (
             <div>
               <dt className="font-semibold text-[var(--ink)]">
                 Fecha de Término:
@@ -119,10 +106,18 @@ export function ManageDetailSection({
             </div>
           )}
 
-          {/* Fila 5: Remuneración / Precio Solicitado */}
+          {/* Localidad */}
+            <div>
+              <dt className="font-semibold text-[var(--ink)]">Localidad:</dt>
+              <dd className="mt-1 text-[var(--muted-ink)]">
+                {detail.location || "No especificada"}
+              </dd>
+            </div>
+
+          {/* Remuneración / Precio */}
           <div>
             <dt className="font-semibold text-[var(--ink)]">
-              {detail.type === "CompraVenta"
+              {detail.type === "Compra/Venta"
                 ? "Precio Solicitado:"
                 : "Remuneración:"}
             </dt>
@@ -134,6 +129,7 @@ export function ManageDetailSection({
               )}
             </dd>
           </div>
+
         </dl>
       </div>
     </section>

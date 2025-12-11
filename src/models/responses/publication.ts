@@ -1,6 +1,6 @@
 export interface PendingOffersForAdmin {
-    title: string; 
-    type: number; 
+    title: string;
+    offerType: number;
     id: number;
 }
 // Interfaz de entrada para todas las interfaces de salida que usen ofertas
@@ -11,10 +11,12 @@ export interface OfferDetailForAdmin {
     images: string[];
     companyName: string;
     publicationDate: string;
-    type: number;
+    offerType: number;
     statusValidation: "Pending" | "Published" | "Rejected"; 
     remuneration: number; 
     activa: boolean;
+    location: string;
+    requirements: string;
 }
 // Interfaz de entrada para todas las interfaces de salida que usen compras/ventas
 export interface BuySellDetailForAdmin {
@@ -22,7 +24,7 @@ export interface BuySellDetailForAdmin {
     title: string;
     description: string;
     images: string[];
-    userName: string;
+    nameOwner: string;
     publicationDate: string;
     price: number;
     type: number;
@@ -40,31 +42,51 @@ export type BuySellBasic = {
   userName: string;        
 };
 
-export type AdminItemType = "Trabajo" | "CompraVenta"; 
+export type AdminItemType = OfferSubType | "Compra/Venta";
 
 export type ValidationType = "Todos" | AdminItemType;
 
+export interface BuySellForAdmin {
+    id: string;
+    title: string;
+    type: "Compra/Venta";
+}
 export interface OfferForAdmin {
     id: string;
     title: string;
-    type: AdminItemType; 
+    offerType: OfferSubType;
+}
+// solo se usa para que se vea bien el tipo en la pagina
+export interface AdminItemBase {
+    id: string;
+    title: string;
+    type: "Oferta de Trabajo" | "Voluntariado" | "Compra/Venta"; 
+}
+export type AdminItem = OfferForAdmin | BuySellForAdmin;
+
+export type OfferSubType = "Oferta de Trabajo" | "Voluntariado";
+
+export interface OfferTypeForAdmin {
+    id: string;
+    title: string;
+    offerType: OfferSubType; 
 }
 
 export interface ValidationItemFull {
     id: string; 
-    item: OfferForAdmin;
+    item: AdminItem;
 }
 
 export interface PublishedItem {
     title: string;
-    type: string;
+    offerType: string;
     name: string;
     publicationDate: string;
     activa: boolean;
     id: number;
 }
 
-export type PublicationType = "Trabajo" | "Voluntariado" | "CompraVenta"; 
+export type PublicationType = "Trabajo" | "Voluntariado" | "Compra/Venta"; 
 export type ValidationStatus = "Pending" | "Published" | "Rejected";
 
 export interface AdminDetail {
@@ -81,14 +103,27 @@ export interface AdminDetail {
     remuneration?: number;
     deadlineDate?: string; 
     endDate?: string;
+    location?: string;
+    requirements?: string;
+    contactInfo: string;
+    aboutMe?: string;
 }
 
-export interface UseAdminDetailResult {
+export interface UseAdminDetailValidateResult {
     detail: AdminDetail | null;
     loading: boolean;
     error: string | null;
     isMutating: boolean; 
-    handleAction: (action: 'publish' | 'reject' | 'close_publication') => void;
+    handleAction: (action: 'publish' | 'reject') => void;
+    handleRetry: () => void;
+}
+
+export interface UseAdminDetailManageResult {
+    detail: AdminDetail | null;
+    loading: boolean;
+    error: string | null;
+    isMutating: boolean; 
+    handleAction: (action: 'close_publication') => void;
     handleRetry: () => void;
 }
 
@@ -141,7 +176,20 @@ export interface MyPublishedPublication {
 export interface ViewAppplicantsForAdmin {
   id: number;
   applicant: string;
+  status: "Pendiente" | "Aceptada" | "Rechazada" | string;
+}
+
+export interface PostulantDetailForAdmin {
+  id: number;
+  studentName: string;
+  email: string;
+  phoneNumber: string;
   status: "Pending" | "Published" | "Rejected" | string;
+  curriculumVitae?: string;
+  rating?: string;
+  motivationLetter?: string;
+  disability?: string;
+  profilePicture?: string;
 }
 
 
@@ -171,4 +219,5 @@ export interface ApplicantResponse{
     status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
     applicationDate: string; // Viene como ISO string desde el backend
     curriculumVitaeUrl: string;
+
 }

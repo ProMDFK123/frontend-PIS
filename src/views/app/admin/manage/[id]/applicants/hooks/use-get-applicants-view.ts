@@ -6,7 +6,7 @@ import { mapApplicantToView } from "@/lib";
 import { ViewAppplicantsForAdmin } from "@/models/responses";
 import { handleApiError } from '@/lib'; 
 
-export type ApplicantFilterType = "All" | "Published" | "Pending" | "Rejected";
+export type ApplicantFilterType = "Todos" | "Aceptada" | "Pendiente" | "Rechazada";
 
 export interface UseApplicantsViewResult {
     applicants: ViewAppplicantsForAdmin[];
@@ -23,7 +23,7 @@ export interface UseApplicantsViewResult {
 }
 
 export const useGetApplicantsView = (publicationId: string): UseApplicantsViewResult => {
-    const [filterType, setFilterType] = useState<ApplicantFilterType>("All");
+    const [filterType, setFilterType] = useState<ApplicantFilterType>("Todos");
     const [text, setText] = useState<string>(""); 
     const {
         data: rawApplicants,
@@ -35,7 +35,7 @@ export const useGetApplicantsView = (publicationId: string): UseApplicantsViewRe
     const applicantsList = useMemo(() => {
         if (!rawApplicants) return [];
         let list = rawApplicants.map(p => mapApplicantToView(p));
-        if (filterType !== "All") {
+        if (filterType !== "Todos") {
             list = list.filter(applicant => applicant.status === filterType);
         }
         

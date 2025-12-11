@@ -3,15 +3,15 @@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { handleApiError } from "@/lib";
-import { UseAdminDetailResult } from "@/models/responses";
+import { UseAdminDetailManageResult } from "@/models/responses";
 import {
   useGetAdminPublicationManagementDetailQuery,
   useClosePublicationMutation,
 } from "@/hooks/api/use-manage-service";
 
-type ActionType = "publish" | "reject" | "close_publication";
+type ActionType = "close_publication";
 
-export function useAdminPublicationDetailView(id: string): UseAdminDetailResult {
+export function useAdminPublicationDetailView(id: string): UseAdminDetailManageResult {
   const router = useRouter();
   const detailQuery = useGetAdminPublicationManagementDetailQuery(id);
   const closePublicationMutation = useClosePublicationMutation();
