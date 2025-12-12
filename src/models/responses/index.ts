@@ -19,7 +19,7 @@ export {
   type PublishedItem,
   type ViewAppplicantsForAdmin,
   type ApplicantResponse,
-  type PostulantView
+  type PostulantView,
   type OfferTypeForAdmin,
   type BuySellForAdmin,
   type AdminItemBase,
