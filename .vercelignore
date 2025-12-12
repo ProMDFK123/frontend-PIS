@@ -1,0 +1,8 @@
+# Archivos y carpetas a ignorar en el despliegue de Vercel
+node_modules
+.git
+.env.local
+.next
+src2
+importantRules.txt
+knip.json
