@@ -28,7 +28,7 @@ export function mapOfferDtoToCard(o: OfferBasicDto): Offer {
     id: String(o.id),
     title: o.title,
     type: toOfferType(o.offerType),
-    image: "/generic.png",
+    image: "/generic22.png",
     deadline: o.deadlineDate,
     stipend: stipendValue,
     postedAt: o.publicationDate ?? new Date().toISOString(),
@@ -44,7 +44,7 @@ export function mapBuySellDtoToCard(b: BuySellBasicDto): Offer {
     id: `bs-${b.id}`,
     title: b.title,
     type: "CompraVenta",
-    image: "/generic.png",
+    image: "/generic22.png",
     // compra/venta no tiene deadline ni duration
     stipend: b.price,
     postedAt: b.publicationDate ?? new Date().toISOString(),

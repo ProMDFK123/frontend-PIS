@@ -204,10 +204,18 @@ export default function OfferDetailPage() {
 
   return (
     <main className="relative max-w-4xl mx-auto p-4 md:p-6 space-y-6">
+
+      <button
+        onClick={() => router.back()}
+        className="mb-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] hover:bg-slate-100 transition"
+      >
+        ← Volver
+      </button>
+      
       {/* Banner flotante arriba (esquina derecha) */}
       {banner && (
         <div
-          className={`fixed top-4 right-4 z-50 w-full max-w-sm px-4 transition-all duration-800 ease-out
+          className={`fixed top-4 right-4 z-50 w-full max-w-sm px-4 transition-all duration-1600 ease-out
             ${
               bannerVisible
                 ? "translate-y-0 opacity-100"
@@ -254,7 +262,7 @@ export default function OfferDetailPage() {
       {/* Popup de celebración liviano */}
       {showCelebration && (
         <div
-          className={`fixed left-1/2 top-120 z-40 -translate-x-1/2 transition-all duration-800 ease-out
+          className={`fixed left-1/2 top-120 z-40 -translate-x-1/2 transition-all duration-1600 ease-out
             ${
               celebrationVisible
                 ? "translate-y-0 opacity-100"
@@ -281,7 +289,7 @@ export default function OfferDetailPage() {
         </div>
         <div className="hidden sm:block">
           <img
-            src="/generic.png"
+            src="/generic22.png"
             alt="Publicación"
             className="w-20 h-20 rounded-xl object-cover border border-[var(--border)]"
           />

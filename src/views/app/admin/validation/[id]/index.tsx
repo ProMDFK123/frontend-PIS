@@ -1,87 +1,173 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft, AlertCircle, CheckCircle2, XCircle, Sparkles } from "lucide-react";
+import React, { useState } from "react";
 import { useAdminPublicationDetailView } from "./hooks/use-validation-detail-view";
-import { ValidationDetailSection, ValidationActionSection } from "./components";
+import { handleApiError, getPresentationType } from "@/lib";
+import { ValidationDetailSection } from "./components/validation-detail-section"; 
+import { ValidationActionSection } from "./components/validation-profile-section"; // Ajusta si tu import es diferente
+import { ConfirmDialog } from "@/components/ui"; 
+import { toast } from "sonner";
+import { ValidationDetailSkeleton } from "./components/validation-detail-skeleton"; 
 
 export interface ValidationDetailViewProps {
   id: string;
 }
 
-export default function ValidationDetailView({
-  id,
-}: ValidationDetailViewProps) {
+export default function ValidationDetailView({ id }: ValidationDetailViewProps) {
   const router = useRouter();
   const { detail, loading, error, isMutating, handleAction, handleRetry } =
     useAdminPublicationDetailView(id);
 
   const backRoute = "/admin/publications/validate";
+  
+  const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
 
-  if (loading)
-    return (
-      <div className="text-center mt-12 text-[var(--muted-ink)]">
-        Cargando detalles de la publicación...
-      </div>
-    );
+  // Manejadores para los diálogos
+  const handleApprove = () => {
+    setIsApproveDialogOpen(false);
+    handleAction('publish');
+  };
 
-  if (error) {
+  const handleReject = () => {
+    setIsRejectDialogOpen(false);
+    handleAction('reject');
+  };
+
+  // 1. ESTADO DE CARGA: Skeleton con fondo morado
+  if (loading || !detail) {
     return (
-      <div className="max-w-xl mx-auto p-8 mt-12 bg-red-50 border border-red-200 rounded-lg text-center">
-        <h2 className="text-xl font-semibold text-red-600 mb-4">
-          Error al cargar la publicación
-        </h2>
-        <p className="text-sm text-red-500 mb-6">{error}</p>
-        <button
-          onClick={handleRetry}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-bold"
-        >
-          Reintentar
-        </button>
+      <div className="flex flex-col min-h-screen relative bg-slate-900 overflow-hidden">
+         {/* Fondo */}
+         <div className="fixed inset-0 z-0">
+             <img src="/fondo.png" alt="Fondo" className="w-full h-full object-cover opacity-60"/>
+             <div className="absolute inset-0 bg-gradient-to-br from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
+             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
+         </div>
+         {/* Skeleton */}
+         <ValidationDetailSkeleton />
       </div>
     );
   }
-  
-  if (!detail)
+
+  // 2. ESTADO DE ERROR
+  if (error) {
+    const errorDetails = error ? handleApiError(error).details : "Error desconocido.";
     return (
-      <div className="text-center mt-12 text-[var(--muted-ink)]">
-        No se encontró la publicación pendiente.
+      <div className="min-h-screen flex items-center justify-center bg-slate-900 relative text-white">
+         <div className="absolute inset-0 bg-gradient-to-br from-violet-900 to-slate-900" />
+         <div className="relative z-10 max-w-xl mx-auto p-8 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] text-center shadow-2xl">
+            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-400" />
+            <h2 className="text-2xl font-bold mb-2">Error al cargar</h2>
+            <p className="text-white/80 mb-6">{errorDetails}</p>
+            <button onClick={handleRetry} className="px-6 py-3 bg-white text-purple-900 rounded-full font-bold hover:bg-purple-100 transition shadow-lg">
+              Reintentar
+            </button>
+         </div>
       </div>
     );
-    
-  return (
-    <main className="max-w-6xl mx-auto px-4 py-10">
-      {/* CAMBIO: Usamos router.push(backRoute) para garantizar que siempre navegue a la lista de validación, 
-        incluso si el historial del navegador está vacío o incorrecto. 
-      */}
-      <button
-        onClick={() => router.push(backRoute)}
-        className="mb-6 text-[var(--primary)] hover:underline flex items-center gap-1"
-      >
-        <ChevronLeft size={20} /> Volver a la lista de pendientes
-      </button>
+  }
 
-      <h1 className="text-4xl font-extrabold text-[var(--ink)] mb-1">
-        {detail.title || "Sin Título"}
-      </h1>
-      <p className="text-lg text-[var(--muted-ink)] mb-6">
-        Tipo:{" "}
-        {detail.type === "CompraVenta"
-          ? "Venta de Artículo"
-          : "Oferta de Trabajo"}
-      </p>
-      <div className="flex flex-col md:flex-row gap-6 items-start">
-        <div className="w-full md:w-2/3">
-          <ValidationDetailSection detail={detail} />
-        </div>
-        <div className="w-full md:w-1/3">
-          <ValidationActionSection
-            detail={detail}
-            isMutating={isMutating}
-            handleAction={handleAction}
-          />
-        </div>
+  // 3. CONTENIDO PRINCIPAL
+  return (
+    <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-slate-900">
+      
+      {/* Fondo Morado Fijo */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+          <img src="/fondo.png" alt="Fondo" className="w-full h-full object-cover opacity-60"/>
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
       </div>
-    </main>
+
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+        
+        {/* Header */}
+        <header className="mb-8">
+          <button
+            onClick={() => router.push(backRoute)}
+            className="mb-6 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all font-bold text-sm backdrop-blur-sm border border-white/10"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Volver
+          </button>
+
+          <div className="flex flex-col gap-2">
+             <div className="inline-flex items-center gap-2 self-start px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold uppercase tracking-wider shadow-lg">
+                <Sparkles className="w-3 h-3" />
+                {getPresentationType(detail.type)}
+             </div>
+             <h1 className="text-3xl md:text-5xl font-black tracking-tight drop-shadow-lg leading-tight">
+                {detail.title || "Sin Título"}
+             </h1>
+          </div>
+        </header>
+
+        {/* Tarjeta Principal Blanca */}
+        <div className="bg-white text-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden p-6 md:p-8">
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+                
+                {/* Columna Izquierda: Información */}
+                <div className="w-full md:w-3/4 space-y-8">
+                    <ValidationDetailSection detail={detail} />
+
+                    {/* Botones de Acción */}
+                    <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-100">
+                        <button
+                            onClick={() => setIsRejectDialogOpen(true)}
+                            disabled={isMutating}
+                            className="flex-1 px-6 py-4 bg-red-50 text-red-600 border border-red-100 rounded-xl font-bold hover:bg-red-100 transition disabled:opacity-50 flex justify-center items-center gap-2"
+                        >
+                            <XCircle className="w-5 h-5" />
+                            No Publicar
+                        </button>
+
+                        <button
+                            onClick={() => setIsApproveDialogOpen(true)}
+                            disabled={isMutating}
+                            className="flex-[2] px-6 py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg hover:shadow-green-200 flex justify-center items-center gap-2"
+                        >
+                            <CheckCircle2 className="w-5 h-5" />
+                            {isMutating ? "Procesando..." : "Publicar"}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Columna Derecha: Perfil */}
+                <div className="w-full md:w-1/4 space-y-6">
+                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                        <ValidationActionSection detail={detail} handleAction={handleAction} isMutating={isMutating} />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {/* Diálogos */}
+        <ConfirmDialog
+            open={isApproveDialogOpen}
+            onOpenChange={setIsApproveDialogOpen}
+            title="¿Aprobar Publicación?"
+            description="La oferta será visible inmediatamente para todos los usuarios."
+            confirmText="Sí, Publicar"
+            cancelText="Cancelar"
+            onConfirm={handleApprove}
+            onCancel={() => setIsApproveDialogOpen(false)}
+            // variant="default" // Asegúrate que tu ConfirmDialog soporte esto o quítalo
+        />
+
+        <ConfirmDialog
+            open={isRejectDialogOpen}
+            onOpenChange={setIsRejectDialogOpen}
+            title="¿Rechazar Publicación?"
+            description="La oferta será descartada y el usuario será notificado."
+            confirmText="Sí, Rechazar"
+            cancelText="Cancelar"
+            onConfirm={handleReject}
+            onCancel={() => setIsRejectDialogOpen(false)}
+            // variant="destructive" // Asegúrate que tu ConfirmDialog soporte esto o quítalo
+        />
+      </main>
+    </div>
   );
 }

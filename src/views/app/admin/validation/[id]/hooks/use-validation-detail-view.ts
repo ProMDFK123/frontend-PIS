@@ -3,26 +3,30 @@
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { handleApiError } from '@/lib'; 
-import { UseAdminDetailResult } from '@/models/responses';
+import { UseAdminDetailValidateResult } from '@/models/responses';
 import { 
     useGetAdminPublicationDetailQuery,
     useValidationActionMutation
 } from '@/hooks/api/use-validation-service';
 
-export function useAdminPublicationDetailView(id: string): UseAdminDetailResult {
+export function useAdminPublicationDetailView(id: string): UseAdminDetailValidateResult {
     const router = useRouter();
     
     const detailQuery = useGetAdminPublicationDetailQuery(id);
     const validationMutation = useValidationActionMutation();
     
+    
+    const isViewLoading = detailQuery.isLoading || (detailQuery.isFetching && !detailQuery.data);
+
     const handleAction = (action: 'publish' | 'reject') => {
         const publicationId = detailQuery.data?.id;
+       
         if (!publicationId || validationMutation.isPending) return;
         
         validationMutation.mutate({ id: publicationId, action }, {
             onSuccess: () => {
-                const actionText = action === 'publish' ? 'aceptada' : 'rechazada';
-                toast.success(`Publicación fue ${actionText} con éxito.`);
+                const actionText = action === 'publish' ? 'publicada' : 'rechazada';
+                toast.success(`Publicación ${actionText} con éxito.`);
                 router.push('/admin/publications/validate'); 
             },
             onError: (error) => {
@@ -42,8 +46,9 @@ export function useAdminPublicationDetailView(id: string): UseAdminDetailResult 
         : null;
 
     return {
-        detail: detailQuery.data || null,
-        loading: detailQuery.isLoading,
+    
+        detail: isViewLoading ? null : (detailQuery.data || null),
+        loading: isViewLoading,
         error: errorDetails,
         isMutating: validationMutation.isPending, 
         handleAction,

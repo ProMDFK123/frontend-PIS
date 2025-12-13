@@ -59,9 +59,23 @@ export interface AdminForm {
 
 // Login Adapter
 export function mapLoginResponse(dto: any) {
-  // soporta {token}, {data: token}, {data: {token}}, {message}
-  const token = dto?.token ?? dto?.data?.token ?? dto?.data ?? null;
-  const message = dto?.message ?? (token ? "Login exitoso" : "Credenciales inválidas");
+  // AHORA SOPORTA:
+  // 1. .NET por defecto: { Data: "token", Message: "..." }
+  // 2. .NET con camelCase: { data: "token", message: "..." }
+  // 3. Formatos anidados: { data: { token: "..." } }
+  
+  const token = 
+    dto?.token ??           // Directo (raro en tu backend)
+    dto?.data?.token ??     // Anidado en data
+    dto?.Data ??            // .NET PascalCase (¡IMPORTANTE!)
+    dto?.data ??            // .NET camelCase
+    null;
+
+  const message = 
+    dto?.message ??         // camelCase
+    dto?.Message ??         // PascalCase (¡IMPORTANTE!)
+    (token ? "Login exitoso" : "Credenciales inválidas");
+
   return { message, token };
 }
 // Register Adapters

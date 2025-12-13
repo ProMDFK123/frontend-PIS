@@ -9,6 +9,8 @@ import { profileService, AdminProfileDTO } from "@/services/profileService";
 import { validators } from "src/utils/AuthValidatorsUtil";
 import ChangePassword from "@/components/profile/ChangePassword";
 import RegisterAdminButton from "@/components/profile/RegisterAdminButton";
+// 1. IMPORTA EL SKELETON AQUÍ
+import ProfileSkeleton from "./components/profile-skeleton"; 
 
 export default function Page() {
   const [data, setData] = useState<AdminProfileDTO | null>(null);
@@ -70,7 +72,7 @@ export default function Page() {
       .finally(() => {
         if (mounted) setLoading(false);
       });
-
+    
     return () => {
       mounted = false;
     };

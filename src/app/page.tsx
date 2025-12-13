@@ -2,6 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Search,
+  Briefcase,
+  Users,
+  Rocket,
+  Heart,
+  FileCheck,
+  Ban,
+  Share2,
+} from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
@@ -17,319 +27,291 @@ export default function HomePage() {
   };
 
   return (
-    <>
-      <main className="page">
+    <main className="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
+      {/* ============ HERO ============ */}
+      <section
+        className="relative overflow-hidden py-20 px-6 md:px-12"
+        style={{
+          backgroundImage: `url('/fondo.png')`,
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "right center",
+        }}
+      >
+        {/* Degradado para suavizar el fondo */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--primary)] via-[var(--primary)]/70 to-transparent" />
 
-      {/* HERO */}
-      <section className="hero" style={{ 
-        background: "linear-gradient(135deg, #4f46e5, #ec4899)", color: "white", 
-        padding: "80px 40px", borderRadius: "20px", marginBottom: "40px" }}>
-        <div className="hero-text" style={{ maxWidth: "500px" }}>
-          <h1 style={{ fontSize: "40px", fontWeight: "800", lineHeight: 1.2,
-            color: "white", textShadow: "2px 2px 8px rgba(0,0,0,0.3)"
-           }}>
-            Encuentra oportunidades, servicios y proyectos estudiantiles
-          </h1>
-          <a href="/offers" className="btn-primary" style={{ background: "#22c55e", 
-            color: "white", padding: "12px 26px", borderRadius: "12px", 
-            display: "inline-block", marginTop: "20px", fontWeight: "600" }}>
-            Explorar
-          </a>
-        </div>
-        <img 
-          src="/ucenin.png" 
-          className="hero-img" 
-          alt="hero"
-        />
-      </section>
+        <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-12">
+          {/* Texto */}
+          <div className="max-w-xl text-center lg:text-left">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6 drop-shadow-lg">
+              Encuentra oportunidades, servicios y proyectos estudiantiles
+            </h1>
 
-      {/* FEATURES */}
-      <section className="features" style={{ display: "grid", 
-        gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "24px", 
-        padding: "50px 40px" }}>
-        {[
-          { img: "/explora.png", title: "Explora categorías", 
-            text: "Encuentra trabajos, servicios, tutorías y más.", color: "#4f46e5" },
-          { img: "/postula.png", title: "Postula fácil", 
-            text: "Revisa detalles y postula en segundos.", color: "#ec4899" },
-          { img: "/feucn_logo.png", title: "Comunidad UCN", 
-            text: "Creado por y para estudiantes. 100% gratuito.", color: "#22c55e" }
-        ].map((card, i) => (
-          <div key={i} style={{ display: "flex", flexDirection: "column", 
-          alignItems: "center", textAlign: "center", padding: "24px", 
-          borderRadius: "16px", background: "white", 
-          boxShadow: "0 4px 14px rgba(0,0,0,0.1)", gap: "14px" }}>
-            <img src={card.img} style={{ width: "120px" }} />
-            <h3 style={{ fontSize: "20px", color: card.color }}>{card.title}</h3>
-            <p style={{ color: "#1f2937" }}>{card.text}</p>
+            <p className="text-white/80 text-lg mb-8">
+              Conectamos estudiantes con oportunidades reales. Trabajos,
+              tutorías, emprendimientos y más.
+            </p>
+
+            {/* Botones */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <a
+                href="/offers"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-[var(--primary)] font-bold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+              >
+                <Search className="w-5 h-5" />
+                Explorar ofertas
+              </a>
+
+              <a
+                href="/auth/register"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold rounded-2xl border-2 border-white/30 hover:bg-white/20 backdrop-blur-sm transition-all"
+              >
+                Saber más
+              </a>
+            </div>
+
+            {/* Stats */}
+            <div className="flex gap-8 mt-10 justify-center lg:justify-start">
+              {[
+                { num: "500+", label: "Estudiantes" },
+                { num: "120+", label: "Ofertas" },
+                { num: "100%", label: "Gratuito" },
+              ].map((stat, i) => (
+                <div key={i} className="text-center flex flex-col items-center">
+                  <div className="text-3xl md:text-4xl font-extrabold text-white drop-shadow">
+                    {stat.num}
+                  </div>
+                  <div className="text-white/80 text-sm tracking-wide">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </section>
 
-      {/* ABOUT */}
-      <section className="about" style={{ display: "flex", alignItems: "center", 
-        justifyContent: "center", gap: "40px", flexWrap: "wrap", 
-        padding: "60px 40px", background: "#f0f4f8", borderRadius: "20px", 
-        marginBottom: "40px" }}>
-        <img src="/feucn_logo.png" style={{ width: "320px", flexShrink: 0 }} 
-          alt="Logo FEUCN" />
-        <div style={{ maxWidth: "600px", textAlign: "left" }}>
-          <h2 style={{ fontSize: "30px", fontWeight: 700, color: "#4f46e5", 
-            marginBottom: "20px" }}>¿Quiénes somos?</h2>
-          <p style={{ marginTop: "10px", color: "#1f2937" }}>
-            Somos la <b>Federación de Estudiantes de la Universidad Católica del Norte</b>, 
-            y nuestro objetivo es conectar a estudiantes con oportunidades reales
-            que impulsen su crecimiento académico, laboral y personal.
-          </p>
-          <p style={{ marginTop: "10px", color: "#1f2937" }}>
-            Aquí podrás encontrar ofertas laborales, servicios estudiantiles,
-            emprendimientos y espacios de apoyo mutuo.
-          </p>
         </div>
       </section>
 
-      {/* RULES */}
-      <section className="rules" style={{ background: "#ec4899", color: "white", 
-        padding: "60px 40px", textAlign: "center", borderRadius: "20px" }}>
-        <h2 style={{ fontSize: "28px", marginBottom: "20px" }}>Normas y buen uso</h2>
-        <ul style={{ listStyle: "none", margin: "20px auto", maxWidth: "500px", textAlign: "left" }}>
-          <li style={{ margin: "10px 0", fontSize: "17px" }}>
-            💙 Respeto y empatía siempre.</li>
-          <li style={{ margin: "10px 0", fontSize: "17px" }}>
-            📌 Publica información real y útil.</li>
-          <li style={{ margin: "10px 0", fontSize: "17px" }}>
-            ❌ No compartas datos personales de terceros.</li>
-          <li style={{ margin: "10px 0", fontSize: "17px" }}>
-            🚀 Comparte oportunidades con tu comunidad.</li>
-        </ul>
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "15px" }}>
-          <label style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <input type="checkbox" checked={accepted} onChange={() => 
-              { setAccepted(!accepted); setError(false); }} />
-            <span>Acepto las normas de buen uso</span>
-          </label>
+      {/* ===== FEATURES ===== */}
+      <section className="py-20 px-6 md:px-12 bg-[var(--bg)]">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="inline-block px-4 py-2 rounded-full bg-[var(--chip)] text-[var(--primary)] text-sm font-semibold mb-4">
+              ¿Qué puedes hacer?
+            </span>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[var(--ink)] mb-4">
+              Todo lo que necesitas en un solo lugar
+            </h2>
+            <p className="text-[var(--muted-ink)] max-w-2xl mx-auto">
+              Explora, postula y conecta con la comunidad estudiantil
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-10 px-4">
+            {[
+              {
+                icon: Search,
+                img: "/explora.png",
+                title: "Explora categorías",
+                text: "Encuentra trabajos, servicios, tutorías y más.",
+                color: "var(--primary)",
+              },
+              {
+                icon: Briefcase,
+                img: "/postula.png",
+                title: "Postula fácil",
+                text: "Revisa detalles y postula en segundos.",
+                color: "var(--pop)",
+              },
+              {
+                icon: Users,
+                img: "/feucn_logo.png",
+                title: "Comunidad UCN",
+                text: "Creado por y para estudiantes. 100% gratuito.",
+                color: "var(--accent)",
+              },
+            ].map((card, i) => (
+              <div
+                key={i}
+                className="group relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-[var(--border)]"
+              >
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110"
+                  style={{ background: `${card.color}20` }}
+                >
+                  <card.icon className="w-8 h-8" style={{ color: card.color }} />
+                </div>
+                <img
+                  src={card.img}
+                  alt={card.title}
+                  className="w-32 h-32 object-contain mx-auto mb-6"
+                />
+                <h3 className="text-2xl font-bold text-[var(--ink)] mb-4">
+                  {card.title}
+                </h3>
+                <p className="text-[var(--muted-ink)]">{card.text}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        {error && <p style={{ color: "#facc15", marginTop: "10px", fontSize: "15px" }}>
-          Debes aceptar las normas antes de continuar.</p>}
-        <button onClick={handleExplore} style={{ display: "inline-block", 
-          marginTop: "20px", background: "#22c55e", color: "white", 
-          padding: "12px 26px", fontWeight: "600", borderRadius: "10px", 
-          cursor: "pointer" }}>
-          Empezar a explorar
-        </button>
       </section>
 
-        {/* FOOTER */}
-        <footer className="footer">
-          <p>© 2025 Bolsa Estudiantil FEUCN · Comunidad estudiantil UCN</p>
-        </footer>
-      </main>
+      {/* ===== ABOUT ===== */}
+      <section className="py-20 px-6 md:px-12 bg-gradient-to-br from-[var(--chip)] to-white">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+          <div className="relative flex-shrink-0">
+            <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/20 to-[var(--accent)]/20 rounded-3xl blur-2xl scale-105" />
+            <img
+              src="/feucn_logo.png"
+              alt="Logo FEUCN"
+              className="relative z-10 w-72 md:w-96 drop-shadow-xl"
+            />
+          </div>
 
-      {/* --- ESTILOS COMPLETOS EN EL MISMO ARCHIVO --- */}
+          <div className="max-w-xl">
+            <span className="inline-block px-4 py-2 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-sm font-semibold mb-4">
+              Sobre nosotros
+            </span>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[var(--ink)] mb-6">
+              ¿Quiénes somos?
+            </h2>
+            <p className="text-[var(--muted-ink)] text-lg mb-4">
+              Somos la{" "}
+              <strong className="text-[var(--ink)]">
+                Federación de Estudiantes de la Universidad Católica del Norte
+              </strong>
+              , y nuestro objetivo es conectar a estudiantes con oportunidades
+              reales que impulsen su crecimiento académico, laboral y personal.
+            </p>
+            <p className="text-[var(--muted-ink)] text-lg">
+              Aquí podrás encontrar ofertas laborales, servicios estudiantiles,
+              emprendimientos y espacios de apoyo mutuo.
+            </p>
+
+            <div className="flex gap-6 mt-8">
+              {[
+                { icon: Rocket, label: "Innovación" },
+                { icon: Users, label: "Comunidad" },
+                { icon: Heart, label: "Apoyo" },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 text-[var(--primary)]"
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span className="font-medium text-sm">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== RULES ===== */}
+      <section className="py-20 px-6 md:px-12 bg-gradient-to-br from-[var(--pop)] to-[#F472B6]">
+        <div className="max-w-4xl mx-auto text-center">
+          <span className="inline-block px-4 py-2 rounded-full bg-white/20 text-white text-sm font-semibold mb-4 backdrop-blur-sm">
+            Comunidad responsable
+          </span>
+
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-12">
+            Normas y buen uso
+          </h2>
+
+          <div className="grid sm:grid-cols-2 gap-6 text-left mb-12">
+            {[
+              {
+                icon: Heart,
+                text: "Respeto y empatía siempre.",
+                color: "bg-blue-400",
+              },
+              {
+                icon: FileCheck,
+                text: "Publica información real y útil.",
+                color: "bg-emerald-400",
+              },
+              {
+                icon: Ban,
+                text: "No compartas datos personales de terceros.",
+                color: "bg-red-400",
+              },
+              {
+                icon: Share2,
+                text: "Comparte oportunidades con tu comunidad.",
+                color: "bg-amber-400",
+              },
+            ].map((rule, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-4 bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/20"
+              >
+                <div
+                  className={`w-10 h-10 rounded-xl ${rule.color} flex items-center justify-center flex-shrink-0`}
+                >
+                  <rule.icon className="w-5 h-5 text-white" />
+                </div>
+                <p className="text-white font-medium">{rule.text}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 max-w-md mx-auto">
+            <label className="flex items-center gap-3 cursor-pointer justify-center">
+              <input
+                type="checkbox"
+                checked={accepted}
+                onChange={() => {
+                  setAccepted(!accepted);
+                  setError(false);
+                }}
+                className="w-5 h-5 rounded border-2 border-white/50 bg-white/10 checked:bg-white checked:border-white accent-[var(--primary)]"
+              />
+              <span className="text-white font-medium">
+                Acepto las normas de buen uso
+              </span>
+            </label>
+
+            {error && (
+              <p className="text-yellow-300 mt-3 text-sm font-medium animate-pulse">
+                ⚠️ Debes aceptar las normas antes de continuar.
+              </p>
+            )}
+          </div>
+
+          <button
+            onClick={handleExplore}
+            className="mt-8 inline-flex items-center justify-center gap-2 px-10 py-4 bg-white text-[var(--pop)] font-bold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+          >
+            <Rocket className="w-5 h-5" />
+            Empezar a explorar
+          </button>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="py-8 px-6 bg-white border-t border-[var(--border)]">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-[var(--muted-ink)] text-sm">
+            © 2025 Bolsa Estudiantil FEUCN · Comunidad estudiantil UCN
+          </p>
+        </div>
+      </footer>
+
       <style jsx>{`
-        /* BASE */
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-
-        body, .page {
-          font-family: "Inter", sans-serif;
-          background: #f7f8fc;
-          color: #222;
-        }
-
-        a {
-          text-decoration: none;
-        }
-
-        /* NAVBAR */
-        .navbar {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 16px 40px;
-          background: #ffffff;
-          border-bottom: 2px solid #e3e6ef;
-          position: sticky;
-          top: 0;
-          z-index: 50;
-        }
-
-        .brand {
-          font-size: 22px;
-          font-weight: 700;
-          color: #0066ff;
-        }
-
-        .links a {
-          margin-left: 20px;
-          color: #333;
-          font-weight: 500;
-        }
-
-        .links a:hover {
-          color: #0066ff;
-        }
-
-        /* HERO */
-        .hero {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 80px 40px;
-          flex-wrap: wrap;
-        }
-
-        .hero-text {
-          max-width: 500px;
-        }
-
-        .hero h1 {
-          font-size: 40px;
-          font-weight: 800;
-          line-height: 1.2;
-          background: linear-gradient(90deg, #0066ff, #ff4dd2);
-          -webkit-background-clip: text;
-          color: transparent;
-        }
-
-        .hero p {
-          margin-top: 12px;
-          font-size: 17px;
-          color: #555;
-        }
-
-        .btn-primary {
-          display: inline-block;
-          margin-top: 20px;
-          padding: 12px 26px;
-          background: #0066ff;
-          color: white;
-          border-radius: 10px;
-          font-weight: 600;
-        }
-
-        .hero-img {
-          width: 340px;
-          margin-top: 20px;
-        }
-
-        /* FEATURE CARDS */
-        .features {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-          gap: 24px;
-          padding: 50px 40px;
-        }
-
-        .feature-card {
-          background: white;
-          padding: 24px;
-          border-radius: 16px;
-          text-align: center;
-          box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-        }
-
-        .fc-img {
-          width: 120px;
-          margin-bottom: 14px;
-        }
-
-        .feature-card h3 {
-          font-size: 20px;
-          color: #0066ff;
-        }
-
-        .feature-card p {
-          margin-top: 8px;
-          color: #444;
-        }
-
-        /* ABOUT */
-        .about {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 60px 40px;
-          gap: 40px;
-          flex-wrap: wrap;
-        }
-
-        .about h2 {
-          font-size: 30px;
-          font-weight: 700;
-          color: #0066ff;
-        }
-
-        .about p {
-          margin-top: 10px;
-          color: #555;
-        }
-
-        .about-img {
-          width: 320px;
-        }
-
-        /* RULES */
-        .rules {
-          background: #0066ff;
-          color: white;
-          padding: 60px 40px;
-          text-align: center;
-        }
-
-        .rules h2 {
-          font-size: 28px;
-          margin-bottom: 20px;
-        }
-
-        .rules ul {
-          list-style: none;
-          margin: 20px auto;
-          max-width: 500px;
-          text-align: left;
-        }
-
-        .rules li {
-          margin: 10px 0;
-          font-size: 17px;
-        }
-
-        .btn-secondary {
-          display: inline-block;
-          margin-top: 20px;
-          background: white;
-          color: #0066ff;
-          padding: 12px 26px;
-          font-weight: 600;
-          border-radius: 10px;
-          cursor: pointer;
-        }
-
-        /* FOOTER */
-        .footer {
-          padding: 20px;
-          text-align: center;
-          background: #ffffff;
-          border-top: 2px solid #e3e6ef;
-          margin-top: 40px;
-          color: #666;
-          font-size: 14px;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 800px) {
-          .hero {
-            text-align: center;
-            justify-content: center;
+        @keyframes float {
+          0%,
+          100% {
+            transform: translateY(0px);
           }
-          .hero-img {
-            margin-top: 40px;
+          50% {
+            transform: translateY(-20px);
           }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
         }
       `}</style>
-    </>
+    </main>
   );
 }

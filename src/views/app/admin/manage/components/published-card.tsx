@@ -1,72 +1,70 @@
 import { PublishedItem } from "@/models/responses";
 import { ClockIcon, UserIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/20/solid';
 
-function peso(clp: number): string {
-    if (clp <= 0) return "No disponible";
-    return clp.toLocaleString("es-CL", {
-        style: "currency",
-        currency: "CLP",
-        maximumFractionDigits: 0,
-    });
-}
-
 interface PublishedItemCardProps {
     item: PublishedItem;
     onViewDetail: (id: number) => void;
 }
 
 export default function PublishedCard({ item, onViewDetail }: PublishedItemCardProps) {
-    const { id, title, type, name, publicationDate, activa } = item; 
-    const typeText = typeof type === 'string' ? type : 'CompraVenta'; 
+    const { id, title, offerType, name, publicationDate, activa } = item; 
+    const typeText = typeof offerType === 'string' ? offerType : 'Compra/Venta'; 
+    
+    // Colores más llamativos para los estados
     const statusClasses = activa
-        ? { icon: CheckCircleIcon, text: "ACTIVA", color: "bg-green-100 text-green-800" }
-        : { icon: XCircleIcon, text: "INACTIVA", color: "bg-red-100 text-red-800" };
+        ? { icon: CheckCircleIcon, text: "ACTIVA", bg: "bg-green-100", textCol: "text-green-700" }
+        : { icon: XCircleIcon, text: "INACTIVA", bg: "bg-red-100", textCol: "text-red-700" };
+
     const handleClick = () => {
         onViewDetail(id);
     };
+
     return (
-        <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]
-                            shadow-sm transition hover:shadow-lg">
-            <div className={`absolute top-0 right-0 m-3 z-10 inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${statusClasses.color}`}>
-                <statusClasses.icon className="w-4 h-4 mr-1" />
-                {statusClasses.text}
+        <article className="relative flex flex-col h-full rounded-[2rem] bg-white shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl group border-4 border-transparent hover:border-indigo-200 overflow-hidden">
+            
+            {/* Header de la tarjeta */}
+            <div className="px-6 pt-6 pb-2 flex justify-between items-start">
+                <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600 uppercase tracking-wider">
+                    {typeText}
+                </span>
+                
+                <div className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${statusClasses.bg} ${statusClasses.textCol}`}>
+                    <statusClasses.icon className="w-4 h-4" />
+                    {statusClasses.text}
+                </div>
             </div>
-            <div className="p-4 flex flex-col flex-1">
-                <div className="mb-2">
-                    <span className="inline-flex items-center rounded-full bg-[var(--chip)] px-3 py-1 text-xs font-medium text-[var(--ink)]/80">
-                        {typeText}
-                    </span>
-                </div>
 
-                <h3 className="text-xl font-extrabold text-[var(--ink)] mb-4">{title || "Publicación sin título"}</h3>
+            <div className="px-6 py-4 flex-1 flex flex-col">
+                <h3 className="text-2xl font-black text-slate-900 leading-tight line-clamp-3 mb-6 group-hover:text-indigo-600 transition-colors">
+                    {title || "Sin título"}
+                </h3>
 
-                <ul className="space-y-2 text-[var(--muted-ink)] text-sm">
-                    {/* Publicado por */}
-                    <li className="flex items-center gap-2">
-                        <UserIcon className="w-4 h-4" />
-                        <span>Publicado por: <strong className="text-[var(--ink)]">{name}</strong></span>
-                    </li>
-                    {/* Fecha de Publicación */}
-                    <li className="flex items-center gap-2">
-                        <ClockIcon className="w-4 h-4" />
-                        <span>
-                            Fecha: <strong className="text-[var(--ink)]">
-                                {publicationDate && new Date(publicationDate).getTime() > 0 
-                                    ? new Date(publicationDate).toLocaleDateString("es-CL")
-                                    : "Fecha no disponible"}
-                            </strong>
+                <div className="mt-auto space-y-3">
+                    <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl">
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+                            <UserIcon className="w-4 h-4 text-indigo-600" />
+                        </div>
+                        <span className="text-sm font-bold text-slate-700 truncate">{name}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 px-3">
+                        <ClockIcon className="w-4 h-4 text-slate-400" />
+                        <span className="text-xs font-semibold text-slate-500">
+                            Publicado: {publicationDate && new Date(publicationDate).getTime() > 0
+                                ? new Date(publicationDate).toLocaleDateString("es-CL")
+                                : "—"}
                         </span>
-                    </li>
-                </ul>
-
-                <div className="mt-auto pt-4 flex gap-3">
-                    <button 
-                        className="flex-1 inline-flex items-center justify-center rounded-xl px-4 py-2 text-[15px] font-semibold text-white bg-[var(--primary)] hover:opacity-95 transition"
-                        onClick={handleClick} 
-                    >
-                        Ver Detalles
-                    </button>
+                    </div>
                 </div>
+            </div>
+
+            <div className="p-4 mt-2">
+                <button 
+                    className="w-full inline-flex items-center justify-center rounded-full px-4 py-4 text-sm font-black text-white bg-slate-900 hover:bg-indigo-600 transition-all duration-300 shadow-md transform active:scale-95"
+                    onClick={handleClick} 
+                >
+                    Administrar
+                </button>
             </div>
         </article>
     );

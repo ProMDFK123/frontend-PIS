@@ -9,11 +9,11 @@ interface ApplicantCardProps {
 
 const getStatusBadge = (status: ViewAppplicantsForAdmin['status']) => {
   switch (status) {
-    case 'Published':
-      return { text: 'Seleccionado', color: 'bg-indigo-500 text-white' };
-    case 'Rejected':
-      return { text: 'No Seleccionado', color: 'bg-red-500 text-white' };
-    case 'Pending':
+    case 'Aceptada':
+      return { text: 'Aceptada', color: 'bg-green-500 text-white' };
+    case 'Rechazada':
+      return { text: 'Rechazada', color: 'bg-red-500 text-white' };
+    case 'Pendiente':
     default:
       return { text: 'Pendiente', color: 'bg-yellow-100 text-yellow-800' };
   }
@@ -43,7 +43,7 @@ export default function ApplicantCard({ applicant, onViewDetail }: ApplicantCard
 
         <button
           onClick={() => onViewDetail(id)}
-          className="flex items-center px-3 py-2 bg-[var(--primary)] text-white rounded-md font-medium hover:bg-[var(--primary-dark)] transition text-sm"
+          className="flex items-center px-3 py-2 bg-[var(--primary)] text-white rounded-md font-medium transition text-sm"
         >
           Ver Detalles
           <ChevronRight className="ml-1 w-4 h-4" />
