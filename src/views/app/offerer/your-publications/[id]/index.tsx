@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter,useParams, useSearchParams} from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { PublicationAction, useYourPublicationDetailView } from "./hooks/use-publication-detail-view";
 import {
@@ -14,15 +14,22 @@ export interface YourPublicationDetailViewProps {
 
 export default function YourPublicationDetailView({
   id
-}: YourPublicationDetailViewProps) {
+}: YourPublicationDetailViewProps,) {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  
+  const type = searchParams.get("type");
+  const numberType = Number(type);
+  const urlStatus = searchParams.get("status") 
+    ? Number(searchParams.get("status")):0;
   const router = useRouter();
   const { detail, loading, error, isMutating,
-      handleAction, handleRetry 
+      handleAction, handleRetry
     } =
-    useYourPublicationDetailView(id);
+    useYourPublicationDetailView(id , numberType);
 
   // La ruta a la que volverá el usuario.
-  const backRoute = "/offerer/create-publication/your-publications";
+  const backRoute = "/offerer/your-publications";
 
   if (loading) {
     return (
@@ -75,8 +82,11 @@ export default function YourPublicationDetailView({
         </div>
         <div className="w-Full md:w-1/3">
           <PublicationActionSection
+            id={id}
             detail={detail}
-            isMutating={isMutating} handleAction={handleAction}    //        handleAction={handleAction}
+            isMutating={isMutating}
+            handleAction={handleAction}
+            status={urlStatus}
           />
         </div>
       </div>

@@ -31,7 +31,7 @@ const adminNavLinks = [
 const offererNavLinks = [
   { href: "/offers", label: "Inicio" },
   { href: "/offerer/create-publication", label: "Publicar" },
-  { href: "/offerer/create-publication/your-publications", label: "Mis Publicaciones" },
+  { href: "/offerer/your-publications", label: "Mis Publicaciones" },
 ];
 
 function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
@@ -102,7 +102,7 @@ export default function SiteHeader() {
       { href: "/jobs/history", label: "Historial de postulaciones" },
       { href: "/jobs/reports", label: "Historial de trabajos" },
       { href: "/offerer/create-publication", label: "Publicar" },
-      { href: "/offerer/create-publication/your-publications", label: "Mis Publicaciones" },
+      { href: "/offerer/your-publications", label: "Mis Publicaciones" },
     ];
 
     return baseItems.map(item => {

@@ -8,6 +8,8 @@ import {
   PublicationType,
   PublishedItem,
   ViewAppplicantsForAdmin,
+  ApplicantResponse,
+  PostulantView,
   BuySellForAdmin,
   PostulantDetailForAdmin,
 } from "@/models/responses";
@@ -216,6 +218,21 @@ export function mapApplicantToView(dto: ViewAppplicantsForAdmin): ViewAppplicant
         status: dto.status as "Pending" | "Published" | "Rejected",
     };
 }
+    // Función transformadora (Mapper)
+export const mapOffererApplicantToView = (dto: ApplicantResponse): PostulantView => {
+    return {
+        id: dto.applicationId,
+        studentId: dto.studentId,
+        name: dto.applicantName,
+        status: dto.status,
+        // Formateamos la fecha aquí para no hacerlo en el HTML
+        submittedAt: new Date(dto.applicationDate).toLocaleDateString('es-CL', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        }),
+        cvUrl: dto.curriculumVitaeUrl || null
+    };
+};
+
 
 export const getPresentationType = (modelType: string | undefined): string => {
     if (!modelType) return "Tipo Desconocido";

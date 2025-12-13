@@ -1,3 +1,4 @@
+
 export interface PendingOffersForAdmin {
     title: string;
     offerType: number;
@@ -159,6 +160,11 @@ export interface MyPublishedPublication {
     statusValidation: number; // Viene como número (0)
 }
 
+
+
+
+
+
     //  mypublished PublicationsDTO
 export interface MyPublishedPublication {
     idPublication: number;  // Antes tenías IdPublication o Id
@@ -190,4 +196,76 @@ export interface PostulantDetailForAdmin {
   motivationLetter?: string;
   disability?: string;
   profilePicture?: string;
+}
+
+
+
+//while dev
+
+
+// types/postulants.ts (o donde tengas tus tipos)
+ // La interfaz que creamos antes
+
+// Esta es la estructura que tu componente visual (la Tabla o Lista) espera recibir
+export interface PostulantView {
+    id: number; // applicationId
+    studentId: number;
+    name: string; // Mapeado de 'applicantName'
+    status: string;
+    submittedAt: string; // Fecha formateada
+    cvUrl: string | null;
+}
+
+
+export interface ApplicantResponse{
+    applicationId: number;
+    studentId: number;
+    applicantName: string;
+    // Si conoces todos los estados posibles, es mejor usar un Union Type en vez de string
+    status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
+    applicationDate: string; // Viene como ISO string desde el backend
+    curriculumVitaeUrl: string;
+
+}
+export interface OfferDetail {
+  id: number;
+  title: string;
+  description: string;
+  category?: string;
+  
+  // Propiedades específicas de Trabajo
+  remuneration?: number;    // Para trabajos
+  companyName?: string;     // Para trabajos
+  offerType?: string;
+  
+  // Propiedades comunes que a veces cambian de nombre
+  location: string;
+  postDate?: string;        // A veces viene como postDate
+  publicationDate?: string; // A veces viene como publicationDate
+  endDate?: string;         // Fecha término
+
+  userId: number;
+  userName: string;
+  userEmail: string;
+  aboutMe?: string;
+}
+
+export interface MyBuySell {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  
+  // Propiedades específicas de Compra/Venta
+  price: number;            // Para ventas
+  contactInfo: string;
+  
+  location: string;
+  publicationDate: string;
+  isActive: boolean;
+  imageUrls: string[];
+  
+  userId: number;
+  userName: string;
+  userEmail: string;
 }

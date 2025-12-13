@@ -18,8 +18,13 @@ export {
   type MyPublishedPublication,
   type PublishedItem,
   type ViewAppplicantsForAdmin,
+  type ApplicantResponse,
+  type PostulantView,
   type OfferTypeForAdmin,
   type BuySellForAdmin,
   type AdminItemBase,
   type PostulantDetailForAdmin,
+  type MyBuySell,
+  type OfferDetail
+
 } from "./publication";
