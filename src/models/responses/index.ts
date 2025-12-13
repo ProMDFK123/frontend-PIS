@@ -24,4 +24,7 @@ export {
   type BuySellForAdmin,
   type AdminItemBase,
   type PostulantDetailForAdmin,
+  type MyBuySell,
+  type OfferDetail
+
 } from "./publication";

@@ -2,9 +2,9 @@ import api from "./Service";
 import { BaseApiService } from "./base-api-service";
 import { ApiResponse } from "@/models/generics";
 
-import type { CreatePublicationData, MyPublishedPublication, ApplicantResponse} from "src/models/responses";
+import type { CreatePublicationData, MyPublishedPublication, ApplicantResponse,MyBuySell,OfferDetail  } from "src/models/responses";
 import type { OffererPublication,
-  OfferDetail
+
 } from "src/models/generics";
 
 
@@ -19,23 +19,12 @@ export class OffererPublicationService extends BaseApiService {
       data
     );
   }
-    //  mypublished PublicationsDTO
-    //     int IdPublication
-    //     int UserId 
-    //     string Title 
-    //     Types types 
-    //     string Description
-    //     DateTime PublicationDate
-    //     ICollection<Image> Images
-    //     bool IsActive
-    //     StatusValidation statusValidation
 
   getMyPublishedPublications() {
     return this.httpClient.get<ApiResponse<MyPublishedPublication[]>>(
       `${this.baseURL}/offerent/my-published`);
   }
 
-  
     getMyRejectedPublications() {
     return this.httpClient.get<ApiResponse<MyPublishedPublication[]>>(
       `${this.baseURL}/offerent/my-rejected`);
@@ -44,24 +33,12 @@ export class OffererPublicationService extends BaseApiService {
     return this.httpClient.get<ApiResponse<MyPublishedPublication[]>>(
       `${this.baseURL}/offerent/my-pending`);
   }
-  
+
    //Endpoint: /api/publications/offerent/offer/{id}
    getMyPublicationById(id: number) {
     return this.httpClient.get<
       ApiResponse<OfferDetail>
     >(`${this.baseURL}/offerent/offer/${id}`);
-
-    // OfferDetailDto
-    // public int Id 
-    //  string Title 
-    //  string Description
-    //  string CompanyName 
-    //  string? Location 
-    //  DateTime PostDate 
-    //  DateTime EndDate 
-    //  int Remuneration 
-    //  string OfferType 
-
 
   
   }
@@ -69,7 +46,7 @@ export class OffererPublicationService extends BaseApiService {
 
    getMyBullSellById(id: number){
     return this.httpClient.get<
-      ApiResponse<OffererPublication>
+      ApiResponse<MyBuySell>
     >(`${this.baseURL}/offerent/buysell/${id}`);
 
   } 
@@ -124,53 +101,31 @@ export class OffererPublicationService extends BaseApiService {
       {} // Body vacío requerido para la firma de PATCH
     );
   }
+  /**
+   * Rechaza una postulación específica
+   * Endpoint: PATCH /api/publications/offerent/applications/{applicationId}/reject
+   */
+  rejectApplication(applicationId: number | string) {
+    return this.httpClient.patch<ApiResponse<any>>(
+      `${this.baseURL}/offerent/applications/${applicationId}/reject`,
+      {} // IMPORTANTE: Body vacío requerido para la firma de PATCH
+    );
+  }
+
+  /**
+   * Apela una publicación rechazada enviando una justificación
+   * Endpoint: POST /api/publications/{id}/appeal
+   */
+  appealPublication(id: number | string, justification: string) {
+    // Asumimos que el backend espera un JSON { "justification": "texto..." }
+    // Si el backend espera otro nombre de campo (ej: "reason"), cámbialo aquí.
+    const body = { justification: justification };
+
+    return this.httpClient.post<ApiResponse<any>>(
+      `${this.baseURL}/${id}/appeal`,
+      body
+    );
+  }
 }
 
 export const offererPublicationService = new OffererPublicationService();
-
-/** 
- * export interface CreatePublicationData {
-  Title: string;
-  Description: string;
-  EndDate?: string; // Fecha de término de la oferta/pasantía
-  DeadlineDate?: string; // Fecha límite para postular
-  Remuneration?: number;
-  OfferType: number; // 0 para Trabajo, 1 para Voluntariado/Pasantía
-  Location?: string;
-  Requirements?: string;
-  ContactInfo?: string;
-  ImagesURL: string[];
-  IsCvRequired: boolean;
-}
-
-export interface OffererPublication {
-  id: number;
-  title: string;
-  description: string;
-  offerType: number;
-  publicationDate: string;
-  deadlineDate: string;
-  endDate?: string;
-  remuneration?: number;
-  location?: string;
-  status: number;
-  
-}
-
-}**/
-
-// export const publicationService = {
-//   async create(data: CreatePublicationData): Promise<PublicationResponse> {
-//     // Enviamos el objeto 'data' directamente como JSON.
-//     // La instancia 'api' de Service.tsx ya tiene "Content-Type": "application/json" por defecto.
-//     const response = await api.post<PublicationResponse>("/publications/offers", data);
-
-//     return response.data;
-//   },
-
-//   async getOffererPublications() {
-//     // Realiza una petición GET al endpoint que devuelve las publicaciones del oferente autenticado.
-//     // Se espera que la API devuelva un objeto con una propiedad "data" que contiene el array de publicaciones.
-//     return api.get<{ data: OffererPublication[] }>("/publications/my-published");
-//   },
-// };
