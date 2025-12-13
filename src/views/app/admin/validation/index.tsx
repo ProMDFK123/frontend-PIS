@@ -1,16 +1,29 @@
 "use client";
 
 import { Suspense, useEffect } from "react";
-import { AlertCircle, ArrowLeft } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Button, Card, CardContent } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { handleApiError } from "@/lib";
-import { NotificationBanner } from "@/components/ui"; 
+import { NotificationBanner } from "@/components/ui";
 import { useValidationView } from "./hooks/use-validation-view";
 import FilterBar from "./components/filter-bar";
 import ValidationRowLink from "./components/validation-row-link";
 import { useNotification } from "@/hooks/common/use-notification";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function ListSkeleton() {
+  return (
+    <div className="flex items-center justify-between p-6 rounded-[2rem] bg-white/10 border border-white/20 h-24 w-full animate-pulse">
+       <div className="flex-1 space-y-3">
+          <Skeleton className="h-4 w-32 bg-white/20" />
+          <Skeleton className="h-6 w-3/4 bg-white/30" />
+       </div>
+       <Skeleton className="h-12 w-12 rounded-full bg-white/20" />
+    </div>
+  )
+}
 
 export default function ValidationView() {
   const {
@@ -26,40 +39,44 @@ export default function ValidationView() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { notification, isVisible, show, close } = useNotification();
+
   useEffect(() => {
     const notificationParam = searchParams.get("notification");
-    // mensaje notificacion
     if (notificationParam === "published") {
-      show(
-        "¡Publicación Aceptada con exito!",
-        "La oferta ha sido validada y ahora es visible para todos los usuarios.",
-        "success"
-      );
+      show("¡Publicación Aceptada!", "La oferta es visible para todos.", "success");
       router.replace("/admin/publications/validate", { scroll: false });
     } else if (notificationParam === "rejected") {
-      show(
-        "Publicación Descartada con exito",
-        "La publicación ha sido rechazada y eliminada de la lista de pendientes.",
-        "error"
-      );
+      show("Publicación Descartada", "La publicación ha sido rechazada.", "error");
       router.replace("/admin/publications/validate", { scroll: false });
     }
   }, [searchParams, show, router]);
 
   const apiErrorDetails = error ? handleApiError(error).details : null;
+
   const renderContent = () => {
-    if (isLoading) {
-      return <div className="mt-8 text-center text-muted-foreground">Cargando publicaciones pendientes...</div>;
+    // 2. Lógica de Carga con Skeleton
+    if (pendingPublications === null || isLoading) {
+      return (
+        <section className="mt-8 grid gap-4 pb-20">
+           {/* Renderizamos 5 skeletons */}
+           {Array.from({ length: 5 }).map((_, index) => (
+             // Usa <ValidationCardSkeleton /> si ya creaste el archivo, 
+             // si no, usa este <ListSkeleton /> provisional que se ve bien sobre morado.
+             <ListSkeleton key={index} />
+           ))}
+        </section>
+      );
     }
+
     if (error) {
       return (
-        <div className="flex justify-center items-center p-8 text-red-500 bg-red-50 border border-red-200 rounded-lg mx-5">
+        <div className="flex justify-center items-center p-8 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] mx-5 text-white shadow-2xl">
           <div className="text-center">
-            <AlertCircle className="h-6 w-6 mx-auto mb-2" />
-            <div className="font-semibold">Error al cargar la validación</div>
-            <div className="text-sm mt-1">{apiErrorDetails}</div>
-            <Button onClick={() => actions.handleRetry()} className="mt-3 cursor-pointer">
-              Reintentar
+            <AlertCircle className="h-10 w-10 mx-auto mb-4 text-purple-300" />
+            <div className="font-extrabold text-xl mb-2">Ups, algo salió mal</div>
+            <div className="text-white/80 mb-4">{apiErrorDetails}</div>
+            <Button onClick={() => actions.handleRetry()} className="bg-white text-purple-900 hover:bg-purple-100 rounded-full font-bold px-6">
+              Reintentar conexión
             </Button>
           </div>
         </div>
@@ -68,16 +85,18 @@ export default function ValidationView() {
 
     if (!hasOffers && totalCount === 0) {
       return (
-        <Card className="col-span-full p-8 text-center text-muted-foreground">
-          <CardContent>
-            No hay publicaciones pendientes de validación.
-          </CardContent>
-        </Card>
+        <div className="mt-12 p-12 text-center bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-white/20 text-white shadow-xl">
+          <div className="bg-white/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-10 h-10 text-white" />
+          </div>
+          <h3 className="text-2xl font-black mb-2">¡Todo al día!</h3>
+          <p className="text-lg text-purple-200">No hay publicaciones pendientes de revisión.</p>
+        </div>
       );
     }
 
     return (
-      <section className="mt-8 grid gap-2">
+      <section className="mt-8 grid gap-4 pb-20">
         {pendingPublications.map((o) => (
           <ValidationRowLink
             key={o.id}
@@ -90,38 +109,59 @@ export default function ValidationView() {
   };
 
   return (
-    <Suspense fallback={<div>Cargando...</div>}>
-      <div className="flex flex-col min-h-screen relative"> 
+    <Suspense fallback={<div className="min-h-screen bg-[#6D5EF7]"/>}>
+      <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-slate-900">
+        
+        
+        <div className="fixed inset-0 z-0">
+            <img 
+                src="/fondo.png" 
+                alt="Fondo UCN" 
+                className="w-full h-full object-cover opacity-60"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
+        </div>
+
         <NotificationBanner 
           data={notification} 
           isVisible={isVisible} 
           onClose={close} 
         />
 
-        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <header className="mb-6">
+        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+          <header className="mb-10">
             <Link href="/admin/publications"> 
-              <Button variant="outline" className="mb-4 cursor-pointer">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver a la administración
-              </Button>
+              <button className="mb-8 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all font-bold text-sm backdrop-blur-sm border border-white/10">
+                <ArrowLeft className="h-4 w-4" />
+                Volver al Panel
+              </button>
             </Link>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-primary">
-              Validar Publicaciones
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              {totalCount} publicaciones por revisar.
-            </p>
+            
+            <div className="flex flex-col items-start gap-2">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold uppercase tracking-wider shadow-lg transform -rotate-1">
+                <Sparkles className="w-3.5 h-3.5" /> Zona de Control
+              </div>
+              <h1 className="text-5xl md:text-6xl font-black tracking-tight drop-shadow-lg leading-tight mt-2">
+                Validar <br className="md:hidden"/> Publicaciones
+              </h1>
+              <p className="text-purple-100 text-lg md:text-xl font-medium mt-3 max-w-2xl drop-shadow-md">
+                Revisa y aprueba las oportunidades enviadas por la comunidad. Tienes <span className="text-yellow-300 font-black text-2xl align-middle">{totalCount}</span> pendientes.
+              </p>
+            </div>
           </header>
 
-          <FilterBar
-            text={filters.text}
-            setText={actions.setText}
-            type={filters.type as any} 
-            setType={actions.setType as any}
-            sort={filters.sort as any} 
-            setSort={actions.setSort as any}
-          />
+          <div className="mb-8">
+             <FilterBar
+                text={filters.text}
+                setText={actions.setText}
+                type={filters.type as any} 
+                setType={actions.setType as any}
+                sort={filters.sort as any} 
+                setSort={actions.setSort as any}
+              />
+          </div>
+
           {renderContent()}
         </main>
       </div>

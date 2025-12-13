@@ -15,14 +15,18 @@ export function useAdminPublicationDetailView(id: string): UseAdminDetailValidat
     const detailQuery = useGetAdminPublicationDetailQuery(id);
     const validationMutation = useValidationActionMutation();
     
+    
+    const isViewLoading = detailQuery.isLoading || (detailQuery.isFetching && !detailQuery.data);
+
     const handleAction = (action: 'publish' | 'reject') => {
         const publicationId = detailQuery.data?.id;
+       
         if (!publicationId || validationMutation.isPending) return;
         
         validationMutation.mutate({ id: publicationId, action }, {
             onSuccess: () => {
-                const actionText = action === 'publish' ? 'aceptada' : 'rechazada';
-                toast.success(`Publicación fue ${actionText} con éxito.`);
+                const actionText = action === 'publish' ? 'publicada' : 'rechazada';
+                toast.success(`Publicación ${actionText} con éxito.`);
                 router.push('/admin/publications/validate'); 
             },
             onError: (error) => {
@@ -42,8 +46,9 @@ export function useAdminPublicationDetailView(id: string): UseAdminDetailValidat
         : null;
 
     return {
-        detail: detailQuery.data || null,
-        loading: detailQuery.isLoading,
+    
+        detail: isViewLoading ? null : (detailQuery.data || null),
+        loading: isViewLoading,
         error: errorDetails,
         isMutating: validationMutation.isPending, 
         handleAction,
