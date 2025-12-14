@@ -5,6 +5,7 @@ import { PublishedItem, OfferDetailForAdmin, BuySellDetailForAdmin, AdminDetail,
 import { ClosePublicationVariables } from "@/models/requests";
 import { AxiosError } from "axios";
 import { offererPublicationService } from "@/services/offererPublicationService";
+import { toast } from "sonner";
 
 // centraliza la lógica para obtener publicaciones publicadas (ofertas y compras/ventas)
 
@@ -102,6 +103,32 @@ export const useGetPostulantsQuery = (publicationId: string | undefined) => {
     });
 };
 
+export const useGetPostulantDetailQuery = (id: string | undefined) => {
+    return useQuery<any, Error>({ 
+        queryKey: ["admin", "postulantDetail", id],
+        queryFn: async () => {
+            if (!id) throw new Error("ID de postulante es requerido.");
+            const response = await manageService.getPostulantDetail(id);
+            return response.data.data;
+        }
+    });
+}
+
+export const useOffererGetPostulantDetailQuery = (
+    offerId: string | number | undefined, 
+    applicantId: string | number | undefined
+) => {
+    return useQuery<any, Error>({ 
+        queryKey: ["offerer", "postulantDetail", offerId, applicantId],
+        queryFn: async () => {
+            if (!offerId || !applicantId) throw new Error("Faltan identificadores requeridos.");
+            const response = await offererPublicationService.getApplicantDetail(offerId, applicantId);
+            return response.data.data;
+        },
+        enabled: !!offerId && !!applicantId 
+    });
+}
+
 export const useGetOffererPostulantsQuery = (publicationId: string | undefined) => {
     return useQuery<any[], Error>({ 
         queryKey: ["offerer", "postulants", publicationId],
@@ -113,4 +140,41 @@ export const useGetOffererPostulantsQuery = (publicationId: string | undefined) 
         },
         enabled: !!publicationId,
     });
+};
+
+export const useAcceptApplicationMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number | string) => 
+      offererPublicationService.acceptApplication(applicationId),
+    onSuccess: () => {
+      toast.success("Postulación aceptada correctamente.");
+      // Invalidamos para refrescar la data en pantalla inmediatamente
+      queryClient.invalidateQueries({ queryKey: ["offerer", "postulantDetail"] });
+      queryClient.invalidateQueries({ queryKey: ["offerer", "postulants"] });
+    },
+    onError: (error: any) => {
+      const apiError = handleApiError(error);
+      toast.error(apiError.details || "Error al aceptar la postulación.");
+    },
+  });
+};
+
+export const useRejectApplicationMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number | string) => 
+      offererPublicationService.rejectApplication(applicationId),
+    onSuccess: () => {
+      toast.success("Postulación rechazada.");
+      queryClient.invalidateQueries({ queryKey: ["offerer", "postulantDetail"] });
+      queryClient.invalidateQueries({ queryKey: ["offerer", "postulants"] });
+    },
+    onError: (error: any) => {
+      const apiError = handleApiError(error);
+      toast.error(apiError.details || "Error al rechazar la postulación.");
+    },
+  });
 };

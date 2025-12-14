@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ApplicantCard } from "./components/applicant-card";
 import { ApplicantInfoForm } from "./components/applicant-info-form";
 import { useAdminPostulantDetail } from "./hooks/use-applicant-detail";
-// Importar el skeleton (asegúrate de haberlo creado como te mostré antes)
 import { ApplicantDetailSkeleton } from "./components/applicant-detail-skeleton";
 
 export default function ApplicantDetailView({
@@ -22,11 +21,9 @@ export default function ApplicantDetailView({
 
   const backRoute = `/admin/publications/manage/${id}/applicants`;
 
-  // 1. Loading State con Skeleton
   if (loading || !postulant) {
     return (
       <div className="flex flex-col min-h-screen relative bg-slate-900 overflow-hidden">
-         {/* Fondo Morado Fixed */}
          <div className="fixed inset-0 z-0 pointer-events-none">
              <img src="/fondo.png" alt="Fondo" className="w-full h-full object-cover opacity-60"/>
              <div className="absolute inset-0 bg-gradient-to-br from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
@@ -37,7 +34,6 @@ export default function ApplicantDetailView({
     );
   }
 
-  // 2. Error State
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 relative">
@@ -57,11 +53,9 @@ export default function ApplicantDetailView({
     );
   }
 
-  // 3. Contenido Principal
   return (
     <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-slate-900">
       
-      {/* Fondo Morado Fixed */}
       <div className="fixed inset-0 z-0 pointer-events-none">
           <img src="/fondo.png" alt="Fondo" className="w-full h-full object-cover opacity-60"/>
           <div className="absolute inset-0 bg-gradient-to-br from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
@@ -83,13 +77,11 @@ export default function ApplicantDetailView({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
           {/* Card Izquierda: Avatar y Acciones */}
-          {/* AQUÍ ESTA LA MAGIA: Forzamos 'text-slate-900' para que el texto sea oscuro dentro de la tarjeta blanca */}
           <div className="col-span-1 bg-white text-slate-900 rounded-xl shadow-xl overflow-hidden border-4 border-transparent p-1">
             <ApplicantCard postulant={postulant} />
           </div>
 
           {/* Formulario Derecha */}
-          {/* AQUÍ TAMBIÉN: 'text-slate-900' para resetear el color del texto */}
           <div className="col-span-2 bg-white text-slate-900 rounded-xl shadow-xl overflow-hidden p-1">
             <ApplicantInfoForm postulant={postulant} />
           </div>

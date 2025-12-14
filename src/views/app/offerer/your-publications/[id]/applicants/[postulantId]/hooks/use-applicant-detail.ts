@@ -1,11 +1,11 @@
 "use client";
 
-import { useGetPostulantDetailQuery } from "@/hooks/api/use-manage-service"; 
+import { useOffererGetPostulantDetailQuery } from "@/hooks/api/use-manage-service"; 
 import { getApplicantDetailForAdmin } from "@/lib"; 
 import { useMemo } from "react";
 
-export const useAdminPostulantDetail = (postulantId: string) => {
-  const { data, error, isLoading, isFetching, refetch } = useGetPostulantDetailQuery(postulantId);
+export const useOffererPostulantDetail = (offerId: string, postulantId: string) => {
+  const { data, error, isLoading, isFetching, refetch } = useOffererGetPostulantDetailQuery(offerId, postulantId);
   const isViewLoading = isLoading || (isFetching && !data);
 
   const postulant = useMemo(

@@ -1,13 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, AlertCircle, CheckCircle2, XCircle, Sparkles } from "lucide-react";
+import { ArrowLeft, AlertCircle, Sparkles, CheckCircle2, XCircle } from "lucide-react";
 import React, { useState } from "react";
 import { useAdminPublicationDetailView } from "./hooks/use-validation-detail-view";
 import { handleApiError, getPresentationType } from "@/lib";
-import { ValidationDetailSection } from "./components/validation-detail-section"; 
-import { ValidationActionSection } from "./components/validation-profile-section"; // Ajusta si tu import es diferente
-import { ConfirmDialog } from "@/components/ui"; 
+import { ValidationDetailSection } from "./components/validation-detail-section";
+import { ValidationActionSection } from "./components/validation-profile-section"; 
+import { ConfirmDialog } from "@/components/ui";
 import { toast } from "sonner";
 import { ValidationDetailSkeleton } from "./components/validation-detail-skeleton"; 
 
@@ -20,33 +20,55 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
   const { detail, loading, error, isMutating, handleAction, handleRetry } =
     useAdminPublicationDetailView(id);
 
+  // Ruta exacta a la que volveremos
   const backRoute = "/admin/publications/validate";
   
-  const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
+  const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
 
-  // Manejadores para los diálogos
-  const handleApprove = () => {
-    setIsApproveDialogOpen(false);
-    handleAction('publish');
+  const handlePublishConfirm = async () => {
+    setIsPublishDialogOpen(false);
+    const toastId = toast.loading("Publicando oferta...");
+    
+    try {
+      await handleAction("publish");
+      toast.dismiss(toastId);
+      // Redirección explícita con el parámetro de notificación
+      router.push(`${backRoute}?notification=published`); 
+    } catch (e) {
+      toast.error("Error al publicar", {
+        id: toastId,
+        description: "No se pudo completar la acción.",
+      });
+    }
   };
 
-  const handleReject = () => {
+  const handleRejectConfirm = async () => {
     setIsRejectDialogOpen(false);
-    handleAction('reject');
+    const toastId = toast.loading("Rechazando oferta...");
+    
+    try {
+      await handleAction("reject");
+      toast.dismiss(toastId);
+      // Redirección explícita con el parámetro de notificación
+      router.push(`${backRoute}?notification=rejected`);
+    } catch (e) {
+      toast.error("Error al rechazar", {
+        id: toastId,
+        description: "No se pudo completar la acción.",
+      });
+    }
   };
 
-  // 1. ESTADO DE CARGA: Skeleton con fondo morado
+  // 1. ESTADO DE CARGA
   if (loading || !detail) {
     return (
       <div className="flex flex-col min-h-screen relative bg-slate-900 overflow-hidden">
-         {/* Fondo */}
-         <div className="fixed inset-0 z-0">
+         <div className="fixed inset-0 z-0 pointer-events-none">
              <img src="/fondo.png" alt="Fondo" className="w-full h-full object-cover opacity-60"/>
              <div className="absolute inset-0 bg-gradient-to-br from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
          </div>
-         {/* Skeleton */}
          <ValidationDetailSkeleton />
       </div>
     );
@@ -90,7 +112,7 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
             className="mb-6 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all font-bold text-sm backdrop-blur-sm border border-white/10"
           >
             <ArrowLeft className="h-4 w-4" />
-            Volver
+            Volver al Panel
           </button>
 
           <div className="flex flex-col gap-2">
@@ -124,12 +146,12 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
                         </button>
 
                         <button
-                            onClick={() => setIsApproveDialogOpen(true)}
+                            onClick={() => setIsPublishDialogOpen(true)}
                             disabled={isMutating}
                             className="flex-[2] px-6 py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg hover:shadow-green-200 flex justify-center items-center gap-2"
                         >
                             <CheckCircle2 className="w-5 h-5" />
-                            {isMutating ? "Procesando..." : "Publicar"}
+                            {isMutating ? "Procesando..." : "Publicar Oferta"}
                         </button>
                     </div>
                 </div>
@@ -145,27 +167,25 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
 
         {/* Diálogos */}
         <ConfirmDialog
-            open={isApproveDialogOpen}
-            onOpenChange={setIsApproveDialogOpen}
-            title="¿Aprobar Publicación?"
+            open={isPublishDialogOpen}
+            onOpenChange={setIsPublishDialogOpen}
+            title="¿Publicar esta oferta?"
             description="La oferta será visible inmediatamente para todos los usuarios."
             confirmText="Sí, Publicar"
             cancelText="Cancelar"
-            onConfirm={handleApprove}
-            onCancel={() => setIsApproveDialogOpen(false)}
-            // variant="default" // Asegúrate que tu ConfirmDialog soporte esto o quítalo
+            onConfirm={handlePublishConfirm}
+            onCancel={() => setIsPublishDialogOpen(false)}
         />
 
         <ConfirmDialog
             open={isRejectDialogOpen}
             onOpenChange={setIsRejectDialogOpen}
-            title="¿Rechazar Publicación?"
-            description="La oferta será descartada y el usuario será notificado."
+            title="¿Rechazar publicación?"
+            description="La oferta será descartada y el usuario será notificado. Esta acción no se puede deshacer."
             confirmText="Sí, Rechazar"
             cancelText="Cancelar"
-            onConfirm={handleReject}
+            onConfirm={handleRejectConfirm}
             onCancel={() => setIsRejectDialogOpen(false)}
-            // variant="destructive" // Asegúrate que tu ConfirmDialog soporte esto o quítalo
         />
       </main>
     </div>

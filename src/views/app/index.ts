@@ -10,4 +10,5 @@ export { default as YourPublicationDetailView ,} from "@/views/app/offerer/your-
 // export {default as ApplicantsOffererView} from "@/views/app/offerer/your-publications/[id]/applicants";
 export { default as ApplicantDetailView } from "@/views/app/admin/manage/[id]/applicants/[postulantId]";
 export { default as ApplicantPageView} from "@/views/app/offerer/your-publications/[id]/applicants";
+export { default as ApplicantDetailViewOfferer } from "@/views/app/offerer/your-publications/[id]/applicants/[postulantId]";
 
