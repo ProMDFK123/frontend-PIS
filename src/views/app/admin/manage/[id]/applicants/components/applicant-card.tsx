@@ -1,13 +1,15 @@
 import React from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Star } from 'lucide-react'; // 1. Importamos Star
 import { ViewAppplicantsForAdmin } from "@/models/responses";
 
 interface ApplicantCardProps {
+  // Asegúrate de que tu interfaz ViewAppplicantsForAdmin tenga la propiedad 'rating'
+  // si no la tiene, puedes extenderla aquí: applicant: ViewAppplicantsForAdmin & { rating: number };
   applicant: ViewAppplicantsForAdmin;
   onViewDetail: (id: number) => void;
 }
 
-const getStatusBadge = (status: ViewAppplicantsForAdmin['status']) => {
+const getStatusBadge = (status: string) => {
   switch (status) {
     case 'Aceptada':
       return { text: 'Aceptada', color: 'bg-green-500 text-white' };
@@ -20,7 +22,11 @@ const getStatusBadge = (status: ViewAppplicantsForAdmin['status']) => {
 };
 
 export default function ApplicantCard({ applicant, onViewDetail }: ApplicantCardProps) {
-  const { id, applicant: applicantName, status } = applicant;
+  // 2. Extraemos 'rating' (le pongo un default de 0 por si viene null)
+  // Nota: Si TS se queja, asegura que 'rating' exista en tu modelo ViewAppplicantsForAdmin
+  const { id, applicant: applicantName, status, rating } = applicant as any;
+  console.log("Applicant Rating:", rating); // Debugging line
+  
   const statusInfo = getStatusBadge(status);
   const initial = applicantName ? applicantName[0].toUpperCase() : 'U';
 
@@ -31,9 +37,31 @@ export default function ApplicantCard({ applicant, onViewDetail }: ApplicantCard
           {initial}
         </div>
 
-        <span className="text-lg font-semibold text-[var(--ink)] flex-grow truncate">
-          {applicantName}
-        </span>
+        {/* 3. Cambiamos esto a flex-col para poner las estrellas debajo del nombre */}
+        <div className="flex flex-col flex-grow">
+            <span className="text-lg font-semibold text-[var(--ink)] truncate leading-tight">
+            {applicantName}
+            </span>
+            
+            {/* Lógica de las Estrellas */}
+            <div className="flex items-center gap-0.5 mt-1">
+                {[1, 2, 3, 4, 5, 6].map((index) => (
+                    <Star
+                        key={index}
+                        size={14}
+                        className={`${
+                            index <= rating 
+                                ? "fill-yellow-400 text-yellow-400" // Estrella llena
+                                : "fill-gray-200 text-gray-200"     // Estrella vacía
+                        }`}
+                    />
+                ))}
+                {/* Opcional: Mostrar el número al lado */}
+                <span className="text-xs text-gray-400 ml-2 font-medium">
+                    ({rating}/6)
+                </span>
+            </div>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
