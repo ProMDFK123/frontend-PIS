@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, AlertCircle, Sparkles } from "lucide-react"; // Cambié ChevronLeft por ArrowLeft para el estilo nuevo
+import { ArrowLeft, AlertCircle, Sparkles } from "lucide-react";
 import React, { useState } from "react";
 import { useAdminPublicationDetailView } from "./hooks/use-manage-detail-view";
 import { handleApiError, getPresentationType } from "@/lib";
@@ -9,7 +9,7 @@ import { ManageDetailSection } from "./components/manage-detail-section";
 import { ManageProfileSection } from "./components/manage-profile-section";
 import { ConfirmDialog } from "@/components/ui";
 import { toast } from "sonner";
-import { ManageDetailSkeleton } from "./components/manage-detail-skeleton"; // <--- Importamos el Skeleton
+import { ManageDetailSkeleton } from "./components/manage-detail-skeleton";
 
 export interface ManageDetailViewProps {
   id: string;

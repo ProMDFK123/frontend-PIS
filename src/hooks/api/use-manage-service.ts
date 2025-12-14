@@ -5,6 +5,7 @@ import { PublishedItem, OfferDetailForAdmin, BuySellDetailForAdmin, AdminDetail,
 import { ClosePublicationVariables } from "@/models/requests";
 import { AxiosError } from "axios";
 import { offererPublicationService } from "@/services/offererPublicationService";
+import { toast } from "sonner";
 
 // centraliza la lógica para obtener publicaciones publicadas (ofertas y compras/ventas)
 
@@ -139,4 +140,41 @@ export const useGetOffererPostulantsQuery = (publicationId: string | undefined) 
         },
         enabled: !!publicationId,
     });
+};
+
+export const useAcceptApplicationMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number | string) => 
+      offererPublicationService.acceptApplication(applicationId),
+    onSuccess: () => {
+      toast.success("Postulación aceptada correctamente.");
+      // Invalidamos para refrescar la data en pantalla inmediatamente
+      queryClient.invalidateQueries({ queryKey: ["offerer", "postulantDetail"] });
+      queryClient.invalidateQueries({ queryKey: ["offerer", "postulants"] });
+    },
+    onError: (error: any) => {
+      const apiError = handleApiError(error);
+      toast.error(apiError.details || "Error al aceptar la postulación.");
+    },
+  });
+};
+
+export const useRejectApplicationMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number | string) => 
+      offererPublicationService.rejectApplication(applicationId),
+    onSuccess: () => {
+      toast.success("Postulación rechazada.");
+      queryClient.invalidateQueries({ queryKey: ["offerer", "postulantDetail"] });
+      queryClient.invalidateQueries({ queryKey: ["offerer", "postulants"] });
+    },
+    onError: (error: any) => {
+      const apiError = handleApiError(error);
+      toast.error(apiError.details || "Error al rechazar la postulación.");
+    },
+  });
 };
