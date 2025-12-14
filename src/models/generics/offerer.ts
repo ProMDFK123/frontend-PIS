@@ -24,7 +24,18 @@ export interface OffererPublication {
   location?: string;
   status: number;
 }
-
+export interface OffererBuySell {
+  id: number;
+  title: string;
+  description: string;
+  offerType: number;
+  publicationDate: string;
+  deadlineDate: string;
+  endDate?: string;
+  remuneration?: number;
+  location?: string;
+  status: number;
+}
 export interface OfferDetail {
   id: number;
   title: string;

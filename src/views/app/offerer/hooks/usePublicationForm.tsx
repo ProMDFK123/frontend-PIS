@@ -1,98 +1,180 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Cookies from 'js-cookie';
-import { AxiosError } from 'axios';
-import { offererPublicationService } from 'src/services/offererPublicationService';
-import { buildLoginUrl } from 'src/lib/auth';
-import { FormData } from 'src/models/generics';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+import { AxiosError } from "axios";
+import { offererPublicationService } from "src/services/offererPublicationService"; // Asegúrate de importar la interfaz
+import { buildLoginUrl } from "src/lib/auth";
+import { CreateBuySellData } from "@/models/responses";
+import { useNotification } from "@/hooks/common/use-notification";
 
+/**
+ * Interfaz que define la estructura de los datos del formulario de publicación.
+ * Unifica los campos necesarios tanto para Ofertas Laborales (Tipo 1) como para Ventas (Tipo 2).
+ */
+export interface PublicationFormData {
+  title: string;
+  description: string;
+  offerType: string; // '1' = Trabajo, '2' = Venta
+  // Campos Oferta Trabajo
+  endDate: string;
+  deadlineDate: string;
+  remuneration: string;
+  location: string;
+  requirements: string;
+  isCvRequired: boolean;
+  jobType: string; // Full Time, Part Time, etc.
+  // Campos Venta
+  category: string;
+  price: string;
+  // Comunes
+  contactInfo: string;
+}
+
+/**
+ * Hook personalizado para manejar la lógica del formulario de creación de publicaciones.
+ * Gestiona el estado, la autenticación, las validaciones condicionales y el envío de datos a la API.
+ */
 export const usePublicationForm = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
-  
-  const [formData, setFormData] = useState<FormData>({
-    title: '',
-    description: '',
-    offerType: '0',
-    endDate: '',
-    deadlineDate: '',
-    remuneration: '',
-    location: '',
-    requirements: '',
-    contactInfo: '',
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof PublicationFormData, string>>
+  >({});
+  const { notification, isVisible, show, close } = useNotification();
+
+  // Estado inicial del formulario con valores por defecto
+  const [formData, setFormData] = useState<PublicationFormData>({
+    title: "",
+    description: "",
+    offerType: "0", // Por defecto Oferta Laboral
+    endDate: "",
+    deadlineDate: "",
+    remuneration: "",
+    location: "",
+    requirements: "",
+    contactInfo: "",
     isCvRequired: false,
+    jobType: "",
+    category: "",
+    price: "",
   });
 
-  // 1. Verificación de Autenticación
+  // 1. Verificación de Autenticación: Redirige al login si no hay token.
   useEffect(() => {
-    const token = Cookies.get('token');
+    const token = Cookies.get("token");
     if (!token) {
       const currentPath = window.location.pathname;
-      window.location.href = buildLoginUrl(currentPath, 'login_required');
+      window.location.href = buildLoginUrl(currentPath, "login_required");
     } else {
       setIsLoading(false);
     }
   }, []);
 
-  // 2. Lógica de Remuneración
-  useEffect(() => {
-    if (formData.offerType === '1') {
-      setFormData((prev) => ({ ...prev, remuneration: '0' }));
-    }
-  }, [formData.offerType]);
-
+  /**
+   * Maneja los cambios en los inputs del formulario (Texto, Select, Checkbox).
+   * Incluye lógica específica para resetear la remuneración si se selecciona "Voluntariado".
+   */
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-
-    setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-
-    if (errors[name as keyof FormData]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
+    setFormData((prev) => {
+      const newData = {
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      };
+      // Regla de negocio: Si es voluntariado, la remuneración debe ser 0.
+      if (name === "jobType" && value === "Volunteering") {
+        newData.remuneration = "0";
+      }
+      return newData;
+    });
+    // Limpiar error al escribir
+    if (errors[name as keyof PublicationFormData] || name === "jobType") {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+        // Si cambia el tipo de trabajo, limpiamos también el error de remuneración
+        ...(name === "jobType" ? { remuneration: "" } : {}),
+      }));
     }
   };
 
+  /**
+   * Valida los datos del formulario antes de enviar.
+   * Aplica reglas diferentes dependiendo si es una Oferta Laboral o una Venta.
+   * @returns {boolean} True si el formulario es válido, False si hay errores.
+   */
   const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof FormData, string>> = {};
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const newErrors: Partial<Record<keyof PublicationFormData, string>> = {};
+    const isJobOffer = formData.offerType === "0";
+    const isProduct = formData.offerType === "1";
 
-    if (!formData.title.trim()) newErrors.title = 'El título es requerido';
-    else if (formData.title.length < 5 || formData.title.length > 200) newErrors.title = 'El título debe tener entre 5 y 200 caracteres';
+    // Validaciones Comunes
+    if (!formData.title.trim()) newErrors.title = "El título es requerido";
+    if (!formData.description.trim())
+      newErrors.description = "La descripción es requerida";
+    if (!formData.contactInfo.trim())
+      newErrors.contactInfo = "El contacto es requerido";
 
-    if (!formData.description.trim()) newErrors.description = 'La descripción es requerida';
-    else if (formData.description.length < 10 || formData.description.length > 2000) newErrors.description = 'La descripción debe tener entre 10 y 2000 caracteres';
+    // --- VALIDACIONES SOLO PARA OFERTA LABORAL (TIPO 1) ---
+    if (isJobOffer) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Normalizar fecha actual
 
-    if (!formData.offerType) newErrors.offerType = 'Debes seleccionar un tipo de oferta';
+      if (!formData.deadlineDate)
+        newErrors.deadlineDate = "Cierre de postulaciones requerido";
+      if (!formData.endDate) newErrors.endDate = "Fecha de término requerida";
 
-    if (!formData.deadlineDate) newErrors.deadlineDate = 'La fecha límite es requerida';
-    else if (new Date(formData.deadlineDate) < today) newErrors.deadlineDate = 'La fecha límite no puede ser pasada';
+      // Validar coherencia de fechas
+      if (formData.deadlineDate && new Date(formData.deadlineDate) < today)
+        newErrors.deadlineDate = "La fecha no puede ser pasada";
 
-    if (!formData.endDate) newErrors.endDate = 'La fecha de término es requerida';
-    else if (new Date(formData.endDate) < today) newErrors.endDate = 'La fecha de término no puede ser pasada';
+      if (
+        formData.endDate &&
+        formData.deadlineDate &&
+        new Date(formData.endDate) <= new Date(formData.deadlineDate)
+      ) {
+        newErrors.endDate =
+          "El término debe ser después del cierre de postulaciones";
+      }
 
-    if (!newErrors.endDate && !newErrors.deadlineDate) {
-      if (new Date(formData.endDate) <= new Date(formData.deadlineDate)) {
-        newErrors.endDate = 'La fecha de término debe ser posterior a la fecha límite';
+      if (!formData.jobType)
+        newErrors.jobType = "Selecciona el tipo de jornada";
+
+      // Validación específica: Voluntariado sin remuneración
+      if (
+        formData.jobType === "Volunteering" &&
+        parseFloat(formData.remuneration || "0") > 0
+      ) {
+        newErrors.remuneration =
+          "Un voluntariado no puede tener remuneración mayor a 0";
       }
     }
 
-    if (formData.offerType === '0' && !formData.remuneration) {
-      newErrors.remuneration = 'La remuneración es requerida para ofertas de trabajo';
-    } else if (formData.remuneration) {
-      const val = parseFloat(formData.remuneration);
-      if (val < 0) newErrors.remuneration = 'No puede ser negativa';
-      if (formData.offerType === '1' && val !== 0) newErrors.remuneration = 'Voluntariado no puede tener remuneración';
+    // --- VALIDACIONES SOLO PARA VENTA (TIPO 2) ---
+    if (isProduct) {
+      if (!formData.category) newErrors.category = "Selecciona una categoría";
+
+      if (!formData.price) {
+        newErrors.price = "El precio es requerido";
+      } else if (parseFloat(formData.price) < 0) {
+        newErrors.price = "El precio no puede ser negativo";
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  /**
+   * Maneja el envío del formulario al servidor.
+   * Selecciona el servicio adecuado (createJobOffer o createBuySell) según el tipo de oferta.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -100,35 +182,60 @@ export const usePublicationForm = () => {
     setIsSubmitting(true);
 
     try {
-      const remunerationValue = formData.offerType === '1' ? 0 : (formData.remuneration ? parseFloat(formData.remuneration) : 0);
+      const isJobOffer = formData.offerType === "0";
 
-      await offererPublicationService.create({
-        Title: formData.title,
-        Description: formData.description,
-        OfferType: parseInt(formData.offerType, 10),
-        EndDate: formData.endDate || undefined,
-        DeadlineDate: formData.deadlineDate || undefined,
-        Remuneration: remunerationValue,
-        Location: formData.location || undefined,
-        Requirements: formData.requirements || undefined,
-        ContactInfo: formData.contactInfo || undefined,
-        IsCvRequired: formData.isCvRequired,
-        ImagesURL: [],
-      });
+      if (isJobOffer) {
+        // --- LÓGICA PARA OFERTA LABORAL (TIPO 1) ---
+        await offererPublicationService.create({
+          Title: formData.title,
+          Description: formData.description,
+          OfferType: formData.jobType === "JobOffer" ? 0 : 1,
+          EndDate: formData.endDate,
+          DeadlineDate: formData.deadlineDate,
+          Remuneration: formData.remuneration
+            ? parseFloat(formData.remuneration)
+            : 0,
+          Location: formData.location,
+          Requirements: formData.requirements,
+          ContactInfo: formData.contactInfo,
+          IsCvRequired: formData.isCvRequired,
+          ImagesURL: [],
+        });
+      } else {
+        // --- LÓGICA PARA VENTA (TIPO 2) ---
+        // 1. Preparamos el objeto JSON
+        const buySellData: CreateBuySellData = {
+          Title: formData.title,
+          Description: formData.description,
+          Category: formData.category,
+          Price: parseFloat(formData.price || "0"),
+          Location: formData.location,
+          ContactInfo: formData.contactInfo,
+          ImagesURL: [],
+        };
 
-      alert('¡Publicación creada exitosamente!');
-      router.push('/offerer/create-publication/your-publications?success=true');
+        await offererPublicationService.createBuySell(buySellData);
+      }
+
+      show("¡Éxito!", "Publicación creada exitosamente.", "success");
+      setTimeout(() => {
+        router.push("/offerer/your-publications?success=true");
+      }, 1500);
     } catch (error) {
       if (error instanceof AxiosError && error.response?.data?.errors) {
-         const serverErrors: any = {};
-         const errorsData = error.response.data.errors;
-         Object.keys(errorsData).forEach(key => {
-            serverErrors[key.toLowerCase()] = errorsData[key][0];
-         });
-         setErrors(serverErrors);
+        const serverErrors: any = {};
+        const errorsData = error.response.data.errors;
+        Object.keys(errorsData).forEach((key) => {
+          // Mapeo simple de errores del backend a tus inputs
+          serverErrors[key.toLowerCase()] = errorsData[key][0];
+        });
+        setErrors(serverErrors);
       } else {
-        const msg = error instanceof AxiosError ? (error.response?.data?.message || 'Error al conectar') : 'Error inesperado';
-        alert(msg);
+        const msg =
+          error instanceof AxiosError
+            ? error.response?.data?.message || "Error al conectar"
+            : "Error inesperado";
+        show("Error", msg, "error");
       }
     } finally {
       setIsSubmitting(false);
@@ -141,6 +248,9 @@ export const usePublicationForm = () => {
     isLoading,
     isSubmitting,
     handleInputChange,
-    handleSubmit
+    handleSubmit,
+    notification,
+    isVisible,
+    closeNotification: close,
   };
 };

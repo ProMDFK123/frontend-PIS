@@ -8,21 +8,32 @@ import {
   PublicationActionSection,
 } from "./components";
 
+/**
+ * Props esperadas por la vista de detalle.
+ * @param id El ID numérico de la publicación a visualizar.
+ */
 export interface YourPublicationDetailViewProps {
   id: number;
 }
 
+/**
+ * Componente de página para ver el detalle de una publicación propia del oferente.
+ * Permite visualizar la información completa y realizar acciones (editar, eliminar, etc.).
+ */
 export default function YourPublicationDetailView({
   id
 }: YourPublicationDetailViewProps,) {
   const params = useParams();
   const searchParams = useSearchParams();
   
+  // Obtener parámetros de consulta para determinar el tipo de publicación y estado
   const type = searchParams.get("type");
   const numberType = Number(type);
   const urlStatus = searchParams.get("status") 
     ? Number(searchParams.get("status")):0;
   const router = useRouter();
+
+  // Hook para obtener los detalles de la publicación desde la API
   const { detail, loading, error, isMutating,
       handleAction, handleRetry
     } =

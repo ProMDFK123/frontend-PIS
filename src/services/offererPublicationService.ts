@@ -2,11 +2,15 @@ import api from "./Service";
 import { BaseApiService } from "./base-api-service";
 import { ApiResponse } from "@/models/generics";
 
-import type { CreatePublicationData, MyPublishedPublication, ApplicantResponse,MyBuySell,OfferDetail  } from "src/models/responses";
-import type { OffererPublication,
-
-} from "src/models/generics";
-
+import type {
+  CreatePublicationData,
+  CreateBuySellData,
+  MyPublishedPublication,
+  ApplicantResponse,
+  MyBuySell,
+  OfferDetail,
+} from "src/models/responses";
+import type { OffererPublication } from "src/models/generics";
 
 export class OffererPublicationService extends BaseApiService {
   constructor() {
@@ -15,42 +19,48 @@ export class OffererPublicationService extends BaseApiService {
 
   create(data: CreatePublicationData) {
     return this.httpClient.post<ApiResponse<OffererPublication>>(
-      `${this.baseURL}/offers`, 
+      `${this.baseURL}/offers`,
+      data
+    );
+  }
+  createBuySell(data: CreateBuySellData) {
+    return this.httpClient.post<ApiResponse<OffererPublication>>(
+      `${this.baseURL}/buysells`,
       data
     );
   }
 
   getMyPublishedPublications() {
     return this.httpClient.get<ApiResponse<MyPublishedPublication[]>>(
-      `${this.baseURL}/offerent/my-published`);
+      `${this.baseURL}/offerent/my-published`
+    );
   }
 
-    getMyRejectedPublications() {
+  getMyRejectedPublications() {
     return this.httpClient.get<ApiResponse<MyPublishedPublication[]>>(
-      `${this.baseURL}/offerent/my-rejected`);
+      `${this.baseURL}/offerent/my-rejected`
+    );
   }
   getPMyPendingPublications() {
     return this.httpClient.get<ApiResponse<MyPublishedPublication[]>>(
-      `${this.baseURL}/offerent/my-pending`);
+      `${this.baseURL}/offerent/my-pending`
+    );
   }
 
-   //Endpoint: /api/publications/offerent/offer/{id}
-   getMyPublicationById(id: number) {
-    return this.httpClient.get<
-      ApiResponse<OfferDetail>
-    >(`${this.baseURL}/offerent/offer/${id}`);
-
-  
+  //Endpoint: /api/publications/offerent/offer/{id}
+  getMyPublicationById(id: number) {
+    return this.httpClient.get<ApiResponse<OfferDetail>>(
+      `${this.baseURL}/offerent/offer/${id}`
+    );
   }
- //Endpoint: /api/publications/offerent/buysell/{id}
+  //Endpoint: /api/publications/offerent/buysell/{id}
 
-   getMyBullSellById(id: number){
-    return this.httpClient.get<
-      ApiResponse<MyBuySell>
-    >(`${this.baseURL}/offerent/buysell/${id}`);
-
-  } 
-// =========================================================
+  getMyBullSellById(id: number) {
+    return this.httpClient.get<ApiResponse<MyBuySell>>(
+      `${this.baseURL}/offerent/buysell/${id}`
+    );
+  }
+  // =========================================================
   //  NUEVOS MÉTODOS IMPLEMENTADOS
   // =========================================================
 
@@ -79,7 +89,7 @@ export class OffererPublicationService extends BaseApiService {
    * Método: AcceptApplicationOfferent (Actualización por estado)
    * Endpoint: /api/publications/offerent/my-offer/applicants/{status}
    * Descripción: Actualizar estado de postulaciones según "status".
-   * Nota: Como es un PATCH, se suele enviar un body con los IDs a afectar, 
+   * Nota: Como es un PATCH, se suele enviar un body con los IDs a afectar,
    * aquí pongo `data` como opcional por si el endpoint lo requiere.
    */
   updateApplicationsBatchStatus(status: string, data?: any) {
@@ -123,6 +133,21 @@ export class OffererPublicationService extends BaseApiService {
     return this.httpClient.post<ApiResponse<any>>(
       `${this.baseURL}/${id}/appeal`,
       body
+    );
+  }
+
+  /**
+   * Sube una imagen y retorna la URL resultante.
+   * Endpoint asumido: /publications/upload
+   */
+  uploadImage(file: File) {
+    const formData = new FormData();
+    formData.append("file", file); // 'file' suele ser el nombre estándar, verifica tu backend
+
+    return this.httpClient.post<ApiResponse<string>>(
+      `${this.baseURL}/upload`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
     );
   }
 }
