@@ -84,7 +84,7 @@ export function UserDetailSection({ user }: UserDetailSectionProps) {
                         <div>
                             <dt className="font-semibold text-slate-700">Calificación:</dt>
                             <dd className="mt-1 font-semibold text-green-700">
-                                ⭐ {user.rating.toFixed(1)} / 5.0
+                                ⭐ {user.rating.toFixed(1)} / 6.0
                             </dd>
                         </div>
                     )}

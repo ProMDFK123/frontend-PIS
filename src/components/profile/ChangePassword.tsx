@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
+import { Eye, EyeOff } from "lucide-react";
 import { profileService } from "@/services/profileService";
 import { validators } from "src/utils/AuthValidatorsUtil";
 
@@ -29,6 +30,12 @@ export default function ChangePasswordDialog({
     currentPassword: "",
     newPassword: "",
     confirmNewPassword: "",
+  });
+
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
   });
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -97,6 +104,11 @@ export default function ChangePasswordDialog({
         confirmNewPassword: "",
       });
       setFieldErrors({});
+      setShowPasswords({
+        current: false,
+        new: false,
+        confirm: false,
+      });
       onOpenChange(false);
 
       if (onSuccess) onSuccess();
@@ -124,6 +136,11 @@ export default function ChangePasswordDialog({
       });
       setFieldErrors({});
       setError(null);
+      setShowPasswords({
+        current: false,
+        new: false,
+        confirm: false,
+      });
     }
     onOpenChange(newOpen);
   }
@@ -165,6 +182,7 @@ export default function ChangePasswordDialog({
               </div>
             )}
 
+            {/* Current Password */}
             <div className="grid gap-2">
               <label 
                 htmlFor="currentPassword" 
@@ -172,20 +190,35 @@ export default function ChangePasswordDialog({
               >
                 Contraseña Actual
               </label>
-              <Input
-                id="currentPassword"
-                name="currentPassword"
-                type="password"
-                value={form.currentPassword}
-                onChange={handleChange}
-                style={{
-                  borderColor: fieldErrors.currentPassword ? '#EF4444' : '#E5E7EB',
-                  borderWidth: '1px',
-                  borderRadius: '8px',
-                  padding: '8px 12px'
-                }}
-                disabled={submitting}
-              />
+              <div className="relative">
+                <Input
+                  id="currentPassword"
+                  name="currentPassword"
+                  type={showPasswords.current ? "text" : "password"}
+                  value={form.currentPassword}
+                  onChange={handleChange}
+                  style={{
+                    borderColor: fieldErrors.currentPassword ? '#EF4444' : '#E5E7EB',
+                    borderWidth: '1px',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    paddingRight: '40px'
+                  }}
+                  disabled={submitting}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPasswords.current ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
               {fieldErrors.currentPassword && (
                 <p style={{ color: '#DC2626', fontSize: '12px' }}>
                   {fieldErrors.currentPassword}
@@ -193,6 +226,7 @@ export default function ChangePasswordDialog({
               )}
             </div>
 
+            {/* New Password */}
             <div className="grid gap-2">
               <label 
                 htmlFor="newPassword" 
@@ -200,20 +234,35 @@ export default function ChangePasswordDialog({
               >
                 Nueva Contraseña
               </label>
-              <Input
-                id="newPassword"
-                name="newPassword"
-                type="password"
-                value={form.newPassword}
-                onChange={handleChange}
-                style={{
-                  borderColor: fieldErrors.newPassword ? '#EF4444' : '#E5E7EB',
-                  borderWidth: '1px',
-                  borderRadius: '8px',
-                  padding: '8px 12px'
-                }}
-                disabled={submitting}
-              />
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  name="newPassword"
+                  type={showPasswords.new ? "text" : "password"}
+                  value={form.newPassword}
+                  onChange={handleChange}
+                  style={{
+                    borderColor: fieldErrors.newPassword ? '#EF4444' : '#E5E7EB',
+                    borderWidth: '1px',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    paddingRight: '40px'
+                  }}
+                  disabled={submitting}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPasswords.new ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
               {fieldErrors.newPassword && (
                 <p style={{ color: '#DC2626', fontSize: '12px' }}>
                   {fieldErrors.newPassword}
@@ -224,6 +273,7 @@ export default function ChangePasswordDialog({
               </p>
             </div>
 
+            {/* Confirm New Password */}
             <div className="grid gap-2">
               <label 
                 htmlFor="confirmNewPassword" 
@@ -231,20 +281,35 @@ export default function ChangePasswordDialog({
               >
                 Confirmar Nueva Contraseña
               </label>
-              <Input
-                id="confirmNewPassword"
-                name="confirmNewPassword"
-                type="password"
-                value={form.confirmNewPassword}
-                onChange={handleChange}
-                style={{
-                  borderColor: fieldErrors.confirmNewPassword ? '#EF4444' : '#E5E7EB',
-                  borderWidth: '1px',
-                  borderRadius: '8px',
-                  padding: '8px 12px'
-                }}
-                disabled={submitting}
-              />
+              <div className="relative">
+                <Input
+                  id="confirmNewPassword"
+                  name="confirmNewPassword"
+                  type={showPasswords.confirm ? "text" : "password"}
+                  value={form.confirmNewPassword}
+                  onChange={handleChange}
+                  style={{
+                    borderColor: fieldErrors.confirmNewPassword ? '#EF4444' : '#E5E7EB',
+                    borderWidth: '1px',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    paddingRight: '40px'
+                  }}
+                  disabled={submitting}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPasswords.confirm ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
               {fieldErrors.confirmNewPassword && (
                 <p style={{ color: '#DC2626', fontSize: '12px' }}>
                   {fieldErrors.confirmNewPassword}
@@ -271,7 +336,7 @@ export default function ChangePasswordDialog({
               type="submit" 
               disabled={submitting}
               style={{
-                backgroundColor: '#6D5EF7', // BolsaUCN primary purple
+                backgroundColor: '#6D5EF7',
                 color: '#FFFFFF',
                 opacity: submitting ? 0.6 : 1
               }}
