@@ -1,18 +1,18 @@
+// src/views/app/offerer/your-publications/[id]/hooks/use-publication-detail-view.tsx
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { offererPublicationService } from "src/services/offererPublicationService";
 import type { OfferDetail, MyBuySell } from "src/models/responses";
 
-export type PublicationAction = "postulantes";
+export type PublicationAction = "postulantes" | "close_publication";
 
+// El hook recibe el 'id' y el 'type'
 export const useYourPublicationDetailView = (id: number, type: number) => {
   const router = useRouter();
   const [detail, setDetail] = useState< OfferDetail | MyBuySell| null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMutating, setIsMutating] = useState(false);
-
-  // Eliminamos el estado redundante 'typePublication' porque ya lo recibes por props
 
   const fetchDetail = useCallback(async () => {
     setLoading(true);
@@ -21,17 +21,14 @@ export const useYourPublicationDetailView = (id: number, type: number) => {
     try {
       let response;
 
-      // ✅ CORRECCIÓN: Usamos if/else directo para decidir qué servicio llamar
-      // Asumimos que 0 es "Oferta de Trabajo" (Job)
-if (type === 0) {
-        // ES UNA OFERTA DE TRABAJO
-        const response = await offererPublicationService.getMyPublicationById(id);
-        // Le decimos a TS: "Confía en mí, esto es un OfferDetail"
+      // Se usa el parámetro 'type' para discriminar el fetch
+      // 0: Oferta de Trabajo, 2: Voluntariado -> getMyPublicationById
+      if (type === 0 || type === 2) { 
+        response = await offererPublicationService.getMyPublicationById(id);
         setDetail(response.data.data as OfferDetail); 
       } else {
-        // ES UNA COMPRA/VENTA
-        const response = await offererPublicationService.getMyBullSellById(id);
-        // Le decimos a TS: "Confía en mí, esto es un MyBuySell"
+        // 1: Compra/Venta -> getMyBullSellById
+        response = await offererPublicationService.getMyBullSellById(id);
         setDetail(response.data.data as MyBuySell);
       }
 
@@ -46,9 +43,8 @@ if (type === 0) {
     } finally {
       setLoading(false);
     }
-  }, [id, type]); // ✅ Agregamos 'type' a las dependencias
+  }, [id, type]);
 
-  // Este useEffect dispara la carga inicial cuando cambia el ID o el TIPO
   useEffect(() => {
     if (id) {
       fetchDetail();
@@ -56,6 +52,7 @@ if (type === 0) {
   }, [id, fetchDetail]);
 
   const handleAction = async (action: PublicationAction) => {
+    // ... (función handleAction sin cambios) ...
     if (!detail) return;
 
     setIsMutating(true);
@@ -63,13 +60,30 @@ if (type === 0) {
       if (action === "postulantes") {
         router.push(`/offerer/your-publications/${id}/applicants`);
       }
-      // Aquí puedes agregar más acciones como delete, etc.
     } catch (err: any) {
       alert("Error al realizar la acción: " + (err.response?.data?.message || err.message));
     } finally {
       setIsMutating(false);
     }
   };
+    
+  // FUNCIÓN DE CIERRE ACTUALIZADA: Pasa el ID y el TIPO al servicio
+  const handleClosePublication = useCallback(async () => {
+    if (!detail) throw new Error("Publicación no cargada.");
+
+    setIsMutating(true);
+    try {
+        // Se llama al servicio con el ID y el TIPO, que discrimina el endpoint
+        await offererPublicationService.closePublication(id, type); 
+        // Redirigir después del éxito
+        router.push(`/offerer/your-publications?notification=closed`);
+    } catch (err) {
+        throw err; // Relanzar para que el componente padre pueda mostrar el toast de error
+    } finally {
+        setIsMutating(false);
+    }
+  }, [id, type, detail, router]);
+
 
   const handleRetry = () => {
     fetchDetail();
@@ -82,6 +96,6 @@ if (type === 0) {
     isMutating,
     handleAction,
     handleRetry,
-    
+    handleClosePublication, 
   };
 };

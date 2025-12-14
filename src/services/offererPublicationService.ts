@@ -125,6 +125,28 @@ export class OffererPublicationService extends BaseApiService {
       body
     );
   }
+
+  closePublication(id: number, type: number){
+    let endpoint: string;
+
+    // Discriminar el endpoint según el tipo de publicación
+    if (type === 0 || type === 2) {
+        // Oferta de Trabajo (0) o Voluntariado (2) -> offer
+        endpoint = `${this.baseURL}/offerent/my-offer/${id}/close`;
+    }
+    else if (type === 1) {
+        // Compra/Venta (1) -> buysell
+        endpoint = `${this.baseURL}/offerent/my-buysell/${id}/close`;
+    } else {
+        // Manejo de tipo desconocido o inválido
+        throw new Error("Tipo de publicación no válido para la acción de cierre.");
+    }
+
+    // Realiza la petición patch al endpoint específico
+    return this.httpClient.patch<ApiResponse<any>>(endpoint, {}); 
+};
+
+
 }
 
 export const offererPublicationService = new OffererPublicationService();
