@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Cookies from "js-cookie";
 import { login } from "@/services/authService";
 import type { LoginRequestDto } from "@/services/dtos/authDto";
-import { toast } from "sonner";
 
 //implementado para ver que rol y redigir segun 
 import { extractUserFromJwt } from "@/lib";
@@ -19,7 +18,7 @@ function LoginForm() {
   const bannerMessage = 
     msg === "login_required" ? "Tienes que iniciar sesión primero." : 
     msg === "session_expired" ? "Sesion Expirada." :
-    "Error inesperado.";
+    msg ? "Error inesperado." : null;
   const [form, setForm] = useState({
     correo: "",
     password: "",
@@ -124,10 +123,10 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0d8ef2] px-4">
+    <div className="min-h-screen h-full flex items-center justify-center bg-[#0d8ef2] px-4">
       <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-xl w-[360px] flex flex-col items-center relative">
         {/* Logo */}
-        <div className="absolute -top-20 flex flex-col items-center">
+        <div className="absolute -top-10 flex flex-col items-center">
           <img
             src="/feucn_logo.png"
             alt="Logo FEUCN"
