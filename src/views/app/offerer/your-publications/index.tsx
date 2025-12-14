@@ -296,24 +296,43 @@ export default function YourPublicationsView() {
     }, [setError, setIsLoading, setPublications]);
     
   useEffect(() => {
-    const notificationParam = searchParams.get("success");
-    if (notificationParam === "true") {
+    const successParam = searchParams.get("success");
+    const closeNotificationParam = searchParams.get("notification"); // <-- NUEVO
+
+    let notificationProcessed = false; // Bandera para saber si se mostró una notificación
+    
+    // 1. Lógica para Publicación Enviada (existente)
+    if (successParam === "true") {
       show(
         "¡Publicación Enviada!",
         "Tu oferta ha sido enviada con éxito y está en proceso de revisión.",
         "success"
       );
       router.replace("/offerer/your-publications", { scroll: false });
+      notificationProcessed = true;
     }
     
-    if (!notificationParam) {
+    // 2. Lógica para Publicación Cerrada (NUEVO)
+    else if (closeNotificationParam === "closed") {
+      show(
+        "Publicación Cerrada", // Título
+        "La publicación ha sido cerrada y ya no está disponible para postulaciones.", // Mensaje
+        "success" // Tipo de notificación (verde)
+      );
+      router.replace("/offerer/your-publications", { scroll: false });
+      notificationProcessed = true;
+    }
+    
+    // 3. Cargar datos
+    if (!notificationProcessed) { // Solo cargar si no se está procesando ninguna notificación
         loadData();
     } else {
+        // Cargar datos poco después de mostrar la notificación para evitar interrupciones.
         const timeout = setTimeout(loadData, 100); 
         return () => clearTimeout(timeout);
     }
     
-  }, [router, searchParams, show, loadData]);
+  }, [router, searchParams, show, loadData]);;
   
   const handleRetry = () => {
     setIsLoading(true);

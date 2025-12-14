@@ -38,6 +38,7 @@ export default function OffererPublicationDetailView() {
 
     const publicationTypeParam = typeQuery ? parseInt(typeQuery) : 0; 
     const publicationId = parseInt(id);
+    
 
     const { 
         detail: publication, 
@@ -47,7 +48,7 @@ export default function OffererPublicationDetailView() {
         handleClosePublication, 
     } = useYourPublicationDetailView(publicationId, publicationTypeParam);
 
-    const { notification, isVisible, close } = useNotification();
+    const { notification, isVisible, close, show } = useNotification();
     
     // ESTADO: Para el diálogo de confirmación de cierre
     const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
@@ -58,12 +59,26 @@ export default function OffererPublicationDetailView() {
         const toastId = toast.loading("Cerrando publicación...");
         try {
             await handleClosePublication();
+            
             toast.dismiss(toastId);
-        } catch (e) {
-            toast.error("Error al cerrar publicación", {
-                id: toastId,
-                description: "No se pudo completar la acción.",
-            });
+            
+            // ÉXITO: Redirigir para que la página de lista muestre el banner de éxito
+            router.push(`/offerer/your-publications?notification=closed`); 
+            
+        } catch (e: any) {
+            
+            toast.dismiss(toastId); // Quitar el toast de carga
+            
+            // Obtener el mensaje de error (será el mensaje del 409 si aplica)
+            const errorMessage = e?.message || "Hubo un error desconocido al intentar cerrar la publicación.";
+
+            // FALLO: USAR EL BANNER DE NOTIFICACIÓN
+            show(
+                "¡Error al Cerrar Publicación!", 
+                errorMessage,
+                "error" // Tipo de notificación de error
+            );
+
         }
     };
 

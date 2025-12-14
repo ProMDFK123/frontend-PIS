@@ -7,6 +7,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from 'sonner'; 
 import type { OfferDetail, MyBuySell } from "src/models/responses";
 
+
 interface PublicationActionSectionProps {
     detail: OfferDetail | MyBuySell;
     statusInfo: { text: string; classes: string; };
@@ -29,6 +30,8 @@ const PublicationActionSection: React.FC<PublicationActionSectionProps> = ({
     const isPending = detail.statusValidation === 1;
     const isRejected = detail.statusValidation === 2;
     const isPublished = detail.statusValidation === 0;
+    
+    
 
     const handleConfirmClose = async () => {
         setIsCloseDialogOpen(false);
@@ -36,7 +39,14 @@ const PublicationActionSection: React.FC<PublicationActionSectionProps> = ({
         try {
             await handleClosePublication();
             toast.dismiss(toastId);
-            // La redirección ocurre dentro de handleClosePublication en el hook.
+            
+            // AÑADIR ESTA LÍNEA para el popup de éxito
+            toast.success("Publicación cerrada con éxito", {
+                description: "Serás redirigido a tus publicaciones.",
+            });
+            
+            // La redirección ocurre dentro de handleClosePublication en el hook, 
+            // lo que garantiza que se haga después de este toast.
         } catch (e) {
             toast.error("Error al cerrar publicación", {
                 id: toastId,

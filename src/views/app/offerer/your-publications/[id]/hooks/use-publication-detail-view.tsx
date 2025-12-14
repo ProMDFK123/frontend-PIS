@@ -73,16 +73,21 @@ export const useYourPublicationDetailView = (id: number, type: number) => {
 
     setIsMutating(true);
     try {
-        // Se llama al servicio con el ID y el TIPO, que discrimina el endpoint
+        // Se llama al servicio con el ID y el TIPO
         await offererPublicationService.closePublication(id, type); 
-        // Redirigir después del éxito
-        router.push(`/offerer/your-publications?notification=closed`);
-    } catch (err) {
-        throw err; // Relanzar para que el componente padre pueda mostrar el toast de error
+    } catch (err: any) { // <-- Tipado para poder acceder a la respuesta de Axios
+        
+        // LÓGICA DE ERROR DINÁMICA: DETECTAR EL CÓDIGO 409
+        if (err.response && err.response.status === 409) {
+            // Lanzamos el nuevo error con el mensaje específico para el banner
+            throw new Error("El estado actual de la publicación (Pendiente o Rechazada) no permite el cierre.");
+        }
+        
+        throw err; // Relanzar cualquier otro error
     } finally {
         setIsMutating(false);
     }
-  }, [id, type, detail, router]);
+  }, [id, type, detail]);
 
 
   const handleRetry = () => {
