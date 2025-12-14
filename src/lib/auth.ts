@@ -50,7 +50,7 @@ export function getUserFromToken(): {
         json.unique_name ||
         json[NAME_URI] ||
         (json.email ? String(json.email).split("@")[0] : undefined),
-
+      userName: json.userName,
       email: json.email || json[EMAIL_URI],
       sub: json.sub,
 
@@ -62,14 +62,13 @@ export function getUserFromToken(): {
   }
 }
 
-export function extractUserFromJwt() {
+export function extractUserFromJwt(token: string | null) {
   try {
-    const token = getTokenFromCookie();
-    if (!token) return null;
+    if (!token) throw new Error("Token JWT no proporcionado");
     const decoded = jwtDecode<JwtClaims>(token);
 
     if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
-      return null; // temporary
+      throw new Error("Token JWT expirado");
     }
 
     const user = {

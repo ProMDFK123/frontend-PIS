@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Cookies from "js-cookie";
 import { login } from "@/services/authService";
 import type { LoginRequestDto } from "@/services/dtos/authDto";
+import { toast } from "sonner";
 
 //implementado para ver que rol y redigir segun 
 import { extractUserFromJwt } from "@/lib";
@@ -15,7 +16,10 @@ function LoginForm() {
   const sp = useSearchParams();
   const rawReturnTo = sp?.get("returnTo") || "";
   const msg = sp?.get("msg");
-  const bannerMessage = msg === "login_required" ? "Tienes que iniciar sesión primero." : msg;
+  const bannerMessage = 
+    msg === "login_required" ? "Tienes que iniciar sesión primero." : 
+    msg === "session_expired" ? "Sesion Expirada." :
+    "Error inesperado.";
   const [form, setForm] = useState({
     correo: "",
     password: "",
@@ -29,7 +33,7 @@ function LoginForm() {
     const token = Cookies.get("token");
     if (token) {
       try {
-        const decoded = extractUserFromJwt();
+        const decoded = extractUserFromJwt(token);
         const role = decoded?.role;
         console.log("[Role] response:", role);
         const decodedReturn = rawReturnTo ? decodeURIComponent(rawReturnTo) : "";
@@ -84,7 +88,7 @@ function LoginForm() {
       let role: string | undefined;
       try {
         if (response.token) {
-          const decoded = extractUserFromJwt();
+          const decoded = extractUserFromJwt(response.token);
           role = decoded?.role;
         }
       } catch (e) {

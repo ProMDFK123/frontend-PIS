@@ -1,7 +1,8 @@
 // src/services/Service.ts
 import axios from "axios";
 import Cookies from "js-cookie";
-import { buildLoginUrl } from "@/lib/auth";
+import { buildLoginUrl, extractUserFromJwt } from "@/lib/auth";
+import { toast } from "sonner";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5185/";
 
@@ -12,18 +13,48 @@ const api = axios.create({
   },
 });
 
+let isHandlingExpiration = false;
+
 api.interceptors.request.use(
   (config) => {
     console.log(`📤 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
     
     const token = Cookies.get("token");  // ✅ Get the actual JWT token string
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;  // ✅ Send full token
-      console.log("🔑 Token attached to request");
-    } else {
-      console.warn("⚠️ No token found in cookies!");
+      try {
+        extractUserFromJwt(token);  // ✅ Validate token structure and expiration
+        console.log("🔐 Valid token found");
+        config.headers.Authorization = `Bearer ${token}`;  // ✅ Send full token
+        console.log("🔑 Token attached to request");
+      } catch (error) {
+        console.warn("⚠️ Invalid or expired token:", error);
+        if (!isHandlingExpiration) {
+          isHandlingExpiration = true;
+          Cookies.remove("token");
+        
+          const isOnLoginPage = typeof window !== "undefined" &&
+            window.location.pathname.includes("/auth/login");
+          if (!isOnLoginPage) {
+            const errorMessage = error instanceof Error && error.message === "Token JWT expirado"
+              ? "Tu sesión ha expirado. Redirigiendo al inicio de sesión..."
+              : "Sesión inválida. Por favor, inicia sesión nuevamente.";
+            
+            toast.error(errorMessage, {
+              duration: 2500,
+            });
+            
+            setTimeout(() => {
+              const currentPath = window.location.pathname + window.location.search;
+              window.location.href = buildLoginUrl(currentPath, "session_expired");
+            }, 2500);
+          }
+        }
+        return Promise.resolve({
+          ...config,
+          cancelToken: new axios.CancelToken((cancel) => cancel("session_expired"))
+        });
+      }
     }
-    
     return config;
   },
   (error) => {
@@ -35,16 +66,30 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (axios.isCancel(error)) {
+      return Promise.resolve({ data: null });
+    }
+    
     const status = error?.response?.status;
 
     const isOnLoginPage = typeof window !== "undefined" &&
       window.location.pathname.includes("/auth/login");
 
-    if (status === 401 && !isOnLoginPage) {
+    if (status === 401 && !isOnLoginPage && !isHandlingExpiration) {
+      isHandlingExpiration = true;
       Cookies.remove("token");
+      
+      toast.info("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.", {
+        duration: 3000,
+        icon: "🔒",
+      });
+      
+      setTimeout(() => {
+        const currentPath = window.location.pathname + window.location.search;
+        window.location.href = buildLoginUrl(currentPath, "session_expired");
+      }, 800);
 
-      const currentPath = window.location.pathname + window.location.search;
-      window.location.href = buildLoginUrl(currentPath, "login_required");
+      return Promise.resolve({ data: null });
     }
 
     return Promise.reject(error);

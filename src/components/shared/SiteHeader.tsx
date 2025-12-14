@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useMemo } from "react";
-import { getProfileRoute, getUserFromToken } from "@/lib";
+import { getProfileRoute, getUserFromToken, getTokenFromCookie } from "@/lib";
 import { ChevronDown } from "lucide-react";
 
 import { 
@@ -67,9 +67,18 @@ export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Function to reload the profile photo
+  const loadPhoto = async () => {
+    const res = await profileService.getProfilePhoto();
+    if (res.data?.photoUrl) {
+      setAuth(prev => ({ ...prev, photoUrl: `${res.data.photoUrl}?v=${Date.now()}` }));
+    }
+  }
+  
   useEffect(() => {
     const logged = isLoggedIn();
-    const info = extractUserFromJwt();
+    const token = getTokenFromCookie();
+    const info = token ? getUserFromToken() : null;
     const userRole = getRoleFromToken();
     const tokenData = getUserFromToken();
 
@@ -82,19 +91,19 @@ export default function SiteHeader() {
     });
 
     if (logged) {
-      const loadPhoto = async () => {
-        try {
-          const res = await profileService.getProfilePhoto();
-          if (res.data?.photoUrl) {
-            setAuth(prev => ({ ...prev, photoUrl: `${res.data.photoUrl}?v=${Date.now()}` }));
-          }
-        } catch (err) {
-          console.error("Error obteniendo foto:", err);
-        }
-      };
       loadPhoto();
     }
   }, [pathname]);
+
+  useEffect(() => {
+    const handlePhotoUpdate = () => {
+      if(auth.logged) {
+        loadPhoto();
+      }
+    };
+    window.addEventListener('profilePhotoUpdated', handlePhotoUpdate);
+    return () => window.removeEventListener('profilePhotoUpdated', handlePhotoUpdate);
+  }, [auth.logged]);
 
   const dropdownItems = useMemo(() => {
     const baseItems = [
