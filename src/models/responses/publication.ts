@@ -108,6 +108,7 @@ export interface AdminDetail {
     requirements?: string;
     contactInfo: string;
     aboutMe?: string;
+    rating: number;
 }
 
 export interface UseAdminDetailValidateResult {
@@ -183,6 +184,7 @@ export interface ViewAppplicantsForAdmin {
   id: number;
   applicant: string;
   status: "Pendiente" | "Aceptada" | "Rechazada" | string;
+  rating: number;
 }
 
 export interface PostulantDetailForAdmin {
@@ -214,6 +216,7 @@ export interface PostulantView {
     status: string;
     submittedAt: string; // Fecha formateada
     cvUrl: string | null;
+    rating: number;
 }
 
 
@@ -225,6 +228,7 @@ export interface ApplicantResponse{
     status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
     applicationDate: string; // Viene como ISO string desde el backend
     curriculumVitaeUrl: string;
+    rating?: number;
 
 }
 export interface OfferDetail {

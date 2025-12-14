@@ -149,7 +149,8 @@ export function mapOfferToDetail(dto: any): AdminDetail {
     location: dto.location,
     requirements: dto.requirements,
     contactInfo: dto.contactInfo,
-    aboutMe: dto.aboutMe
+    aboutMe: dto.aboutMe,
+    rating: dto.rating || 0
   };
 }
 
@@ -188,7 +189,8 @@ export function mapBuySellToDetail(dto: any): AdminDetail {
     location: dto.location,
     requirements: undefined,
     contactInfo: dto.contactInfo,
-    aboutMe: dto.aboutMe
+    aboutMe: dto.aboutMe,
+    rating: dto.rating || 0
   };
 }
 
@@ -216,6 +218,7 @@ export function mapApplicantToView(dto: ViewAppplicantsForAdmin): ViewAppplicant
         id: dto.id,
         applicant: dto.applicant,
         status: dto.status as "Pending" | "Published" | "Rejected",
+        rating: dto.rating || 0,
     };
 }
     // Función transformadora (Mapper)
@@ -229,7 +232,8 @@ export const mapOffererApplicantToView = (dto: ApplicantResponse): PostulantView
         submittedAt: new Date(dto.applicationDate).toLocaleDateString('es-CL', {
             year: 'numeric', month: 'long', day: 'numeric'
         }),
-        cvUrl: dto.curriculumVitaeUrl || null
+        cvUrl: dto.curriculumVitaeUrl || null,
+        rating: dto.rating || 0,
     };
 };
 

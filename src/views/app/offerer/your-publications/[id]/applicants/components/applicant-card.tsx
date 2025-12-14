@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, CalendarDays } from 'lucide-react';
+import { ChevronRight, CalendarDays, Star } from 'lucide-react'; // 1. Agregado Star
 import { ApplicantResponse } from "@/models/responses";
 
 interface ApplicantCardProps {
@@ -21,8 +21,10 @@ const getStatusBadge = (status: string) => {
 
 export default function ApplicantCard({ applicant, onViewDetail }: ApplicantCardProps) {
   const { studentId, applicantName, status, applicationDate } = applicant;
+  const rating = (applicant as any).rating || 0; 
   const statusInfo = getStatusBadge(status);
   const initial = applicantName ? applicantName[0].toUpperCase() : 'U';
+  
   const formattedDate = new Date(applicationDate).toLocaleDateString('es-ES', {
     day: '2-digit',
     month: 'long',
@@ -41,6 +43,25 @@ export default function ApplicantCard({ applicant, onViewDetail }: ApplicantCard
              <span className="text-lg font-bold text-slate-800 truncate leading-tight">
                {applicantName}
             </span>
+
+            {/* 3. Renderizado de las Estrellas */}
+            <div className="flex items-center gap-0.5 mt-1">
+                {[1, 2, 3, 4, 5, 6].map((index) => (
+                    <Star
+                        key={index}
+                        size={14}
+                        className={`${
+                            index <= rating 
+                                ? "fill-yellow-400 text-yellow-400" 
+                                : "fill-gray-200 text-gray-200"
+                        }`}
+                    />
+                ))}
+                <span className="text-xs text-gray-400 ml-2 font-medium">
+                    ({rating}/6)
+                </span>
+            </div>
+
             <span className="text-xs text-slate-500 font-medium flex items-center gap-1 mt-1">
                 <CalendarDays className="w-3 h-3" />
                 Postulado el: {formattedDate}
