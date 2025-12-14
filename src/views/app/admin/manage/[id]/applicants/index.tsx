@@ -8,7 +8,6 @@ import { useGetApplicantsView } from "./hooks/use-get-applicants-view";
 import { ViewAppplicantsForAdmin } from "@/models/responses";
 import ApplicantCard from "./components/applicant-card";
 import ApplicantFilterBar from "./components/view-applicants-filter-bar";
-// 1. Importar el nuevo skeleton
 import { ApplicantListSkeleton } from "./components/applicant-list-skeleton";
 
 export interface ApplicantsViewProps {
@@ -36,7 +35,6 @@ export default function ApplicantsView({ id }: ApplicantsViewProps) {
   };
 
   const renderContent = () => {
-    // 2. Loading State con Skeleton
     if (isLoading) {
       return <ApplicantListSkeleton />;
     }
