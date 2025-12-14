@@ -262,6 +262,7 @@ export interface OfferDetail {
   userName: string;
   userEmail: string;
   aboutMe?: string;
+  statusValidation: number;
 }
 
 export interface MyBuySell {
@@ -282,4 +283,5 @@ export interface MyBuySell {
   userId: number;
   userName: string;
   userEmail: string;
+  statusValidation: number;
 }

@@ -1,119 +1,114 @@
+// src/views/app/offerer/your-publications/[id]/components/PublicationActionSection.tsx
+"use client";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { Edit, Users, Trash2 } from 'lucide-react';
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"; 
+import { toast } from 'sonner'; 
 import type { OfferDetail, MyBuySell } from "src/models/responses";
-import type { PublicationAction } from "../hooks/use-publication-detail-view";
 
-interface Props {
-  detail: OfferDetail | MyBuySell;
-  isMutating: boolean;
-  id: number;
-  handleAction: (action: PublicationAction, reason?: string) => void;
-  status: number;
+
+interface PublicationActionSectionProps {
+    detail: OfferDetail | MyBuySell;
+    statusInfo: { text: string; classes: string; };
+    // Propiedades para manejar el cierre
+    handleClosePublication: () => Promise<void>;
+    isMutating: boolean;
 }
 
-// ✅ CORRECCIÓN 1: Clases de Tailwind completas
-// En lugar de guardar "green", guardamos toda la clase para que Tailwind la detecte.
-const getStatusInfo = (status: number) => {
-  switch (status) {
-    case 0: // Publicada / Activa
-      return {
-        text: "Publicada",
-        classes: "bg-green-100 text-green-800 border-green-200",
-      };
-    case 1: // En Revisión / Pendiente
-      return {
-        text: "En proceso",
-        classes: "bg-yellow-100 text-yellow-800 border-yellow-200",
-      };
-    case 2: // Rechazada
-      return {
-        text: "Rechazada",
-        classes: "bg-red-100 text-red-800 border-red-200",
-      };
-    case 3: // Finalizada / Cerrada (Ejemplo)
-      return {
-        text: "Cerrada",
-        classes: "bg-gray-100 text-gray-800 border-gray-200",
-      };
-    default:
-      return {
-        text: "Desconocido",
-        classes: "bg-gray-100 text-gray-600 border-gray-200",
-      };
-  }
-};
+const PublicationActionSection: React.FC<PublicationActionSectionProps> = ({ 
+    detail, 
+    statusInfo,
+    handleClosePublication,
+    isMutating,
+}) => {
+    
+    const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
+    
+    // Determinar si es Oferta o Compra/Venta para extraer datos del oferente
+    const isJobOffer = 'remuneration' in detail || 'companyName' in detail;
+    const isPending = detail.statusValidation === 1;
+    const isRejected = detail.statusValidation === 2;
+    const isPublished = detail.statusValidation === 0;
+    
+    
 
-export function PublicationActionSection({
-  detail,
-  isMutating,
-  // id, // Si no lo usas aquí, puedes quitarlo de props o dejarlo
-  handleAction,
-  status,
-}: Props) {
-  // ✅ CORRECCIÓN 2: Normalización del Status
-  // Verificamos si la propiedad se llama 'status' (en listas) o 'statusValidation' (en detalles)
-  // Usamos 'as any' o 'in' para evitar errores de TS si las interfaces difieren.
-  const numericStatus =
-    "status" in detail ? detail.status : (detail as any).statusValidation;
+    const handleConfirmClose = async () => {
+        setIsCloseDialogOpen(false);
+        const toastId = toast.loading("Cerrando publicación...");
+        try {
+            await handleClosePublication();
+            toast.dismiss(toastId);
+            
+            // AÑADIR ESTA LÍNEA para el popup de éxito
+            toast.success("Publicación cerrada con éxito", {
+                description: "Serás redirigido a tus publicaciones.",
+            });
+            
+            // La redirección ocurre dentro de handleClosePublication en el hook, 
+            // lo que garantiza que se haga después de este toast.
+        } catch (e) {
+            toast.error("Error al cerrar publicación", {
+                id: toastId,
+                description: "No se pudo completar la acción.",
+            });
+        }
+    };
 
-  const statusInfo = getStatusInfo(status);
+    return (
+        <aside className="space-y-6 sticky top-10">
+            
+            {/* SECCIÓN DE ACCIONES (El perfil de contacto fue eliminado) */}
+            <section className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
+                
+                <h2 className="text-2xl font-bold text-slate-900 text-center mb-4 border-b pb-2">
+                    Acciones
+                </h2>
 
-  return (
-    <aside className="sticky top-24 bg-white p-6 rounded-xl shadow-lg border border-gray-200 space-y-4">
-      <h2 className="text-xl font-bold text-gray-800">Estado y Acciones</h2>
+                {/* Botón Ver Postulantes (Disponible si es Oferta/Voluntariado y está Activa) */}
+                {isPublished && isJobOffer && (
+                    <Link href={`/offerer/your-publications/${detail.id}/applicants`} passHref>
+                        <button className="w-full px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg transform active:scale-95 transition-all flex justify-center items-center gap-2">
+                            <Users className="w-5 h-5" />
+                            Ver Postulantes
+                        </button>
+                    </Link>
+                )}
 
-      {/* Badge de Estado */}
-      <div className="flex items-center justify-between">
-        <span className="font-semibold text-gray-600">Estado actual:</span>
-        <span
-          className={`px-3 py-1 text-sm font-bold rounded-full border ${statusInfo.classes}`}
-        >
-          {statusInfo.text}
-        </span>
-      </div>
+                {/* Botón Editar (Disponible si está Pendiente o Rechazada) */}
+                {(isPending || isRejected) && (
+                    <Link href={`/offerer/edit-publication/${detail.id}`} passHref>
+                        <button className="w-full px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-slate-900 rounded-xl font-bold shadow-lg transform active:scale-95 transition-all flex justify-center items-center gap-2">
+                            <Edit className="w-5 h-5" />
+                            Editar Publicación
+                        </button>
+                    </Link>
+                )}
+                
+                {/* Botón de Cerrar Publicación (Funcionalidad Requerida) */}
+                <button 
+                    onClick={() => setIsCloseDialogOpen(true)}
+                    disabled={isMutating}
+                    className="w-full px-6 py-3 border border-red-500 text-red-600 hover:bg-red-50/50 hover:text-red-700 rounded-xl font-bold transform active:scale-95 transition-all flex justify-center items-center gap-2 disabled:opacity-50"
+                >
+                    <Trash2 className="w-5 h-5" />
+                    {isMutating ? "Cerrando..." : "Cerrar Publicación"}
+                </button>
+            </section>
 
-      {/* Botones de Acción */}
-      <div className="pt-4 border-t border-gray-200 space-y-3">
-        {status !== 1 && status !== 2 && (
-          <button
-            onClick={() => handleAction("postulantes")}
-            disabled={isMutating}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-          >
-            {/* Icono opcional */}
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-            {isMutating ? "Cargando..." : "Ver postulantes"}
-          </button>
-        )}
-
-        {status === 2 && (
-          <button
-            onClick={() => handleAction("appeal" as any)}
-            disabled={isMutating}
-            className="w-full flex items-center justify-center px-4 py-2 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 transition disabled:opacity-50 shadow-sm"
-          >
-            Apelar
-          </button>
-        )}
-
-        <button
-          // onClick={() => handleAction("delete")}
-          disabled={isMutating || numericStatus === 3} // Deshabilitar si ya está cerrada
-          className="w-full flex items-center justify-center px-4 py-2 bg-white text-red-600 border border-red-200 rounded-lg font-semibold hover:bg-red-50 hover:border-red-300 transition disabled:opacity-50"
-        >
-          {isMutating ? "Procesando..." : "Cerrar Publicación"}
-        </button>
-      </div>
-    </aside>
-  );
+            {/* DIÁLOGO DE CONFIRMACIÓN */}
+            <ConfirmDialog
+                open={isCloseDialogOpen}
+                onOpenChange={setIsCloseDialogOpen}
+                title="¿Cerrar esta publicación?"
+                description="Esta acción hará que la publicación deje de estar disponible para los usuarios y no podrá recibir más postulaciones."
+                confirmText="Cerrar"
+                cancelText="Cancelar"
+                onConfirm={handleConfirmClose}
+                onCancel={() => setIsCloseDialogOpen(false)}
+            />
+        </aside>
+    );
 }
+
+export default PublicationActionSection;
