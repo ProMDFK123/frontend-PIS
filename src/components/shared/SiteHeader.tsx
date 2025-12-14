@@ -105,6 +105,10 @@ export default function SiteHeader() {
       { href: "/offerer/your-publications", label: "Mis Publicaciones" },
     ];
 
+    if (auth.role === "Admin") {
+      baseItems.push({ href: "/admin/users", label: "Ver usuarios" });
+    }
+    
     return baseItems.map(item => {
       if (item.label !== "Historial de trabajos") return item;
       let newHref = "/jobs/reviews/student";

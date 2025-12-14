@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { CheckCircle, Settings, Sparkles } from 'lucide-react';
+import { CheckCircle, Settings, UserCog, Sparkles } from 'lucide-react';
 
 const Footer = () => (
   // CORRECCIÓN 1: Agregamos 'text-slate-600' para forzar texto oscuro en todo el footer
@@ -119,6 +119,18 @@ export default function Page() {
                     <Settings className="size-6 text-white group-hover:text-purple-700" />
                 </div>
                 Administrar Publicaciones
+            </a>
+
+            <a
+                href='/admin/users'
+                className="group flex-1 flex items-center justify-center px-8 py-6 rounded-[2rem] text-lg font-bold transition-all duration-300 shadow-xl
+                            bg-white/10 backdrop-blur-md border border-white/20 text-white 
+                            hover:bg-white hover:text-purple-900 hover:scale-[1.02] hover:shadow-2xl hover:border-white"
+            >
+                <div className="mr-4 p-2 bg-white/10 rounded-full group-hover:bg-purple-100 transition-colors">
+                    <UserCog className="size-6 text-white group-hover:text-purple-700" />
+                </div>
+                Ver Usuarios
             </a>
         </div>
 
