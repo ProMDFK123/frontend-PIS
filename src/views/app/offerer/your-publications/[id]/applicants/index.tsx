@@ -1,15 +1,16 @@
-// src/components/ApplicantsPage.tsx
-"use client"
+"use client";
 import React from 'react';
-import { useApplicantsView } from './hooks'; // Importamos el hook nuevo
+import { useRouter } from 'next/navigation'; // 1. Importar useRouter
+import { useApplicantsView } from './hooks'; 
 import type { ApplicantResponse } from '@/models/responses';
 
 interface Props {
   offerId: number | string;
 }
 
- const ApplicantsPageView = ({ offerId }: Props) => {
-  // CONEXIÓN: Usamos el hook para obtener lógica y datos
+const ApplicantsPageView = ({ offerId }: Props) => {
+  const router = useRouter(); // 2. Inicializar router
+
   const { 
     applicants, 
     totalCount, 
@@ -19,7 +20,10 @@ interface Props {
     setSearchTerm 
   } = useApplicantsView(offerId);
 
-  // Renderizado de estados de carga/error
+  const handleViewDetail = (postulantId: number) => {
+    router.push(`/offerer/your-publications/${offerId}/applicants/${postulantId}`);
+  };
+
   if (isLoading) return <div className="p-10 text-center text-gray-500">Cargando postulantes...</div>;
   if (isError) return <div className="p-10 text-center text-red-500">Error al cargar datos.</div>;
 
@@ -28,7 +32,6 @@ interface Props {
       
       {/* --- HEADER --- */}
       <div className="relative bg-gradient-to-r from-violet-900 via-purple-800 to-fuchsia-800 px-6 py-8 md:px-10 md:py-12 shadow-md overflow-hidden">
-        {/* Decoración de fondo */}
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 left-10 w-40 h-40 bg-pink-500 opacity-10 rounded-full blur-2xl"></div>
 
@@ -57,7 +60,6 @@ interface Props {
             placeholder="Buscar postulante..."
             className="w-full p-3 text-gray-700 rounded-xl focus:outline-none placeholder-gray-400"
             value={searchTerm}
-            // Aquí conectamos el input con el hook
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
@@ -72,19 +74,28 @@ interface Props {
             </div>
           ) : (
             applicants.map((app) => (
-              <ApplicantCard key={app.applicationId} applicant={app} />
+              <ApplicantCard 
+                key={app.applicationId} 
+                applicant={app} 
+                // 4. Pasar la función de navegación
+                onViewDetail={handleViewDetail} 
+              />
             ))
           )}
         </div>
       </div>
     </div>
   );
-  
 };
+
 export default ApplicantsPageView;
-// --- SUB-COMPONENTE: ApplicantCard (Solo visual) ---
-// Puedes mover esto a su propio archivo ApplicantCard.tsx si prefieres
-const ApplicantCard = ({ applicant }: { applicant: ApplicantResponse }) => {
+
+interface ApplicantCardProps {
+  applicant: ApplicantResponse;
+  onViewDetail: (id: number) => void;
+}
+
+const ApplicantCard = ({ applicant, onViewDetail }: ApplicantCardProps) => {
   const initial = applicant.applicantName.charAt(0).toUpperCase();
 
   const getStatusStyles = (status: string) => {
@@ -113,7 +124,12 @@ const ApplicantCard = ({ applicant }: { applicant: ApplicantResponse }) => {
         <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm ${getStatusStyles(applicant.status)}`}>
           {applicant.status}
         </span>
-        <button className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-md flex items-center gap-2 transition-colors">
+        
+        {/* 6. Conectar el evento onClick */}
+        <button 
+          onClick={() => onViewDetail(applicant.studentId)}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-md flex items-center gap-2 transition-colors"
+        >
           Ver Detalles
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

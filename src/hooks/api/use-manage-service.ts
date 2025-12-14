@@ -102,6 +102,32 @@ export const useGetPostulantsQuery = (publicationId: string | undefined) => {
     });
 };
 
+export const useGetPostulantDetailQuery = (id: string | undefined) => {
+    return useQuery<any, Error>({ 
+        queryKey: ["admin", "postulantDetail", id],
+        queryFn: async () => {
+            if (!id) throw new Error("ID de postulante es requerido.");
+            const response = await manageService.getPostulantDetail(id);
+            return response.data.data;
+        }
+    });
+}
+
+export const useOffererGetPostulantDetailQuery = (
+    offerId: string | number | undefined, 
+    applicantId: string | number | undefined
+) => {
+    return useQuery<any, Error>({ 
+        queryKey: ["offerer", "postulantDetail", offerId, applicantId],
+        queryFn: async () => {
+            if (!offerId || !applicantId) throw new Error("Faltan identificadores requeridos.");
+            const response = await offererPublicationService.getApplicantDetail(offerId, applicantId);
+            return response.data.data;
+        },
+        enabled: !!offerId && !!applicantId 
+    });
+}
+
 export const useGetOffererPostulantsQuery = (publicationId: string | undefined) => {
     return useQuery<any[], Error>({ 
         queryKey: ["offerer", "postulants", publicationId],

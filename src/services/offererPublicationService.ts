@@ -64,7 +64,6 @@ export class OffererPublicationService extends BaseApiService {
       `${this.baseURL}/offerent/my-offer/${offerId}/applicants`
     );
   }
-
   /**
    * Método: GetApplicantDetail
    * Endpoint: /api/publications/offerent/my-offer/{offerId}/applicants/{studentId}
