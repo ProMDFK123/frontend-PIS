@@ -1,5 +1,8 @@
 "use client";
 
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { NotificationBanner } from "@/components/ui/notification";
+import type { NotificationState } from "@/hooks/common/use-notification";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
@@ -33,9 +36,12 @@ interface ReviewDetailDTO {
   commentForOfferor: string;
   atTime: boolean;
   goodPresentation: boolean;
+  studentHasRespectOfferor: boolean; 
   isCompleted: boolean;
   isReviewForStudentCompleted: boolean;
   isReviewForOfferorCompleted: boolean;
+  hasReviewForOfferorBeenDeleted: boolean;
+  hasReviewForStudentBeenDeleted: boolean;
   isClosed: boolean;
 }
 
@@ -66,6 +72,10 @@ export default function StudentReviewsPage() {
   /* ======= MODAL DE CONFIRMACIÓN ======= */
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
+  /* ======= NOTIFICACIONES ======= */
+  const [notification, setNotification] = useState<NotificationState | null>(null);
+  const [isNotificationVisible, setIsNotificationVisible] = useState(false);
+
   /* ======= FORMULARIO ======= */
   const [commentJob, setCommentJob] = useState("");
   const [commentEmployer, setCommentEmployer] = useState("");
@@ -82,9 +92,11 @@ export default function StudentReviewsPage() {
   };
 
   const openFinishModal = (item: CombinedReviewDTO) => {
-    setFinishReview(item);
-    setShowFinishModal(true);
+  if (item.review.hasReviewForOfferorBeenDeleted) return;
+  setFinishReview(item);
+  setShowFinishModal(true);
   };
+
 
   const closeFinishModal = () => {
     setShowFinishModal(false);
@@ -143,8 +155,17 @@ export default function StudentReviewsPage() {
       setShowConfirmModal(false);
       closeFinishModal();
 
-      // 🔄 Recargar los datos sin refrescar la página
+      // Recargar los datos sin refrescar la página
       await refreshReviews();
+
+      // Mostrar notificacion 
+      setNotification({
+        type: "success",
+        title: "Reseña enviada",
+        message: `Tu reseña fue enviada correctamente para el trabajo "${finishReview.publication.title}".`,
+      });   
+
+      setIsNotificationVisible(true);
 
     } catch (err) {
       console.error("Error al enviar reseña:", err);
@@ -223,6 +244,16 @@ export default function StudentReviewsPage() {
       .catch(() => setError("Error al cargar reseñas."))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+  if (!isNotificationVisible) return;
+
+  const timer = setTimeout(() => {
+    setIsNotificationVisible(false);
+  }, 3500);
+
+  return () => clearTimeout(timer);
+  }, [isNotificationVisible]);
 
   if (loading) return <p className="text-center mt-10">Cargando reseñas...</p>;
   if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
@@ -348,9 +379,12 @@ export default function StudentReviewsPage() {
 
           <button
             onClick={() => openFinishModal({ publication, review })}
-            disabled={review.isReviewForOfferorCompleted}
+            disabled={
+              review.isReviewForOfferorCompleted ||
+              review.hasReviewForOfferorBeenDeleted
+            }
             className={`mt-2 w-full text-center text-sm font-medium rounded-lg py-2 transition ${
-              review.isReviewForOfferorCompleted
+              review.isReviewForOfferorCompleted || review.hasReviewForOfferorBeenDeleted
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                 : "bg-purple-600 text-white hover:bg-purple-700"
             }`}
@@ -389,7 +423,7 @@ export default function StudentReviewsPage() {
           MODAL DETALLES
       ================================================================= */}
       {showModal && selectedReview && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-100">
           <div className="bg-white w-[90%] max-w-3xl rounded-lg shadow-lg p-6 relative">
             <button
               onClick={closeModal}
@@ -454,7 +488,11 @@ export default function StudentReviewsPage() {
               </div>
 
               <p className="mt-2 text-sm text-gray-700">
-                {selectedReview.review.commentForOfferor || "Sin reseña"}
+                {selectedReview.review.hasReviewForOfferorBeenDeleted
+                  ? "Tu reseña eliminada por un administrador"
+                  : selectedReview.review.commentForOfferor?.trim()
+                    ? selectedReview.review.commentForOfferor
+                    : "Reseña pendiente"}
               </p>
             </div>
 
@@ -515,6 +553,30 @@ export default function StudentReviewsPage() {
                 </span>
                 ¿Buena presentación personal?
               </label>
+
+              <label className="flex items-center gap-3">
+                <span
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                    selectedReview.review.studentHasRespectOfferor
+                      ? "bg-purple-700 border-purple-800"
+                      : "bg-white border-gray-400"
+                  }`}
+                >
+                  {selectedReview.review.studentHasRespectOfferor && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </span>
+                ¿El estudiante fue respetuoso con el oferente?
+              </label>
             </div>
 
             <div className="flex justify-end mt-6">
@@ -533,7 +595,7 @@ export default function StudentReviewsPage() {
           MODAL FINALIZAR EVALUACIÓN
       ================================================================= */}
       {showFinishModal && finishReview && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-40">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50">
           <div className="bg-white w-[95%] max-w-3xl rounded-xl shadow-xl p-8 relative">
             <button
               onClick={closeFinishModal}
@@ -616,33 +678,34 @@ export default function StudentReviewsPage() {
       {/* ================================================================
           MODAL CONFIRMACIÓN (blur + FEUCN)
       ================================================================= */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-md text-center">
-            <h2 className="text-xl font-semibold mb-4">Confirmar envío</h2>
-            <p className="text-gray-700 mb-6">
-              ¿Seguro que deseas enviar esta evaluación?  
-              Una vez enviada no podrás editarla.
-            </p>
+      <ConfirmDialog
+        open={showConfirmModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowConfirmModal(false);
+          }
+        }}
+        title="Confirmar envío"
+        description="¿Seguro que deseas enviar esta evaluación? Una vez enviada no podrás modificarla."
+        confirmText="Confirmar"
+        cancelText="Cancelar"
+        onConfirm={confirmSubmitOfferorReview}
+        onCancel={handleCancelConfirm}
+      />
 
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={handleCancelConfirm}
-                className="px-6 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
-              >
-                Cancelar
-              </button>
-
-              <button
-                onClick={confirmSubmitOfferorReview}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      {/* ======= NOTIFICACIÓN ======= */}
+      <div
+        className={`fixed top-0 right-0 z-50 ${
+          isNotificationVisible ? "pointer-events-auto" : "pointer-events-none"
+        }`}
+      >
+        <NotificationBanner
+          data={notification}
+          isVisible={isNotificationVisible}
+          onClose={() => setIsNotificationVisible(false)}
+        />
+      </div>
+      
+      </div>
   );
 }
