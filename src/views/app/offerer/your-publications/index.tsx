@@ -6,7 +6,7 @@ import { offererPublicationService } from 'src/services/offererPublicationServic
 import { buildLoginUrl, handleApiError, cn } from 'src/lib';
 import { 
     ChevronLeft, ChevronRight, Settings2, AlertCircle, ClockIcon, Briefcase, 
-    ShoppingBag, Heart, ArrowLeft, Filter, Search, ListFilter, ArrowUpDown 
+    ShoppingBag, Heart, ArrowLeft, Search, ListFilter, ArrowUpDown, ArrowRight 
 } from "lucide-react";
 import { MyPublishedPublication } from '@/models/responses';
 import { Button } from '@/components/ui/Button';
@@ -14,25 +14,22 @@ import { NotificationBanner } from "@/components/ui/notification";
 import { useNotification } from "@/hooks/common/use-notification"; 
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from 'next/link';
-// Ya no necesitamos importar 'Input' ya que usamos un <input> simple dentro del nuevo FilterBar
 
 // Cantidad de elementos por página
 const ITEMS_PER_PAGE = 9; 
 
 // --- Constantes de Filtro y Mapeo ---
 
-// Mapeo de Tipos de Publicación (CORREGIDO: 1=Compra/Venta, 2=Voluntariado)
 const PUBLICATION_TYPES = [
     { value: 0, text: "Oferta de Trabajo", icon: Briefcase, iconClass: "text-indigo-500", bg: "bg-indigo-100", textCol: "text-indigo-800" },
     { value: 1, text: "Compra/Venta", icon: ShoppingBag, iconClass: "text-purple-500", bg: "bg-purple-100", textCol: "text-purple-800" },
     { value: 2, text: "Voluntariado", icon: Heart, iconClass: "text-pink-500", bg: "bg-pink-100", textCol: "text-pink-800" },
 ];
 
-// Mapeo de Estados de Publicación
 const PUBLICATION_STATUS = [
-    { value: 0, text: "Activa", classes: "bg-green-500 text-white" },
-    { value: 1, text: "Pendiente", classes: "bg-yellow-100 text-yellow-800 border border-yellow-200" },
-    { value: 2, text: "Rechazada", classes: "bg-red-500 text-white" },
+    { value: 0, text: "Activa", classes: "bg-green-100 text-green-700 border-green-200" },
+    { value: 1, text: "Pendiente", classes: "bg-yellow-100 text-yellow-800 border-yellow-200" },
+    { value: 2, text: "Rechazada", classes: "bg-red-100 text-red-700 border-red-200" },
 ];
 
 type SortType = "recientes" | "titulo";
@@ -44,7 +41,7 @@ const getPublicationTypeInfo = (type: number) => {
 };
 
 const getStatusBadge = (status: number) => {
-  const baseClasses = "px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm";
+  const baseClasses = "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border";
   const info = PUBLICATION_STATUS.find(s => s.value === status) || { text: "Desconocido", classes: "bg-gray-100 text-gray-800" };
   return { text: info.text, classes: `${baseClasses} ${info.classes}` };
 };
@@ -54,6 +51,7 @@ interface PublicationCardProps {
     onClick: () => void;
 }
 
+// --- NUEVO DISEÑO HORIZONTAL (Card Full Width) ---
 const PublicationCard = ({ pub, onClick }: PublicationCardProps) => {
     const statusInfo = getStatusBadge(pub.statusValidation);
     const typeInfo = getPublicationTypeInfo(pub.types);
@@ -65,71 +63,65 @@ const PublicationCard = ({ pub, onClick }: PublicationCardProps) => {
         <article 
             onClick={onClick}
             className={cn(
-                "relative flex flex-col h-full rounded-[2rem] bg-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl group border-4 border-transparent overflow-hidden cursor-pointer",
-                statusInfo.text === 'Activa' && 'hover:border-green-400',
-                statusInfo.text === 'Rechazada' && 'hover:border-red-400',
-                statusInfo.text === 'Pendiente' && 'hover:border-yellow-400',
+                "group relative flex items-center justify-between p-6 rounded-[2rem] transition-all duration-300 cursor-pointer w-full",
+                "bg-white text-slate-800 shadow-xl", // Fondo blanco sólido
+                "hover:scale-[1.01] hover:shadow-2xl hover:bg-white", // Efecto hover sutil
+                "border-4 border-transparent hover:border-purple-300" // Borde al hover
             )}
         >
-            
-            <div className="px-6 pt-6 pb-2 flex justify-between items-start">
-                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider ${typeInfo.bg} ${typeInfo.textCol}`}>
-                    <typeInfo.icon className={`w-3 h-3 mr-1 ${typeInfo.iconClass}`} />
-                    {typeInfo.text}
-                </span>
-                
-                <div className={statusInfo.classes}>
-                    {statusInfo.text}
-                </div>
-            </div>
+            <div className="flex-1 min-w-0 pr-6">
+                <div className="flex flex-wrap items-center gap-3 mb-2">
+                    {/* Badge de Tipo con Icono */}
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full ${typeInfo.bg}`}>
+                        <typeInfo.icon className={`w-4 h-4 ${typeInfo.iconClass}`} />
+                        <span className={`text-xs font-black uppercase tracking-wider ${typeInfo.textCol}`}>
+                            {typeInfo.text}
+                        </span>
+                    </div>
 
-            <div className="px-6 py-4 flex-1 flex flex-col">
-                <h3 className="text-xl font-black text-slate-900 leading-tight line-clamp-3 mb-6 group-hover:text-indigo-600 transition-colors">
+                    {/* Badge de Estado */}
+                    <div className={statusInfo.classes}>
+                        {statusInfo.text}
+                    </div>
+                </div>
+                
+                {/* Título Grande que ocupa el espacio */}
+                <h3 className="font-black text-2xl md:text-3xl text-slate-900 truncate group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-600 group-hover:to-pink-600 transition-all mb-1">
                     {pub.title || "Sin título"}
                 </h3>
 
-                <div className="mt-auto space-y-3">
-                    <div className="flex items-center gap-3 px-3">
-                        <ClockIcon className="w-4 h-4 text-slate-400" />
-                        <span className="text-xs font-semibold text-slate-500">
-                            Publicado: {date}
-                        </span>
-                    </div>
+                {/* Fecha */}
+                <div className="flex items-center gap-2 text-slate-400 pl-1">
+                    <ClockIcon className="w-3.5 h-3.5" />
+                    <span className="text-xs font-bold">Publicado el {date}</span>
                 </div>
             </div>
 
-            <div className="p-4 mt-2">
-                <button 
-                    type="button"
-                    className="w-full inline-flex items-center justify-center rounded-full px-4 py-3 text-sm font-black text-white bg-slate-900 hover:bg-indigo-600 transition-all duration-300 shadow-md transform active:scale-95"
-                >
-                    Ver detalles
-                </button>
+            {/* Botón Flecha a la derecha */}
+            <div className="flex items-center pl-4 border-l border-slate-100">
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-purple-600 transition-colors duration-300 shadow-sm">
+                    <ArrowRight className="text-slate-400 w-6 h-6 group-hover:text-white transition-colors duration-300" />
+                </div>
             </div>
         </article>
     );
 };
 
+// --- Skeleton Horizontal Full Width ---
 const CardSkeleton = () => (
-    <article className="relative flex flex-col h-full rounded-[2rem] bg-white shadow-xl border-4 border-transparent overflow-hidden animate-pulse">
-        <div className="px-6 pt-6 pb-2 flex justify-between items-start">
-            <Skeleton className="h-6 w-24 rounded-full bg-slate-200" />
-            <Skeleton className="h-6 w-20 rounded-full bg-slate-200" />
+    <div className="w-full relative flex items-center justify-between p-6 rounded-[2rem] bg-white shadow-xl border-4 border-transparent overflow-hidden animate-pulse h-[130px]">
+        <div className="flex-1 space-y-3">
+             <div className="flex gap-2">
+                <Skeleton className="h-6 w-32 rounded-full bg-slate-200" />
+                <Skeleton className="h-6 w-20 rounded-full bg-slate-200" />
+             </div>
+             <Skeleton className="h-9 w-1/2 rounded-lg bg-slate-200" />
+             <Skeleton className="h-4 w-40 rounded-lg bg-slate-200" />
         </div>
-        <div className="px-6 py-4 flex-1 flex flex-col gap-4">
-            <Skeleton className="h-8 w-full rounded-lg bg-slate-200" />
-            <Skeleton className="h-8 w-3/4 rounded-lg bg-slate-200" />
-            <div className="mt-auto space-y-3">
-               <div className="flex items-center gap-3 px-3">
-                  <Skeleton className="w-4 h-4 rounded-full bg-slate-300" />
-                  <Skeleton className="h-3 w-24 bg-slate-300" />
-               </div>
-            </div>
+        <div className="pl-4 border-l border-slate-100">
+            <Skeleton className="h-12 w-12 rounded-full bg-slate-200" />
         </div>
-        <div className="p-4 mt-2">
-            <Skeleton className="h-12 w-full rounded-full bg-slate-300" />
-        </div>
-    </article>
+    </div>
 );
 
 
@@ -145,7 +137,7 @@ interface FilterBarProps {
     clearFilters: () => void;
 }
 
-// Componente FilterBar con estilo de Administrador
+// --- FilterBar Estilo Admin ---
 const FilterBar = ({ 
     searchTerm, 
     setSearchTerm, 
@@ -157,13 +149,12 @@ const FilterBar = ({
     setSort,
     clearFilters
 }: FilterBarProps) => {
-    // Estilo base para los inputs/selects: "píldora translúcida"
     const baseClass = "w-full bg-white/10 backdrop-blur-md border border-white/30 text-white placeholder:text-white/60 rounded-full px-5 py-3.5 text-sm font-bold focus:bg-white focus:text-purple-900 focus:placeholder:text-purple-300 focus:ring-4 focus:ring-white/20 transition-all outline-none shadow-lg hover:bg-white/20";
     const iconClass = "absolute left-4 top-1/2 -translate-y-1/2 text-white/70 pointer-events-none";
 
     return (
-        <div className="p-6 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/20 shadow-xl mb-10">
-            <div className="flex flex-col md:flex-row gap-4 items-stretch">
+        <div className="p-6 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/20 shadow-xl mb-10 w-full">
+            <div className="flex flex-col xl:flex-row gap-4 items-stretch">
                 
                 {/* Buscador de Título */}
                 <div className="flex-1 relative group">
@@ -177,10 +168,10 @@ const FilterBar = ({
                     />
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full xl:w-auto">
                     
                     {/* Selector Estado */}
-                    <div className="relative w-full sm:w-40 group">
+                    <div className="relative w-full group">
                         <ListFilter className={`${iconClass} w-4 h-4 group-focus-within:text-purple-500`} />
                         <select
                             value={filterStatus}
@@ -195,8 +186,8 @@ const FilterBar = ({
                     </div>
 
                     {/* Selector Tipo */}
-                    <div className="relative w-full sm:w-40 group">
-                        <ListFilter className={`${iconClass} w-4 h-4 group-focus-within:text-purple-500`} />
+                    <div className="relative w-full group">
+                        <Briefcase className={`${iconClass} w-4 h-4 group-focus-within:text-purple-500`} />
                         <select
                             value={filterType}
                             onChange={(e) => setFilterType(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
@@ -210,7 +201,7 @@ const FilterBar = ({
                     </div>
                     
                     {/* Selector Orden */}
-                    <div className="relative w-full sm:w-40 group">
+                    <div className="relative w-full group">
                         <ArrowUpDown className={`${iconClass} w-4 h-4 group-focus-within:text-purple-500`} />
                         <select
                             value={sort}
@@ -221,17 +212,16 @@ const FilterBar = ({
                             <option value="titulo" className="text-slate-800">A-Z</option>
                         </select>
                     </div>
-                    
-                </div>
-                
-                <Button 
-                    variant="outline"
-                    onClick={clearFilters}
-                    className="w-full md:w-40 h-[53px] bg-white/20 text-white hover:bg-white/30 border-white/50 text-sm font-black rounded-full"
-                >
-                    Limpiar
-                </Button>
 
+                    {/* Botón Limpiar */}
+                    <Button 
+                        variant="outline"
+                        onClick={clearFilters}
+                        className="w-full h-[53px] bg-white/20 text-white hover:bg-white/30 border-white/50 text-sm font-black rounded-full"
+                    >
+                        Limpiar
+                    </Button>
+                </div>
             </div>
         </div>
     );
@@ -249,7 +239,7 @@ export default function YourPublicationsView() {
   const [filterStatus, setFilterStatus] = useState<number | 'all'>('all');
   const [filterType, setFilterType] = useState<number | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [sort, setSort] = useState<SortType>('recientes'); // Nuevo estado de ordenamiento
+  const [sort, setSort] = useState<SortType>('recientes'); 
   
   // --- Estados de Paginación ---
   const [currentPage, setCurrentPage] = useState(1);
@@ -281,10 +271,9 @@ export default function YourPublicationsView() {
         const allPublications = [
           ...published.map(p => ({ ...p, statusValidation: 0 })), // 0: Activa/Publicada
           ...pending.map(p => ({ ...p, statusValidation: 1 })),   // 1: Pendiente/En Proceso
-          ...rejected.map(p => ({ ...p, statusValidation: 2 }))  // 2: Rechazada
+          ...rejected.map(p => ({ ...p, statusValidation: 2 }))   // 2: Rechazada
         ];
         
-        // El ordenamiento inicial se hará en useMemo para permitir que el filtro de orden funcione
         setPublications(allPublications);
 
       } catch (err) {
@@ -297,11 +286,10 @@ export default function YourPublicationsView() {
     
   useEffect(() => {
     const successParam = searchParams.get("success");
-    const closeNotificationParam = searchParams.get("notification"); // <-- NUEVO
+    const closeNotificationParam = searchParams.get("notification");
 
-    let notificationProcessed = false; // Bandera para saber si se mostró una notificación
+    let notificationProcessed = false;
     
-    // 1. Lógica para Publicación Enviada (existente)
     if (successParam === "true") {
       show(
         "¡Publicación Enviada!",
@@ -311,23 +299,19 @@ export default function YourPublicationsView() {
       router.replace("/offerer/your-publications", { scroll: false });
       notificationProcessed = true;
     }
-    
-    // 2. Lógica para Publicación Cerrada (NUEVO)
     else if (closeNotificationParam === "closed") {
       show(
-        "Publicación Cerrada", // Título
-        "La publicación ha sido cerrada y ya no está disponible para postulaciones.", // Mensaje
-        "success" // Tipo de notificación (verde)
+        "Publicación Cerrada",
+        "La publicación ha sido cerrada y ya no está disponible para postulaciones.",
+        "success"
       );
       router.replace("/offerer/your-publications", { scroll: false });
       notificationProcessed = true;
     }
     
-    // 3. Cargar datos
-    if (!notificationProcessed) { // Solo cargar si no se está procesando ninguna notificación
+    if (!notificationProcessed) {
         loadData();
     } else {
-        // Cargar datos poco después de mostrar la notificación para evitar interrupciones.
         const timeout = setTimeout(loadData, 100); 
         return () => clearTimeout(timeout);
     }
@@ -345,25 +329,22 @@ export default function YourPublicationsView() {
     setFilterStatus('all');
     setFilterType('all');
     setSearchTerm('');
-    setSort('recientes'); // Limpiar ordenamiento
-    setCurrentPage(1); // Reiniciar paginación
+    setSort('recientes'); 
+    setCurrentPage(1); 
   }, []);
 
   // --- LÓGICA DE FILTRADO Y ORDENAMIENTO ---
   const filteredPublications = useMemo(() => {
     let filtered = publications;
 
-    // 1. Filtrar por Estado
     if (filterStatus !== 'all') {
       filtered = filtered.filter(pub => pub.statusValidation === filterStatus);
     }
 
-    // 2. Filtrar por Tipo
     if (filterType !== 'all') {
       filtered = filtered.filter(pub => pub.types === filterType);
     }
 
-    // 3. Filtrar por Palabra Clave (Título)
     if (searchTerm.trim() !== '') {
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
       filtered = filtered.filter(pub => 
@@ -372,14 +353,11 @@ export default function YourPublicationsView() {
       );
     }
 
-    // 4. Aplicar Ordenamiento
     filtered.sort((a, b) => {
         if (sort === 'recientes') {
-            // Ordenar por fecha: más reciente (b) primero
             return new Date(b.publicationDate).getTime() - new Date(a.publicationDate).getTime();
         }
         if (sort === 'titulo') {
-            // Ordenar por título alfabéticamente (A-Z)
             const titleA = a.title || "";
             const titleB = b.title || "";
             return titleA.localeCompare(titleB);
@@ -387,7 +365,6 @@ export default function YourPublicationsView() {
         return 0;
     });
 
-    // Nota: La paginación se reinicia automáticamente en el useMemo
     return filtered;
   }, [publications, filterStatus, filterType, searchTerm, sort]);
 
@@ -441,8 +418,9 @@ export default function YourPublicationsView() {
   const renderContent = () => {
     if (isLoading) {
       return (
-        <section className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
-            {Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
+        // Flex col para que los esqueletos también ocupen todo el ancho
+        <section className="mt-8 flex flex-col gap-6 pb-20">
+            {Array.from({ length: 6 }).map((_, index) => (
                 <CardSkeleton key={index} />
             ))}
         </section>
@@ -466,13 +444,13 @@ export default function YourPublicationsView() {
 
     if (filteredPublications.length === 0) {
         return (
-            <div className="mt-12 p-12 text-center bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-white/20 text-white shadow-xl col-span-full">
+            <div className="mt-12 p-12 text-center bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-white/20 text-white shadow-xl w-full">
               <div className="bg-white/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Settings2 className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-2xl font-black mb-2">Sin resultados</h3>
               <p className="text-lg text-purple-200">No hay publicaciones que coincidan con los filtros seleccionados.</p>
-              {publications.length > 0 && ( // Muestra el botón si hay publicaciones totales pero el filtro no devuelve nada
+              {publications.length > 0 && ( 
                 <Button onClick={clearFilters} className="mt-4 bg-yellow-400 text-slate-900 hover:bg-yellow-300 rounded-full font-bold px-6">
                     Limpiar Filtros
                 </Button>
@@ -483,7 +461,8 @@ export default function YourPublicationsView() {
     
     return (
         <>
-            <section className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
+            {/* Lista Vertical Full Width: Usamos flex-col para apilar */}
+            <section className="mt-8 flex flex-col gap-6 pb-12 w-full">
                 {currentPublications.map((pub) => (
                     <PublicationCard
                         key={pub.idPublication}
@@ -507,7 +486,7 @@ export default function YourPublicationsView() {
   return (
     <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-slate-900">
                 
-        {/* Fondo Fixed (Estilo Admin) */}
+        {/* Fondo Fixed */}
         <div className="fixed inset-0 z-0 pointer-events-none">
             <img 
                 src="/fondo.png" 
@@ -521,7 +500,7 @@ export default function YourPublicationsView() {
         {/* Notification Banner */}
         <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
 
-        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 max-w-7xl">
             <header className="mb-10">
                 <Link href="/offers"> 
                     <button className="mb-8 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all font-bold text-sm backdrop-blur-sm border border-white/10">
@@ -543,7 +522,7 @@ export default function YourPublicationsView() {
                 </div>
             </header>
             
-            {/* Componente de Filtro (Estilo Admin) */}
+            {/* Componente de Filtro */}
             <FilterBar 
                 filterStatus={filterStatus}
                 setFilterStatus={setFilterStatus}
@@ -556,7 +535,7 @@ export default function YourPublicationsView() {
                 clearFilters={clearFilters}
             />
 
-            {/* Render Content - List or Error/Loading State */}
+            {/* Contenido Principal */}
             {renderContent()}
             
         </main>
