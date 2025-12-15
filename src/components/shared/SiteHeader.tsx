@@ -126,16 +126,21 @@ export default function SiteHeader() {
   const isOfferer = auth.role === "Offerent";
   const mainLinks = isAdmin ? adminNavLinks : isOfferer ? offererNavLinks : userLinks;
 
+  // Lógica para determinar a dónde redirige el Logo
+  const logoHref = isAdmin ? "/admin/publications" : "/";
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[var(--border)] bg-white/80 backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
         
-        <Link href="/" className="flex items-center gap-2 font-extrabold text-xl group">
+        {/* Logo con href dinámico */}
+        <Link href={logoHref} className="flex items-center gap-2 font-extrabold text-xl group">
           <span className="text-[var(--ink)]">Bolsa</span>
           <span className="px-3 py-1 rounded-xl bg-white text-[var(--primary)] border border-[var(--primary)] font-bold shadow-sm">
             FEUCN
           </span>
         </Link>
+
         <div className="flex items-center gap-1">
           {mainLinks.map((l) => (
             <Link

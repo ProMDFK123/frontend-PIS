@@ -108,12 +108,24 @@ export function ValidationDetailSection({
           )}
 
           {/* Localidad */}
+          {detail.type !== "Compra/Venta" && (
             <div>
               <dt className="font-semibold text-[var(--ink)]">Localidad:</dt>
               <dd className="mt-1 text-[var(--muted-ink)]">
                 {detail.location || "No especificada"}
               </dd>
             </div>
+          )}
+
+            {/* Categoria */}
+            {detail.type == "Compra/Venta" && (
+            <div>
+              <dt className="font-semibold text-[var(--ink)]">Categoria:</dt>
+              <dd className="mt-1 text-[var(--muted-ink)]">
+                {detail.category || "No especificada"}
+              </dd>
+            </div>
+          )}
 
           {/* Remuneración / Precio */}
           <div>

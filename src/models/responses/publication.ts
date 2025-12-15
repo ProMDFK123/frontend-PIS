@@ -109,6 +109,7 @@ export interface AdminDetail {
     contactInfo: string;
     aboutMe?: string;
     rating: number;
+    category?: string;
 }
 
 export interface UseAdminDetailValidateResult {

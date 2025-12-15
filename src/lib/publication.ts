@@ -190,7 +190,8 @@ export function mapBuySellToDetail(dto: any): AdminDetail {
     requirements: undefined,
     contactInfo: dto.contactInfo,
     aboutMe: dto.aboutMe,
-    rating: dto.rating || 0
+    rating: dto.rating || 0,
+    category: dto.category
   };
 }
 
