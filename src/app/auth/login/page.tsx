@@ -15,7 +15,10 @@ function LoginForm() {
   const sp = useSearchParams();
   const rawReturnTo = sp?.get("returnTo") || "";
   const msg = sp?.get("msg");
-  const bannerMessage = msg === "login_required" ? "Tienes que iniciar sesión primero." : msg;
+  const bannerMessage = 
+    msg === "login_required" ? "Tienes que iniciar sesión primero." : 
+    msg === "session_expired" ? "Sesion Expirada." :
+    msg ? "Error inesperado." : null;
   const [form, setForm] = useState({
     correo: "",
     password: "",
@@ -29,7 +32,7 @@ function LoginForm() {
     const token = Cookies.get("token");
     if (token) {
       try {
-        const decoded = extractUserFromJwt();
+        const decoded = extractUserFromJwt(token);
         const role = decoded?.role;
         console.log("[Role] response:", role);
         const decodedReturn = rawReturnTo ? decodeURIComponent(rawReturnTo) : "";
@@ -84,7 +87,7 @@ function LoginForm() {
       let role: string | undefined;
       try {
         if (response.token) {
-          const decoded = extractUserFromJwt();
+          const decoded = extractUserFromJwt(response.token);
           role = decoded?.role;
         }
       } catch (e) {
@@ -120,10 +123,10 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0d8ef2] px-4">
+    <div className="min-h-screen h-full flex items-center justify-center bg-[#0d8ef2] px-4">
       <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-xl w-[360px] flex flex-col items-center relative">
         {/* Logo */}
-        <div className="absolute -top-20 flex flex-col items-center">
+        <div className="absolute -top-10 flex flex-col items-center">
           <img
             src="/feucn_logo.png"
             alt="Logo FEUCN"
