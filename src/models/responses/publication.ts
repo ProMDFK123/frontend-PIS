@@ -147,6 +147,16 @@ export interface CreatePublicationData {
   ImagesURL: string[];
   IsCvRequired: boolean;
 }
+export interface CreateBuySellData 
+{
+  Title: string;
+  Description: string;
+  Category: string;
+  Price: number;
+  ImagesURL: string[],
+  Location: string;
+  ContactInfo: string;
+}
 
     //  mypublished PublicationsDTO
 export interface MyPublishedPublication {
@@ -252,6 +262,7 @@ export interface OfferDetail {
   userName: string;
   userEmail: string;
   aboutMe?: string;
+  statusValidation: number;
 }
 
 export interface MyBuySell {
@@ -272,4 +283,5 @@ export interface MyBuySell {
   userId: number;
   userName: string;
   userEmail: string;
+  statusValidation: number;
 }
