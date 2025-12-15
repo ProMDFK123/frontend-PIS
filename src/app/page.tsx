@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -12,19 +12,40 @@ import {
   Ban,
   Share2,
 } from "lucide-react";
+import { Button } from "@/components/ui";
+import { useDisclaimerAcceptance } from "@/hooks/common/use-disclaimer-acceptance";
+import { getUserFromToken } from "@/lib";
 
 export default function HomePage() {
   const router = useRouter();
-  const [accepted, setAccepted] = useState(false);
+  const [token, setToken] = useState<any>();
+  const {accepted, manageDisclaimer} = useDisclaimerAcceptance();
   const [error, setError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    const user = getUserFromToken();
+    setToken(user);
+    setIsLoaded(true);
+  }, [])
 
   const handleExplore = () => {
-    if (!accepted) {
+    if (!accepted && !token) {
       setError(true);
+      const rulesSection = document.getElementById("rules-section");
+      if (rulesSection) {
+        rulesSection.scrollIntoView({ behavior: "smooth" });
+      }
       return;
     }
-    router.push("/auth/register");
+    router.push("/offers");
   };
+  const handleKnowMore = () => {
+    const featuresSection = document.getElementById("features-section");
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: "smooth" });
+    }
+  }
 
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
@@ -55,20 +76,22 @@ export default function HomePage() {
 
             {/* Botones */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <a
-                href="/offers"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-[var(--primary)] font-bold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+              <Button
+                onClick={handleExplore}
+                size="hero"
+                className="cursor-pointer inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-[var(--primary)] font-bold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all"
               >
                 <Search className="w-5 h-5" />
                 Explorar ofertas
-              </a>
+              </Button>
 
-              <a
-                href="/auth/register"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold rounded-2xl border-2 border-white/30 hover:bg-white/20 backdrop-blur-sm transition-all"
+              <Button
+                onClick={handleKnowMore}
+                size="hero"
+                className="cursor-pointer inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold rounded-2xl border-2 border-white/30 hover:bg-white/20 backdrop-blur-sm transition-all"
               >
                 Saber más
-              </a>
+              </Button>
             </div>
 
             {/* Stats */}
@@ -94,7 +117,7 @@ export default function HomePage() {
       </section>
 
       {/* ===== FEATURES ===== */}
-      <section className="py-20 px-6 md:px-12 bg-[var(--bg)]">
+      <section id="features-section" className="py-20 px-6 md:px-12 bg-[var(--bg)]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <span className="inline-block px-4 py-2 rounded-full bg-[var(--chip)] text-[var(--primary)] text-sm font-semibold mb-4">
@@ -209,85 +232,87 @@ export default function HomePage() {
       </section>
 
       {/* ===== RULES ===== */}
-      <section className="py-20 px-6 md:px-12 bg-gradient-to-br from-[var(--pop)] to-[#F472B6]">
-        <div className="max-w-4xl mx-auto text-center">
-          <span className="inline-block px-4 py-2 rounded-full bg-white/20 text-white text-sm font-semibold mb-4 backdrop-blur-sm">
-            Comunidad responsable
-          </span>
+      {!token && isLoaded && (
+        <section id="rules-section" className="py-20 px-6 md:px-12 bg-gradient-to-br from-[var(--pop)] to-[#F472B6]">
+          <div className="max-w-4xl mx-auto text-center">
+            <span className="inline-block px-4 py-2 rounded-full bg-white/20 text-white text-sm font-semibold mb-4 backdrop-blur-sm">
+              Comunidad responsable
+            </span>
 
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-12">
-            Normas y buen uso
-          </h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-12">
+              Normas y buen uso
+            </h2>
 
-          <div className="grid sm:grid-cols-2 gap-6 text-left mb-12">
-            {[
-              {
-                icon: Heart,
-                text: "Respeto y empatía siempre.",
-                color: "bg-blue-400",
-              },
-              {
-                icon: FileCheck,
-                text: "Publica información real y útil.",
-                color: "bg-emerald-400",
-              },
-              {
-                icon: Ban,
-                text: "No compartas datos personales de terceros.",
-                color: "bg-red-400",
-              },
-              {
-                icon: Share2,
-                text: "Comparte oportunidades con tu comunidad.",
-                color: "bg-amber-400",
-              },
-            ].map((rule, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-4 bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/20"
-              >
+            <div className="grid sm:grid-cols-2 gap-6 text-left mb-12">
+              {[
+                {
+                  icon: Heart,
+                  text: "Respeto y empatía siempre.",
+                  color: "bg-blue-400",
+                },
+                {
+                  icon: FileCheck,
+                  text: "Publica información real y útil.",
+                  color: "bg-emerald-400",
+                },
+                {
+                  icon: Ban,
+                  text: "No compartas datos personales de terceros.",
+                  color: "bg-red-400",
+                },
+                {
+                  icon: Share2,
+                  text: "Comparte oportunidades con tu comunidad.",
+                  color: "bg-amber-400",
+                },
+              ].map((rule, i) => (
                 <div
-                  className={`w-10 h-10 rounded-xl ${rule.color} flex items-center justify-center flex-shrink-0`}
+                  key={i}
+                  className="flex items-start gap-4 bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/20"
                 >
-                  <rule.icon className="w-5 h-5 text-white" />
+                  <div
+                    className={`w-10 h-10 rounded-xl ${rule.color} flex items-center justify-center flex-shrink-0`}
+                  >
+                    <rule.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <p className="text-white font-medium">{rule.text}</p>
                 </div>
-                <p className="text-white font-medium">{rule.text}</p>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 max-w-md mx-auto">
+              <label className="flex items-center gap-3 cursor-pointer justify-center">
+                <input
+                  type="checkbox"
+                  checked={accepted}
+                  onChange={() => {
+                    manageDisclaimer(!accepted);
+                    setError(false);
+                  }}
+                  className="w-5 h-5 rounded border-2 border-white/50 bg-white/10 checked:bg-white checked:border-white accent-[var(--primary)]"
+                />
+                <span className="text-white font-medium">
+                  Acepto las normas de buen uso
+                </span>
+              </label>
+
+              {error && (
+                <p className="text-yellow-300 mt-3 text-sm font-medium animate-pulse">
+                  ⚠️ Debes aceptar las normas antes de continuar.
+                </p>
+              )}
+            </div>
+
+            <button
+              onClick={handleExplore}
+              className="mt-8 inline-flex items-center justify-center gap-2 px-10 py-4 bg-white text-[var(--pop)] font-bold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+            >
+              <Rocket className="w-5 h-5" />
+              Empezar a explorar
+            </button>
           </div>
-
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 max-w-md mx-auto">
-            <label className="flex items-center gap-3 cursor-pointer justify-center">
-              <input
-                type="checkbox"
-                checked={accepted}
-                onChange={() => {
-                  setAccepted(!accepted);
-                  setError(false);
-                }}
-                className="w-5 h-5 rounded border-2 border-white/50 bg-white/10 checked:bg-white checked:border-white accent-[var(--primary)]"
-              />
-              <span className="text-white font-medium">
-                Acepto las normas de buen uso
-              </span>
-            </label>
-
-            {error && (
-              <p className="text-yellow-300 mt-3 text-sm font-medium animate-pulse">
-                ⚠️ Debes aceptar las normas antes de continuar.
-              </p>
-            )}
-          </div>
-
-          <button
-            onClick={handleExplore}
-            className="mt-8 inline-flex items-center justify-center gap-2 px-10 py-4 bg-white text-[var(--pop)] font-bold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-          >
-            <Rocket className="w-5 h-5" />
-            Empezar a explorar
-          </button>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* FOOTER */}
       <footer className="py-8 px-6 bg-white border-t border-[var(--border)]">
