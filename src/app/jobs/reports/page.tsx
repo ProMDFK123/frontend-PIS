@@ -1,5 +1,7 @@
 "use client";
-
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { NotificationBanner } from "@/components/ui/notification";
+import type { NotificationState } from "@/hooks/common/use-notification";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
@@ -26,15 +28,23 @@ interface ReviewDetailDTO {
   idReview: number;
   studentName: string;
   offerorName: string;
+
   ratingForStudent: number;
   commentForStudent: string;
   ratingForOfferor: number;
   commentForOfferor: string;
+
   atTime: boolean;
   goodPresentation: boolean;
+  studentHasRespectOfferor: boolean;
+
   isCompleted: boolean;
   isReviewForStudentCompleted: boolean;
   isReviewForOfferorCompleted: boolean;
+
+  hasReviewForOfferorBeenDeleted: boolean;
+  hasReviewForStudentBeenDeleted: boolean;
+
   isClosed: boolean;
 }
 
@@ -44,19 +54,27 @@ interface CombinedReviewDTO {
 }
 
 export default function AdminReviewsPage() {
+  // Constantes de estado
   const [reviews, setReviews] = useState<CombinedReviewDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Constantes para filtros y ordenamiento
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterScore, setFilterScore] = useState("all");
   const [orderBy, setOrderBy] = useState("none");
 
+  // Constantes para paginación
   const pageSize = 5;
   const [page, setPage] = useState(1);
 
+  // Constantes para el uso del modal de detalles
   const [selectedReview, setSelectedReview] = useState<CombinedReviewDTO | null>(null);
   const [showModal, setShowModal] = useState(false);
+
+  // Constantes para notificaciones
+  const [notification, setNotification] = useState<NotificationState | null>(null);
+  const [isNotificationVisible, setIsNotificationVisible] = useState(false);
 
   // Modal de confirmación
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -137,6 +155,18 @@ export default function AdminReviewsPage() {
 
   const paginated = orderedReviews.slice((page - 1) * pageSize, page * pageSize);
 
+
+  useEffect(() => {
+  if (!isNotificationVisible) return;
+
+  const timer = setTimeout(() => {
+    setIsNotificationVisible(false);
+  }, 3500);
+
+  return () => clearTimeout(timer);
+  }, [isNotificationVisible]);
+
+
   // ========================================================
   // Load Reviews
   // ========================================================
@@ -170,62 +200,180 @@ export default function AdminReviewsPage() {
   //  Preparar eliminación (abre modal de confirmación)
   // ========================================================
   const requestDelete = (
-    ReviewId: number,
-    DeleteStudent: boolean,
-    DeleteOfferor: boolean
-  ) => {
-    setDeleteTarget({ ReviewId, DeleteStudent, DeleteOfferor });
-    setConfirmDelete(true);
-  };
+  ReviewId: number,
+  DeleteStudent: boolean,
+  DeleteOfferor: boolean
+) => {
+  if (!selectedReview) return;
+
+  const review = selectedReview.review;
+
+  // Intento de borrar parte del oferente
+  if (DeleteStudent && !canDeleteOfferorReview(review)) {
+    setNotification({
+      type: "error",
+      title: "Acción no permitida",
+      message:
+        "No se puede eliminar una reseña que aún no ha sido emitida por el oferente.",
+    });
+    setIsNotificationVisible(true);
+    return;
+  }
+
+  // Intento de borrar parte del estudiante
+  if (DeleteOfferor && !canDeleteStudentReview(review)) {
+    setNotification({
+      type: "error",
+      title: "Acción no permitida",
+      message:
+        "No se puede eliminar una reseña que aún no ha sido emitida por el estudiante.",
+    });
+    setIsNotificationVisible(true);
+    return;
+  }
+
+  setDeleteTarget({ ReviewId, DeleteStudent, DeleteOfferor });
+  setConfirmDelete(true);
+};
 
   // ========================================================
   //  Ejecutar eliminación
   // ========================================================
   const executeDelete = async () => {
-    if (!deleteTarget) return;
+  if (!deleteTarget || !selectedReview) return;
 
-    const { ReviewId, DeleteStudent, DeleteOfferor } = deleteTarget;
-    const token = Cookies.get("token");
-    if (!token) return false;
+  const { ReviewId, DeleteStudent, DeleteOfferor } = deleteTarget;
+  const token = Cookies.get("token");
+  if (!token) return;
 
-    try {
-      await axios.post(
-        "http://localhost:5185/api/Review/Admin/DeleteReviewPart",
-        {
-          reviewId: ReviewId,
-          deleteReviewForStudent: DeleteStudent,
-          deleteReviewForOfferor: DeleteOfferor,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  try {
+    await axios.post(
+      "http://localhost:5185/api/Review/Admin/DeleteReviewPart",
+      {
+        reviewId: ReviewId,
+        deleteReviewForStudent: DeleteStudent,
+        deleteReviewForOfferor: DeleteOfferor,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      const refreshed = await axios.get(
-        "http://localhost:5185/api/Review/Admin/system-reviews",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    const refreshed = await axios.get(
+      "http://localhost:5185/api/Review/Admin/system-reviews",
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      setReviews(refreshed.data);
+    setReviews(refreshed.data);
 
-      const updated = refreshed.data.find(
-        (x: CombinedReviewDTO) => x.review.idReview === ReviewId
-      );
-      if (updated) setSelectedReview(updated);
+    const updated = refreshed.data.find(
+      (x: CombinedReviewDTO) => x.review.idReview === ReviewId
+    );
+    if (updated) setSelectedReview(updated);
 
-      setConfirmDelete(false);
-      setDeleteTarget(null);
+    // ✅ CREAR NOTIFICACIÓN
+    const notificationData = buildDeleteNotification(
+      DeleteStudent,
+      DeleteOfferor,
+      ReviewId,
+      selectedReview.publication.title
+    );
 
-      return true;
-    } catch {
-      alert("Error al eliminar la reseña.");
-      return false;
-    }
-  };
+    setNotification(notificationData);
+    setIsNotificationVisible(true);
+
+    // limpiar confirmación
+    setConfirmDelete(false);
+    setDeleteTarget(null);
+  } catch {
+    alert("Error al eliminar la reseña.");
+  }
+};
 
   // ========================================================
   // RENDER
   // ========================================================
   if (loading) return <p className="text-center mt-10">Cargando reseñas...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
+
+  // Descripción dinámica del modal de confirmación
+  const getConfirmDescription = () => {
+  if (!deleteTarget) return "";
+
+  if (deleteTarget.DeleteStudent && deleteTarget.DeleteOfferor) {
+    return "¿Seguro que deseas borrar TODAS las partes de esta reseña?";
+  }
+
+  if (deleteTarget.DeleteStudent) {
+    return "¿Seguro que deseas borrar la parte del OFERENTE?";
+  }
+
+  return "¿Seguro que deseas borrar la parte del ESTUDIANTE?";
+  };
+
+
+  const buildDeleteNotification = (
+  isStudent: boolean,
+  isOfferor: boolean,
+  reviewId: number,
+  jobTitle: string
+): NotificationState => {
+  if (isStudent && isOfferor) {
+    return {
+      type: "success",
+      title: "Reseña eliminada",
+      message: `Se eliminaron todas las partes de la reseña #${reviewId} del trabajo "${jobTitle}".`,
+    };
+  }
+
+  if (isStudent) {
+    return {
+      type: "success",
+      title: "Comentario eliminado",
+      message: `Se eliminó el comentario del OFERENTE en el trabajo "${jobTitle}" (Reseña #${reviewId}).`,
+    };
+  }
+
+  return {
+    type: "success",
+    title: "Comentario eliminado",
+    message: `Se eliminó el comentario del ESTUDIANTE en el trabajo "${jobTitle}" (Reseña #${reviewId}).`,
+  };
+};
+
+// Obtener texto adecuado para comentarios eliminados o vacíos
+const getStudentCommentText = (review: ReviewDetailDTO) => {
+  if (review.hasReviewForOfferorBeenDeleted) {
+    return "Reseña eliminada por administrador";
+  }
+
+  if (!review.commentForOfferor || review.commentForOfferor.trim() === "") {
+    return "Reseña pendiente";
+  }
+
+  return review.commentForOfferor;
+};
+
+const getOfferorCommentText = (review: ReviewDetailDTO) => {
+  if (review.hasReviewForStudentBeenDeleted) {
+    return "Reseña eliminada por administrador";
+  }
+
+  if (!review.commentForStudent || review.commentForStudent.trim() === "") {
+    return "Reseña pendiente";
+  }
+
+  return review.commentForStudent;
+};
+
+  // Constantes para permisos de eliminación
+  const canDeleteOfferorReview = (review: ReviewDetailDTO) => {
+  // Oferente califica al estudiante
+  return review.isReviewForStudentCompleted;
+};
+
+const canDeleteStudentReview = (review: ReviewDetailDTO) => {
+  // Estudiante califica al oferente
+  return review.isReviewForOfferorCompleted;
+};
 
   return (
     <div className="max-w-3xl mx-auto mt-10 space-y-6 pb-10">
@@ -433,11 +581,20 @@ export default function AdminReviewsPage() {
         onClick={() =>
           requestDelete(selectedReview.review.idReview, true, false)
         }
-        className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-2xl"
+        disabled={!canDeleteOfferorReview(selectedReview.review)}
+        className={`absolute top-3 right-3 text-2xl ${
+          canDeleteOfferorReview(selectedReview.review)
+            ? "text-red-500 hover:text-red-700"
+            : "text-gray-300 cursor-not-allowed"
+        }`}
+        title={
+          canDeleteOfferorReview(selectedReview.review)
+            ? "Eliminar reseña del oferente"
+            : "El oferente aún no ha emitido su reseña"
+        }
       >
         🗑️
       </button>
-
       <p className="font-semibold text-gray-800 mb-1">Oferente</p>
 
       <div className="flex items-center gap-2">
@@ -450,8 +607,8 @@ export default function AdminReviewsPage() {
       </div>
 
       <p className="mt-2 text-sm text-gray-700">
-        {selectedReview.review.commentForStudent || "Sin reseña"}
-      </p>
+      {getOfferorCommentText(selectedReview.review)}
+    </p>
     </div>
 
     {/* Estudiante */}
@@ -460,10 +617,21 @@ export default function AdminReviewsPage() {
         onClick={() =>
           requestDelete(selectedReview.review.idReview, false, true)
         }
-        className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-2xl"
+        disabled={!canDeleteStudentReview(selectedReview.review)}
+        className={`absolute top-3 right-3 text-2xl ${
+          canDeleteStudentReview(selectedReview.review)
+            ? "text-red-500 hover:text-red-700"
+            : "text-gray-300 cursor-not-allowed"
+        }`}
+        title={
+          canDeleteStudentReview(selectedReview.review)
+            ? "Eliminar reseña del estudiante"
+            : "El estudiante aún no ha emitido su reseña"
+        }
       >
         🗑️
       </button>
+
 
       <p className="font-semibold text-gray-800 mb-1">Estudiante</p>
 
@@ -477,7 +645,7 @@ export default function AdminReviewsPage() {
       </div>
 
       <p className="mt-2 text-sm text-gray-700">
-        {selectedReview.review.commentForOfferor || "Sin reseña"}
+        {getStudentCommentText(selectedReview.review)}
       </p>
     </div>
 
@@ -531,6 +699,35 @@ export default function AdminReviewsPage() {
         </span>
         ¿Tuvo buena presentación personal?
       </label>
+
+      <label className="flex items-center gap-3">
+  <span
+    className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+      selectedReview.review.studentHasRespectOfferor
+        ? "bg-purple-700 border-purple-800"
+        : "bg-white border-gray-400"
+    }`}
+      >
+        {selectedReview.review.studentHasRespectOfferor && (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="3"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        )}
+      </span>
+      ¿El estudiante fue respetuoso con el oferente?
+      </label>
+
     </div>
 
   </div>
@@ -555,46 +752,40 @@ export default function AdminReviewsPage() {
       {/* ================================================= */}
       {/*         MODAL DE CONFIRMACIÓN ELEGANTE            */}
       {/* ================================================= */}
-      {confirmDelete && deleteTarget && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex justify-center items-center z-[999] animate-fadeIn">
-          <div className="bg-white rounded-xl shadow-2xl p-7 w-full max-w-sm animate-scaleIn">
+      
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConfirmDelete(false);
+            setDeleteTarget(null);
+          }
+        }}
+        title="Confirmar eliminación"
+        description={getConfirmDescription()}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={executeDelete}
+        onCancel={() => {
+          setConfirmDelete(false);
+          setDeleteTarget(null);
+        }}
+      />
 
-            <h3 className="text-xl font-semibold text-center mb-4 text-gray-800">
-              Confirmar eliminación
-            </h3>
-
-            <p className="text-center text-gray-600 mb-7 leading-relaxed">
-              {deleteTarget.DeleteStudent && deleteTarget.DeleteOfferor
-                ? "¿Seguro que deseas borrar TODAS las partes de esta reseña?"
-                : deleteTarget.DeleteStudent
-                ? "¿Seguro que deseas borrar la parte del OFERENTE?"
-                : "¿Seguro que deseas borrar la parte del ESTUDIANTE?"}
-            </p>
-
-            <div className="flex justify-center gap-4">
-              {/* Cancelar */}
-              <button
-                onClick={() => {
-                  setConfirmDelete(false);
-                  setDeleteTarget(null);
-                }}
-                className="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition font-medium"
-              >
-                Cancelar
-              </button>
-
-              {/* Eliminar */}
-              <button
-                onClick={executeDelete}
-                className="px-5 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition font-medium"
-              >
-                Eliminar
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
+      {/* ================================================= */}
+      {/*               BANNER DE NOTIFICACIÓN              */}
+      {/* ================================================= */}
+      <div
+  className={`fixed top-0 right-0 z-50 ${
+    isNotificationVisible ? "pointer-events-auto" : "pointer-events-none"
+  }`}
+>
+  <NotificationBanner
+    data={notification}
+    isVisible={isNotificationVisible}
+    onClose={() => setIsNotificationVisible(false)}
+  />
+</div>
     </div>
   );
 }
