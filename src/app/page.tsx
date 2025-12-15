@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -12,19 +12,31 @@ import {
   Ban,
   Share2,
 } from "lucide-react";
+import { Button } from "@/components/ui";
+import { useDisclaimerAcceptance } from "@/hooks/common/use-disclaimer-acceptance";
 
 export default function HomePage() {
   const router = useRouter();
-  const [accepted, setAccepted] = useState(false);
+  const {accepted, manageDisclaimer, isLoaded} = useDisclaimerAcceptance();
   const [error, setError] = useState(false);
 
   const handleExplore = () => {
     if (!accepted) {
       setError(true);
+      const rulesSection = document.getElementById("rules-section");
+      if (rulesSection) {
+        rulesSection.scrollIntoView({ behavior: "smooth" });
+      }
       return;
     }
-    router.push("/auth/register");
+    router.push("/offers");
   };
+  const handleKnowMore = () => {
+    const featuresSection = document.getElementById("features-section");
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: "smooth" });
+    }
+  }
 
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
@@ -55,20 +67,22 @@ export default function HomePage() {
 
             {/* Botones */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <a
-                href="/offers"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-[var(--primary)] font-bold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+              <Button
+                onClick={handleExplore}
+                size="hero"
+                className="cursor-pointer inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-[var(--primary)] font-bold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all"
               >
                 <Search className="w-5 h-5" />
                 Explorar ofertas
-              </a>
+              </Button>
 
-              <a
-                href="/auth/register"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold rounded-2xl border-2 border-white/30 hover:bg-white/20 backdrop-blur-sm transition-all"
+              <Button
+                onClick={handleKnowMore}
+                size="hero"
+                className="cursor-pointer inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold rounded-2xl border-2 border-white/30 hover:bg-white/20 backdrop-blur-sm transition-all"
               >
                 Saber más
-              </a>
+              </Button>
             </div>
 
             {/* Stats */}
@@ -94,7 +108,7 @@ export default function HomePage() {
       </section>
 
       {/* ===== FEATURES ===== */}
-      <section className="py-20 px-6 md:px-12 bg-[var(--bg)]">
+      <section id="features-section" className="py-20 px-6 md:px-12 bg-[var(--bg)]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <span className="inline-block px-4 py-2 rounded-full bg-[var(--chip)] text-[var(--primary)] text-sm font-semibold mb-4">
@@ -209,7 +223,7 @@ export default function HomePage() {
       </section>
 
       {/* ===== RULES ===== */}
-      <section className="py-20 px-6 md:px-12 bg-gradient-to-br from-[var(--pop)] to-[#F472B6]">
+      <section id="rules-section" className="py-20 px-6 md:px-12 bg-gradient-to-br from-[var(--pop)] to-[#F472B6]">
         <div className="max-w-4xl mx-auto text-center">
           <span className="inline-block px-4 py-2 rounded-full bg-white/20 text-white text-sm font-semibold mb-4 backdrop-blur-sm">
             Comunidad responsable
@@ -262,7 +276,7 @@ export default function HomePage() {
                 type="checkbox"
                 checked={accepted}
                 onChange={() => {
-                  setAccepted(!accepted);
+                  manageDisclaimer(!accepted);
                   setError(false);
                 }}
                 className="w-5 h-5 rounded border-2 border-white/50 bg-white/10 checked:bg-white checked:border-white accent-[var(--primary)]"
