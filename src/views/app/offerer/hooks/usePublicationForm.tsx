@@ -235,6 +235,7 @@ export const usePublicationForm = () => {
           const decoded = extractUserFromJwt(token);
           // Si es Admin usa 'admin', si es Offerent/Offerer usa 'offerer'
           if (decoded?.role === "Admin") rolePath = "admin";
+          if (decoded?.role === "Applicant") rolePath = "students";
         } catch (e) {
           console.error("Error leyendo rol", e);
         }
