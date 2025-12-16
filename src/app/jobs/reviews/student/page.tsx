@@ -42,6 +42,7 @@ interface ReviewDetailDTO {
   isReviewForOfferorCompleted: boolean;
   hasReviewForOfferorBeenDeleted: boolean;
   hasReviewForStudentBeenDeleted: boolean;
+  isClosed: boolean;
 }
 
 interface CombinedReviewDTO {
@@ -79,7 +80,7 @@ export default function StudentReviewsPage() {
   const [commentJob, setCommentJob] = useState("");
   const [commentEmployer, setCommentEmployer] = useState("");
   const [rating, setRating] = useState(0);
-  const MAX_CHARS = 160;
+  const MAX_CHARS = 115;
 
   const remainingJobChars = MAX_CHARS - commentJob.length;
   const remainingEmployerChars = MAX_CHARS - commentEmployer.length;
@@ -220,8 +221,8 @@ export default function StudentReviewsPage() {
   const filtered = reviews.filter(({ publication, review }) => {
     if (publication.types !== 0) return false;
 
-    if (filterStatus === "open" && review.isCompleted) return false;
-    if (filterStatus === "closed" && !review.isCompleted) return false;
+    if (filterStatus === "open" && review.isClosed) return false;
+    if (filterStatus === "closed" && !review.isClosed) return false;
 
     if (filterScore !== "all") {
       const s = Number(filterScore);
@@ -364,12 +365,12 @@ export default function StudentReviewsPage() {
 
             <span
               className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                review.isCompleted
+                review.isClosed
                   ? "bg-green-100 text-green-700"
                   : "bg-yellow-100 text-yellow-700"
               }`}
             >
-              {review.isCompleted ? "Cerrada" : "Abierta"}
+              {review.isClosed ? "Cerrada" : "Abierta"}
             </span>
           </div>
 
@@ -678,7 +679,7 @@ export default function StudentReviewsPage() {
               }`}
             >
               {remainingJobChars >= 0
-                ? `160 carácteres maximo | ${remainingJobChars} restantes`
+                ? `115 carácteres maximo | ${remainingJobChars} restantes`
                 : `Te excediste por ${Math.abs(remainingJobChars)} carácteres.`}
             </p>
             </div>
@@ -705,7 +706,7 @@ export default function StudentReviewsPage() {
                 }`}
               >
                 {remainingEmployerChars >= 0
-                  ? `160 carácteres maximo | ${remainingEmployerChars} restantes`
+                  ? `115 carácteres maximo | ${remainingEmployerChars} restantes`
                   : `Te excediste por ${Math.abs(remainingEmployerChars)} carácteres.`}
               </p>
 

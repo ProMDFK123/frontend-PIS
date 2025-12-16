@@ -41,6 +41,7 @@ interface ReviewDetailDTO {
   isReviewForOfferorCompleted: boolean;
   hasReviewForOfferorBeenDeleted: boolean;
   hasReviewForStudentBeenDeleted: boolean;
+  isClosed: boolean;
 }
 
 interface CombinedReviewDTO {
@@ -76,6 +77,13 @@ export default function OfferentReviewsPage() {
   const [atTime, setAtTime] = useState(false);
   const [goodPresentation, setGoodPresentation] = useState(false);
   const [studentHasRespectOfferor, setStudentHasRespectOfferor] = useState(false);
+  const MAX_COMMENT_LENGTH = 320;
+
+  const remainingCommentChars =
+  MAX_COMMENT_LENGTH - commentStudent.length;
+
+  const isCommentOverLimit = remainingCommentChars < 0;
+
 
   const openModal = (item: CombinedReviewDTO) => {
     setSelectedReview(item);
@@ -217,8 +225,8 @@ export default function OfferentReviewsPage() {
     // Solo trabajos (types == 0)
     if (publication.types !== 0) return false;
 
-    if (filterStatus === "open" && review.isCompleted) return false;
-    if (filterStatus === "closed" && !review.isCompleted) return false;
+    if (filterStatus === "open" && review.isClosed) return false;
+    if (filterStatus === "closed" && !review.isClosed) return false;
 
     if (filterScore !== "all") {
       const s = Number(filterScore);
@@ -228,15 +236,36 @@ export default function OfferentReviewsPage() {
     return true;
   });
 
-  /* ======= ORDEN ======= */
+  /* ======= ORDEN POR IDPUBLICATION ======= */
   const ordered = [...filtered].sort((a, b) => {
-    if (orderBy === "asc") return a.review.idReview - b.review.idReview;
-    if (orderBy === "desc") return b.review.idReview - a.review.idReview;
-    return 0;
-  });
+  if (orderBy === "asc") return a.publication.idPublication - b.publication.idPublication;
+  if (orderBy === "desc") return b.publication.idPublication - a.publication.idPublication;
+  return 0;
+});
 
-  /* ======= PAGINACIÓN ======= */
-  const paginated = ordered.slice((page - 1) * pageSize, page * pageSize);
+
+  /* ======= AGRUPAR POR TRABAJO (ANTES DE PAGINAR) ======= */
+  const map = new Map<number, { publication: PublicationDTO; reviews: ReviewDetailDTO[] }>();
+
+  for (const item of ordered) {
+    const pubId = item.publication.idPublication;
+
+    if (!map.has(pubId)) {
+      map.set(pubId, { publication: item.publication, reviews: [] });
+    }
+
+    map.get(pubId)!.reviews.push(item.review);
+  }
+
+const groupedArray = Array.from(map.values());
+
+/* ======= PAGINAR TRABAJOS ======= */
+const paginatedGroups = groupedArray.slice(
+  (page - 1) * pageSize,
+  page * pageSize
+);
+
+
 
   /* ======= LOAD ======= */
   useEffect(() => {
@@ -281,6 +310,9 @@ export default function OfferentReviewsPage() {
   return () => clearTimeout(timer);
   }, [isNotificationVisible]);
 
+  useEffect(() => {
+  setPage(1);
+}, [orderBy, filterStatus, filterScore]);
 
   if (loading) return <p className="text-center mt-10">Cargando reseñas...</p>;
   if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
@@ -348,104 +380,141 @@ export default function OfferentReviewsPage() {
       </div>
 
       {/* ======= LISTA ======= */}
-      {paginated.map(({ publication, review }) => (
-        <div
-          key={review.idReview}
-          className="border rounded-xl shadow-sm p-5 bg-white flex flex-col gap-4"
-        >
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-bold">
-              {publication.title} — Reseña #{review.idReview}
-            </h2>
+      {paginatedGroups.map(
+  ({ publication, reviews }) => {
 
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                review.isCompleted
-                  ? "bg-green-100 text-green-700"
-                  : "bg-yellow-100 text-yellow-700"
-              }`}
-            >
-              {review.isCompleted ? "Cerrada" : "Abierta"}
+    // SABER SI ES UNA SOLA RESEÑA
+    const hasSingleReview = reviews.length === 1;
+
+    return (
+      <div
+        key={publication.idPublication}
+        className="border-2 border-gray-900 rounded-2xl p-6 bg-white shadow-md space-y-4"
+      >
+        {/* ===== TRABAJO ===== */}
+        <div>
+          <h2 className="text-xl font-bold text-purple-700">
+            {publication.title}{" "}
+            <span className="text-gray-600 font-semibold">
+              #{publication.idPublication}
             </span>
-          </div>
+          </h2>
 
-          <p className="text-sm text-gray-600">
-            Publicada el:{" "}
+
+          <p className="text-sm text-gray-500">
+            Publicado el{" "}
             {new Date(publication.publicationDate).toLocaleDateString("es-CL")}
           </p>
-
-          <div>
-            <p>
-              <strong>Estudiante:</strong> {review.studentName}
-            </p>
-          </div>
-
-          <p>
-            <strong>Tu calificación al estudiante:</strong>{" "}
-            <span className="text-purple-700">
-              {starsOrNone(review.ratingForStudent)}
-            </span>
-          </p>
-
-          <p>
-            <strong>Calificación del estudiante hacia ti:</strong>{" "}
-            <span className="text-purple-700">
-              {starsOrNone(review.ratingForOfferor)}
-            </span>
-          </p>
-
-          <button
-            onClick={() => openModal({ publication, review })}
-            className="mt-2 w-full text-center text-sm font-medium border border-purple-400 text-purple-700 rounded-lg py-2 hover:bg-purple-50"
-          >
-            Ver detalles
-          </button>
-
-          <button
-            onClick={() => openFinishModal({ publication, review })}
-            disabled={
-              review.isReviewForStudentCompleted ||
-              review.hasReviewForStudentBeenDeleted
-            }
-            className={`mt-2 w-full text-center text-sm font-medium rounded-lg py-2 transition ${
-              review.isReviewForStudentCompleted || review.hasReviewForStudentBeenDeleted
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-purple-600 text-white hover:bg-purple-700"
-            }`}
-          >
-            Evaluar al estudiante
-          </button>
         </div>
-      ))}
 
-      {/* ======= PAGINACIÓN ======= */}
-      <div className="flex flex-col items-center gap-3 mt-6">
-        <p className="text-sm text-gray-600">
-          Página {page} de {Math.ceil(filtered.length / pageSize)}
-        </p>
+        {/* ===== RESEÑAS ===== */}
+        <div className="space-y-4 mt-4">
+          {reviews.map((review) => (
+            <div
+              key={review.idReview}
+              className="border-2 border-gray-300 rounded-2xl p-6 bg-white shadow-sm space-y-3"
+            >
+              <div className="flex justify-between items-center">
+                <p className="font-semibold">
+                  Reseña #{review.idReview}
+                </p>
 
-        <div className="flex gap-4">
-          <button
-            className="px-4 py-2 rounded-md border hover:bg-gray-100 disabled:opacity-50"
-            disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-          >
-            ← Anterior
-          </button>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    review.isClosed
+                      ? "bg-green-100 text-green-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {review.isClosed ? "Cerrada" : "Abierta"}
+                </span>
+              </div>
 
-          <button
-            className="px-4 py-2 rounded-md border hover:bg-gray-100 disabled:opacity-50"
-            disabled={page * pageSize >= filtered.length}
-            onClick={() => setPage(page + 1)}
-          >
-            Siguiente →
-          </button>
+              {/* SOLO SI HAY UNA SOLA RESEÑA */}
+              {hasSingleReview && (
+                <p className="text-sm text-gray-700">
+                  <strong>Estudiante:</strong> {review.studentName}
+                </p>
+              )}
+
+              {!hasSingleReview && (
+                <p className="text-sm">
+                  <strong>Estudiante:</strong> {review.studentName}
+                </p>
+              )}
+
+              <p className="text-sm">
+                <strong>Tu calificación al estudiante:</strong>{" "}
+                <span className="text-purple-700">
+                  {starsOrNone(review.ratingForStudent)}
+                </span>
+              </p>
+
+              <p className="text-sm">
+                <strong>Calificación del estudiante hacia ti:</strong>{" "}
+                <span className="text-purple-700">
+                  {starsOrNone(review.ratingForOfferor)}
+                </span>
+              </p>
+
+              <button
+                onClick={() => openModal({ publication, review })}
+                className="mt-2 w-full text-center text-sm font-medium border border-purple-400 text-purple-700 rounded-lg py-2 hover:bg-purple-50"
+              >
+                Ver detalles
+              </button>
+
+              <button
+                onClick={() => openFinishModal({ publication, review })}
+                disabled={
+                  review.isReviewForStudentCompleted ||
+                  review.hasReviewForStudentBeenDeleted
+                }
+                className={`mt-2 w-full text-center text-sm font-medium rounded-lg py-2 transition ${
+                  review.isReviewForStudentCompleted || review.hasReviewForStudentBeenDeleted
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-purple-600 text-white hover:bg-purple-700"
+                }`}
+              >
+                Evaluar al estudiante
+              </button>
+            </div>
+          ))}
         </div>
       </div>
+    );
+  }
+)}
 
-      {/* ================================================================
+    {/* ======= PAGINACIÓN ======= */}
+    <div className="flex flex-col items-center gap-3 mt-6">
+      <p className="text-sm text-gray-600">
+        Página {page} de {Math.ceil(groupedArray.length / pageSize)}
+      </p>
+
+      <div className="flex gap-4">
+        <button
+          className="px-4 py-2 rounded-md border hover:bg-gray-100 disabled:opacity-50"
+          disabled={page === 1}
+          onClick={() => setPage(page - 1)}
+        >
+          ← Anterior
+        </button>
+
+        <button
+          className="px-4 py-2 rounded-md border hover:bg-gray-100 disabled:opacity-50"
+          disabled={page * pageSize >= groupedArray.length}
+          onClick={() => setPage(page + 1)}
+        >
+          Siguiente →
+        </button>
+      </div>
+    </div>
+
+
+        {/* ================================================================
           MODAL DETALLES
-      ================================================================= */}
+        ================================================================= */}
       {showModal && selectedReview && (
         <div className="fixed top-0 left-0 right-0 bottom-0 h-screen w-screen z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
 
@@ -784,14 +853,32 @@ export default function OfferentReviewsPage() {
                 value={commentStudent}
                 onChange={(e) => setCommentStudent(e.target.value)}
                 placeholder="Describe el desempeño, fortalezas o aspectos a mejorar del estudiante..."
-                className="w-full border border-purple-300 rounded-lg p-3 mt-2 focus:outline-purple-500"
+                className={`w-full rounded-lg p-3 mt-2 focus:outline-none ${
+                  isCommentOverLimit
+                    ? "border-2 border-red-500 focus:ring-2 focus:ring-red-400"
+                    : "border border-purple-300 focus:ring-2 focus:ring-purple-400"
+                }`}
               />
+
+              <p
+                className={`mt-1 text-xs text-right ${
+                  isCommentOverLimit ? "text-red-600" : "text-gray-500"
+                }`}
+              >
+                {remainingCommentChars >= 0
+                  ? `320 carácteres máximo | ${remainingCommentChars} restantes`
+                  : `Te excediste por ${Math.abs(remainingCommentChars)} carácteres.`}
+              </p>
             </div>
 
             <div className="flex justify-center mt-10">
               <button
                 onClick={handleOpenConfirm}
-                disabled={!commentStudent.trim() || rating === 0}
+                disabled={
+                  !commentStudent.trim() ||
+                  rating === 0 ||
+                  isCommentOverLimit
+                }
                 className="px-8 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md disabled:bg-gray-400"
               >
                 Enviar evaluación

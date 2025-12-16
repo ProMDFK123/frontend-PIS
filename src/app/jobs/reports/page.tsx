@@ -147,15 +147,7 @@ export default function AdminReviewsPage() {
     return true;
   });
 
-  const orderedReviews = [...filteredReviews].sort((a, b) => {
-    if (orderBy === "asc") return a.review.idReview - b.review.idReview;
-    if (orderBy === "desc") return b.review.idReview - a.review.idReview;
-    return 0;
-  });
-
-  const paginated = orderedReviews.slice((page - 1) * pageSize, page * pageSize);
-
-
+  
   useEffect(() => {
   if (!isNotificationVisible) return;
 
@@ -387,9 +379,10 @@ const canDeleteStudentReview = (review: ReviewDetailDTO) => {
   return review.isReviewForOfferorCompleted;
 };
 
-const reviewsGroupedByPublication = paginated.reduce((acc, item) => {
+  /* ======= AGRUPAR POR PUBLICACIÓN ======= */
+  const reviewsGroupedByPublication = filteredReviews.reduce((acc, item) => {
   const pubId = item.publication.idPublication;
-  
+
   if (!acc[pubId]) {
     acc[pubId] = {
       publication: item.publication,
@@ -404,6 +397,26 @@ const reviewsGroupedByPublication = paginated.reduce((acc, item) => {
   { publication: PublicationDTO; reviews: ReviewDetailDTO[] }
 >);
 
+  /* ======= CONVERTIR A ARRAY ======= */
+  const groupedArray = Object.values(reviewsGroupedByPublication);
+
+
+  const orderedGroups = [...groupedArray].sort((a, b) => {
+  if (orderBy === "asc") return a.publication.idPublication - b.publication.idPublication;
+  if (orderBy === "desc") return b.publication.idPublication - a.publication.idPublication;
+  return 0;
+  });
+
+  /* ======= PAGINAR TRABAJOS ======= */
+  const paginatedGroups = orderedGroups.slice(
+  (page - 1) * pageSize,
+  page * pageSize
+  );
+
+
+
+  if (loading) return <p className="text-center mt-10">Cargando reseñas...</p>;
+  if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
 
   return (
     <div className="max-w-3xl mx-auto mt-10 space-y-6 pb-10">
@@ -468,7 +481,7 @@ const reviewsGroupedByPublication = paginated.reduce((acc, item) => {
       </div>
 
       {/* TARJETAS */}
-      {Object.values(reviewsGroupedByPublication).map(
+      {paginatedGroups.map(
         ({ publication, reviews }) => {
 
           // AQUÍ se declara correctamente
@@ -483,7 +496,10 @@ const reviewsGroupedByPublication = paginated.reduce((acc, item) => {
               <div className="flex justify-between items-center">
                 <div>
                   <h2 className="text-xl font-bold text-purple-700">
-                    {publication.title}
+                    {publication.title}{" "}
+                    <span className="text-gray-600 font-semibold">
+                      #{publication.idPublication}
+                    </span>
                   </h2>
 
                   <p className="text-sm text-gray-500">
@@ -571,7 +587,7 @@ const reviewsGroupedByPublication = paginated.reduce((acc, item) => {
       <div className="flex flex-col items-center gap-3 mt-6">
         <p className="text-sm text-gray-600">
           Página <strong>{page}</strong> de{" "}
-          <strong>{Math.ceil(filteredReviews.length / pageSize)}</strong>
+          <strong>{Math.ceil(groupedArray.length / pageSize)}</strong>
         </p>
 
         <div className="flex gap-4">
@@ -585,7 +601,7 @@ const reviewsGroupedByPublication = paginated.reduce((acc, item) => {
 
           <button
             className="px-4 py-2 rounded-md border hover:bg-gray-100 disabled:opacity-50"
-            disabled={page * pageSize >= filteredReviews.length}
+            disabled={page * pageSize >= groupedArray.length}
             onClick={() => setPage((p) => p + 1)}
           >
             Siguiente →
