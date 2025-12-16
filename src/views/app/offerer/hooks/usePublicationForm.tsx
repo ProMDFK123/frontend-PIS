@@ -128,6 +128,7 @@ export const usePublicationForm = () => {
 
       if (!formData.deadlineDate)
         newErrors.deadlineDate = "Cierre de postulaciones requerido";
+      if (!formData.location.trim()) newErrors.location = "La ubicación es requerida";
       if (!formData.endDate) newErrors.endDate = "Fecha de término requerida";
 
       // Validar coherencia de fechas
@@ -153,6 +154,14 @@ export const usePublicationForm = () => {
       ) {
         newErrors.remuneration =
           "Un voluntariado no puede tener remuneración mayor a 0";
+      }
+
+      if (
+        formData.jobType === "JobOffer" &&
+        parseFloat(formData.remuneration || "0") <= 0
+      ) {
+        newErrors.remuneration =
+          "La remuneración debe ser mayor a 0 para una oferta de trabajo";
       }
     }
 
@@ -237,7 +246,6 @@ export const usePublicationForm = () => {
             : "Error inesperado";
         show("Error", msg, "error");
       }
-    } finally {
       setIsSubmitting(false);
     }
   };
