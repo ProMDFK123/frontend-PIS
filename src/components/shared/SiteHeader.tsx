@@ -138,7 +138,12 @@ export default function SiteHeader() {
         href: getProfileRoute(auth.userType ?? undefined),
         label: "Editar perfil",
       },
-      { href: "/jobs/history", label: "Historial de postulaciones" },
+      // MODIFICACIÓN AQUÍ:
+      // Solo agregamos este item si el rol NO es Admin
+      ...(auth.role !== "Admin"
+        ? [{ href: "/jobs/history", label: "Historial de postulaciones" }]
+        : []),
+      
       { href: "/jobs/reports", label: "Historial de trabajos" },
       { href: "/offerer/create-publication", label: "Publicar" },
       {
