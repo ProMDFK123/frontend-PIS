@@ -1,0 +1,1 @@
+export { useOffererPostulantDetail } from "./use-applicant-detail"
