@@ -37,7 +37,7 @@ const offererNavLinks = [
 
 const studentNavLinks = [
   { href: "/", label: "Inicio" },
-   { href: "/students/create-publication", label: "Publicar" },
+   { href: "/offerer/create-publication", label: "Publicar" },
   { href: "/students/your-publications", label: "Mis Publicaciones" },
 ];
 
