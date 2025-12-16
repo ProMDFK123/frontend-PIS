@@ -30,6 +30,7 @@ const individualValidationRules = {
 
 export default function RegisterAdminPage() {
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const router = useRouter();
   const {notification, isVisible, show, close} = useNotification();
   const {
@@ -63,13 +64,17 @@ export default function RegisterAdminPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    
+    if (loading || success) return;
+
     if (!validateAll()) {
       const firstErrorField = Object.keys(errors)[0];
       document.getElementsByName(firstErrorField)[0]?.focus();
       setLoading(false);
       return;
     }
+
+    setLoading(true);
 
     try {
       const payload = AdminAdapter.toDTO(formData);
@@ -80,6 +85,8 @@ export default function RegisterAdminPage() {
         response.message ||"Se ha enviado un correo de verificación a la dirección proporcionada.",
         "success"
       );
+
+      setSuccess(true);
       
       setTimeout(() => {
         router.push(`/`);
@@ -113,7 +120,6 @@ export default function RegisterAdminPage() {
         errorMessage, 
         "error"
       );
-    } finally {
       setLoading(false);
     }
   };
@@ -252,11 +258,13 @@ export default function RegisterAdminPage() {
 
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full text-white rounded-lg py-3 font-semibold transition duration-150 hover:opacity-90 shadow-md hover:shadow-lg mt-6 disabled:opacity-60"
+                  disabled={loading || success}
+                  className={loading || success 
+                    ? "w-full text-white rounded-md py-2 font-medium transition mt-6" 
+                    : "cursor-pointer w-full text-white rounded-md py-2 font-medium transition mt-6"}
                   style={{ backgroundColor: PRIMARY_COLOR }}
                 >
-                  {loading ? "Creando cuenta..." : "Crear Cuenta"}
+                  {success ? "Redirigiendo..." : loading ? "Creando cuenta..." : "Crear Cuenta"}
                 </button>
               </form>
 

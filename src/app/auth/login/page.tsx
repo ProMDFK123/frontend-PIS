@@ -26,6 +26,7 @@ function LoginForm() {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   // Redirección automática si ya hay token
   useEffect(() => {
@@ -54,6 +55,9 @@ function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (loading || success) return;
+
     setError(null);
     setLoading(true);
 
@@ -74,6 +78,7 @@ function LoginForm() {
         setError(
           response.message || "Usuario no registrado o contraseña incorrecta."
         );
+        setLoading(false);
         return;
       }
 
@@ -103,6 +108,7 @@ function LoginForm() {
         (role === "offerer" ? "/offerer" : role === "Admin" ? "/admin/publications" : "/offers");
 
       console.log(response.message || "Inicio de sesión exitoso.");
+      setSuccess(true);
       router.replace(finalRedirect);
     } catch (error: any) {
       console.error("Error en el login:", error);
@@ -124,8 +130,7 @@ function LoginForm() {
         "Credenciales inválidas. Por favor, revisa tu correo y contraseña.";
 
       setError(errorMessage);
-    } finally {
-      setLoading(false);
+      setLoading(false); 
     }
   };
 

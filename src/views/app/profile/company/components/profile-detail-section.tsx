@@ -1,17 +1,17 @@
 "use client";
 
-import { AdminProfileDTO } from "@/services/profileService";
+import { CompanyProfileDTO } from "@/services/profileService";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 interface ProfileDetailSectionProps {
-    profile: AdminProfileDTO;
+    profile: CompanyProfileDTO;
     formData: {
         userName: string;
         name: string;
         lastName: string;
         rut: string;
-        email: string;
+        emailLocal: string;
         phoneNumber: string;
         aboutMe: string;
     };
@@ -117,19 +117,19 @@ export function ProfileDetailSection({
                         handleChange={handleChange}
                     />
                     <ProfileField
-                        label="Nombre"
-                        name="name"
+                        label="Nombre Compañia"
+                        name="companyName"
                         value={formData.name}
-                        displayValue={profile.name}
+                        displayValue={profile.companyName}
                         isEditing={isEditing}
                         fieldErrors={fieldErrors}
                         handleChange={handleChange}
                     />
                     <ProfileField
-                        label="Apellido"
-                        name="lastName"
+                        label="Razón Social"
+                        name="legalName"
                         value={formData.lastName}
-                        displayValue={profile.lastName}
+                        displayValue={profile.legalName}
                         isEditing={isEditing}
                         fieldErrors={fieldErrors}
                         handleChange={handleChange}
@@ -137,8 +137,8 @@ export function ProfileDetailSection({
                     
                     <ProfileField
                         label="Correo electrónico"
-                        name="email"
-                        value={formData.email}
+                        name="emailLocal"
+                        value={formData.emailLocal}
                         displayValue={profile.email}
                         colSpan={2}
                         isEditing={isEditing}

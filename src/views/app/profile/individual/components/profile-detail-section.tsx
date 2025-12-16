@@ -1,17 +1,17 @@
 "use client";
 
-import { AdminProfileDTO } from "@/services/profileService";
+import { IndividualProfileDTO } from "@/services/profileService";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 interface ProfileDetailSectionProps {
-    profile: AdminProfileDTO;
+    profile: IndividualProfileDTO;
     formData: {
         userName: string;
         name: string;
         lastName: string;
         rut: string;
-        email: string;
+        emailLocal: string;
         phoneNumber: string;
         aboutMe: string;
     };
@@ -138,7 +138,7 @@ export function ProfileDetailSection({
                     <ProfileField
                         label="Correo electrónico"
                         name="email"
-                        value={formData.email}
+                        value={formData.emailLocal}
                         displayValue={profile.email}
                         colSpan={2}
                         isEditing={isEditing}

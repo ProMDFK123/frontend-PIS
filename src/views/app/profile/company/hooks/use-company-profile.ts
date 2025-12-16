@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AdminProfileDTO, profileService } from "@/services/profileService";
+import { profileService, CompanyProfileDTO } from "@/services/profileService";
 import { useNotification } from "@/hooks/common/use-notification";
 import { validators } from "@/utils/AuthValidatorsUtil";
 import { formatRut } from "@/utils/Util";
 
-export const useAdminProfile = () => {
-    const [profile, setProfile] = useState<AdminProfileDTO | null>(null);
+export const useCompanyProfile = () => {
+    const [profile, setProfile] = useState<CompanyProfileDTO | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -20,7 +20,7 @@ export const useAdminProfile = () => {
         name: "",
         lastName: "",
         rut: "",
-        email: "",
+        emailLocal: "",
         phoneNumber: "",
         aboutMe: "",
     });
@@ -31,7 +31,7 @@ export const useAdminProfile = () => {
         try {
             setIsLoading(true);
             setError(null);
-            const response = await profileService.getAdminProfile();
+            const response = await profileService.getCompanyProfile();
             
             if (response.data) {
                 setProfile(response.data);
@@ -40,10 +40,10 @@ export const useAdminProfile = () => {
                 
                 const data = {
                     userName: response.data.userName || "",
-                    name: response.data.name || "",
-                    lastName: response.data.lastName || "",
+                    name: response.data.companyName || "",
+                    lastName: response.data.legalName || "",
                     rut: response.data.rut || "",
-                    email: email,
+                    emailLocal: email,
                     phoneNumber: response.data.phoneNumber || "",
                     aboutMe: response.data.aboutMe || "",
                 };
@@ -101,8 +101,8 @@ export const useAdminProfile = () => {
         const rutError = validators.rut(formData.rut);
         if (rutError) errors.rut = rutError;
 
-        const emailError = validators.regularEmail(formData.email, "Correo");
-        if (emailError) errors.email = emailError;
+        const emailError = validators.regularEmail(formData.emailLocal, "Correo");
+        if (emailError) errors.emailLocal = emailError;
 
         const phoneError = validators.phone(formData.phoneNumber);
         if (phoneError) errors.phoneNumber = phoneError;
@@ -123,18 +123,21 @@ export const useAdminProfile = () => {
 
         try {
             setIsSaving(true);
+            const emailFull = formData.emailLocal.includes("@") 
+                ? formData.emailLocal 
+                : `${formData.emailLocal}@alumnos.ucn.cl`;
 
             const payload = {
                 userName: formData.userName,
                 name: formData.name,
                 lastName: formData.lastName,
                 rut: formData.rut,
-                email: formData.email,
+                email: emailFull,
                 phoneNumber: formData.phoneNumber,
                 aboutMe: formData.aboutMe,
             };
 
-            const response = await profileService.updateStudentProfile(payload);
+            const response = await profileService.updateCompanyProfile(payload);
             
             if (response.data) {
                 // Update profile state with the new form data since API returns string, not full profile
@@ -144,7 +147,7 @@ export const useAdminProfile = () => {
                     name: formData.name,
                     lastName: formData.lastName,
                     rut: formData.rut,
-                    email: formData.email,
+                    email: emailFull,
                     phoneNumber: formData.phoneNumber,
                     aboutMe: formData.aboutMe
                 } : null);
@@ -197,6 +200,10 @@ export const useAdminProfile = () => {
         }
     };
 
+    const handleCVUploadSuccess = (url: string | undefined) => {
+        setProfile(prev => prev ? { ...prev, curriculumVitae: url } : null);
+    };
+
     return {
         profile,
         isLoading,
@@ -208,6 +215,7 @@ export const useAdminProfile = () => {
         handleSave,
         handleCancel,
         handlePhotoUpload,
+        handleCVUploadSuccess,
         notification,
         isVisible,
         close,
