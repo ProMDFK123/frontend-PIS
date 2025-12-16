@@ -17,7 +17,8 @@ export function middleware(req: NextRequest) {
     // proteger dinámicos de detalle:
     (pathname.startsWith("/offers/") && pathname !== "/offers") ||
     pathname.startsWith("/buysells/") ||
-    pathname.startsWith("/admin");
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/students"); // Nuevo: Proteger rutas de estudiante
 
   if (requiresAuth && !token) {
     // eslint-disable-next-line no-console
@@ -68,5 +69,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/auth/login", "/auth/register/:path*", "/profile/:path*", "/dashboard/:path*", "/offers/:path*", "/buysells/:path*"],
+  matcher: ["/auth/login", "/auth/register/:path*", "/profile/:path*", "/dashboard/:path*", "/offers/:path*","/offerer/:path*", "/buysells/:path*"],
 };

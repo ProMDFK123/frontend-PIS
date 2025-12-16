@@ -12,3 +12,6 @@ export { default as ApplicantDetailView } from "@/views/app/admin/manage/[id]/ap
 export { default as ApplicantPageView} from "@/views/app/offerer/your-publications/[id]/applicants";
 export { default as ApplicantDetailViewOfferer } from "@/views/app/offerer/your-publications/[id]/applicants/[postulantId]";
 
+export { default as StudentsView } from "@/views/app/students";
+export { default as StudentYourPublicationsView } from "@/views/app/students/your-publications";
+export { default as StudentYourPublicationDetailView } from "@/views/app/students/your-publications/[id]";
