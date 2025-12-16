@@ -72,7 +72,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
 
     // 3. VISTA PRINCIPAL
     return (
-        <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-slate-900">
+        <div className="flex flex-col min-h-screen relative z-0 text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-slate-900">
             
             {/* Fondo Morado Continuo */}
             <div className="absolute inset-0 z-0">
@@ -97,7 +97,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
                 <header className="mb-8">
                     <button
                         onClick={() => router.push("/admin/users")}
-                        className="mb-6 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all font-bold text-sm backdrop-blur-sm border border-white/10"
+                        className="cursor-pointer mb-6 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all font-bold text-sm backdrop-blur-sm border border-white/10"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         Volver a Usuarios

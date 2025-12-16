@@ -180,7 +180,7 @@ export default function SiteHeader() {
             <div className="relative ml-2" ref={menuRef}>
               <button
                 onClick={() => setOpen(v => !v)}
-                className="flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-[var(--chip)] transition-all"
+                className="cursor-pointer flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-[var(--chip)] transition-all"
               >
                 <UserAvatar name={auth.name} photoUrl={auth.photoUrl ?? undefined} />
                 <ChevronDown className={cn("w-4 h-4 text-[var(--muted-ink)] transition-transform", open && "rotate-180")} />
@@ -200,7 +200,7 @@ export default function SiteHeader() {
                   <div className="border-t border-[var(--border)]" />
                   <button
                     onClick={() => logoutAndRedirect("/")}
-                    className="w-full text-left px-4 py-3 text-sm text-[var(--pop)] font-medium hover:bg-red-50 transition-colors"
+                    className="cursor-pointer w-full text-left px-4 py-3 text-sm text-[var(--pop)] font-medium hover:bg-red-50 transition-colors"
                   >
                     Cerrar sesión
                   </button>
