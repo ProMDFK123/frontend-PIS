@@ -8,7 +8,7 @@ import { login } from "@/services/authService";
 import type { LoginRequestDto } from "@/services/dtos/authDto";
 
 //implementado para ver que rol y redigir segun 
-import { extractUserFromJwt } from "@/lib";
+import { getRoleFromToken } from "@/lib/auth";
 
 function LoginForm() {
   const router = useRouter();
@@ -32,8 +32,7 @@ function LoginForm() {
     const token = Cookies.get("token");
     if (token) {
       try {
-        const decoded = extractUserFromJwt(token);
-        const role = decoded?.role;
+        const role = getRoleFromToken(token);
         console.log("[Role] response:", role);
         const decodedReturn = rawReturnTo ? decodeURIComponent(rawReturnTo) : "";
         const safeReturnTo = decodedReturn && decodedReturn.startsWith("/") ? decodedReturn : "";
@@ -84,11 +83,10 @@ function LoginForm() {
       });
 
       // Decodificar role desde el JWT para redirección por rol
-      let role: string | undefined;
+      let role: string | null = null;
       try {
         if (response.token) {
-          const decoded = extractUserFromJwt(response.token);
-          role = decoded?.role;
+          role = getRoleFromToken(response.token)
         }
       } catch (e) {
         // no bloquear si falla el decode
@@ -109,11 +107,20 @@ function LoginForm() {
     } catch (error: any) {
       console.error("Error en el login:", error);
 
+      if (error.response.status === 403) {
+        router.push(
+          `/auth/verify-email?email=${encodeURIComponent(
+            error.response.data.details
+          )}`
+        );
+        return;
+      }
+
       const backendError = error?.response?.data;
 
       const errorMessage =
-        backendError?.details ||
         backendError?.message ||
+        backendError?.details ||
         "Credenciales inválidas. Por favor, revisa tu correo y contraseña.";
 
       setError(errorMessage);

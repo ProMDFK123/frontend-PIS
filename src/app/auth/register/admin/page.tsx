@@ -7,9 +7,11 @@ import { registerAdmin } from "@/services/authService";
 import { AdminAdapter } from "@/services/adapters/authAdapter";
 import { formatRut } from "@/utils/Util"
 import { useFormValidation } from "@/hooks/auth/useFormValidation";
+import { useNotification } from "@/hooks/common/use-notification";
 import { validators } from "@/utils/AuthValidatorsUtil";
 import { FormField } from "@/components/forms/FormField";
 import { PasswordField } from "@/components/forms/PasswordField";
+import { NotificationBanner } from "@/components/ui";
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";
@@ -29,6 +31,7 @@ const individualValidationRules = {
 export default function RegisterAdminPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const {notification, isVisible, show, close} = useNotification();
   const {
     formData,
     errors,
@@ -69,11 +72,18 @@ export default function RegisterAdminPage() {
     }
 
     try {
-          const payload = AdminAdapter.toDTO(formData);
-          const response = await registerAdmin(payload);
-    
-          alert(response.message || "Registro exitoso. Revisa tu correo para verificar tu cuenta.");
-          router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
+      const payload = AdminAdapter.toDTO(formData);
+      const response = await registerAdmin(payload);
+
+      show(
+        "Registro Exitoso",
+        response.message ||"Se ha enviado un correo de verificación a la dirección proporcionada.",
+        "success"
+      );
+      
+      setTimeout(() => {
+        router.push(`/`);
+      }, 2000);
     }catch (error: any) {
       console.error("Error en el registro:", error);
 
@@ -98,7 +108,11 @@ export default function RegisterAdminPage() {
         }
       }
 
-      alert(errorMessage);
+      show(
+        "Error de Registro", 
+        errorMessage, 
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -106,6 +120,7 @@ export default function RegisterAdminPage() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-gray-100">
+      <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
       <main
         className="flex-grow flex items-center justify-center bg-cover bg-center"
         style={{ backgroundImage: "url('/ucnferia.png')" }}

@@ -97,6 +97,20 @@ export function extractUserFromJwt(token: string | null) {
   }
 }
 
+export function getRoleFromToken(token: string) {
+  if (!token) return null;
+  const decoded = jwtDecode<JwtClaims>(token);
+
+  if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
+    return null;
+  }
+
+  const role = decoded[
+      "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+    ];
+  return role;
+}
+
 export function logoutAndRedirect(path = "/") {
   Cookies.remove("token", { path: "/" });
   if (typeof window !== "undefined") window.location.href = path;

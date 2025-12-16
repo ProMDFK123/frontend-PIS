@@ -11,7 +11,6 @@ export interface StudentProfileDTO {
   aboutMe: string;
   curriculumVitae?: string;
   profilePhoto?: string;
-  profileBanner?: string;
 };
 
 export interface UpdateStudentProfileDTO {
@@ -34,7 +33,6 @@ export interface IndividualProfileDTO {
   rating: number;
   aboutMe: string;
   profilePhoto?: string;
-  profileBanner?: string;
 };
 
 export interface UpdateIndividualProfileDTO {
@@ -57,7 +55,6 @@ export interface CompanyProfileDTO {
   rating: number;
   aboutMe: string;
   profilePhoto?: string;
-  profileBanner?: string;
 };
 
 export interface UpdateCompanyProfileDTO {
@@ -78,9 +75,8 @@ export interface AdminProfileDTO {
   email: string;
   phoneNumber: string;
   aboutMe: string;
-  isSuperAdmin?: boolean;
+  superAdmin?: boolean;
   profilePhoto?: string;
-  profileBanner?: string;
 };
 
 export interface UpdateAdminProfileDTO {
@@ -91,7 +87,7 @@ export interface UpdateAdminProfileDTO {
   email?: string;
   phoneNumber?: string;
   aboutMe?: string;
-  isSuperAdmin?: boolean;
+  superAdmin?: boolean;
 };
 
 export interface GetPhotoDTO {

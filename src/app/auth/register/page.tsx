@@ -100,7 +100,7 @@ export default function RegisterPage() {
                 key={role.id}
                 onClick={() => {
                   setSelectedRoute(`/auth/register/${role.id}`);
-                  setShowModal(true);
+                  {accepted ? handleAccept(`/auth/register/${role.id}`) : setShowModal(true)}
                 }}
                 disabled={showModal || isLoading}
                 className={`w-full py-3 px-4 rounded-xl border border-gray-300 

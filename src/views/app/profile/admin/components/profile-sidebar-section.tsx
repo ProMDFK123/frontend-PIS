@@ -78,7 +78,7 @@ export function ProfileSidebarSection({ profile, onPhotoUpload }: ProfileSidebar
                 <div className="flex flex-col">
                     <span className="font-semibold mb-1">Tipo de Usuario:</span>
                     <span className="inline-flex self-start px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700">
-                        Administrador
+                        {profile.superAdmin ? "Super Administrador" : "Administrador"}
                     </span>
                 </div>
             </div>
