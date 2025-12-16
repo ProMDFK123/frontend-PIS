@@ -167,7 +167,7 @@ export class OffererPublicationService extends BaseApiService {
     }
 
     // Realiza la petición patch al endpoint específico
-    return this.httpClient.patch<ApiResponse<any>>(endpoint, {}); 
+    return this.httpClient.patch<ApiResponse<any>>(endpoint, {});
 };
 
 
