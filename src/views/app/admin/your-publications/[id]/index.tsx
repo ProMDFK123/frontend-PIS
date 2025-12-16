@@ -27,17 +27,16 @@ const PUBLICATION_STATUS = [
 ];
 // --------------------------------------------------------
 
-export default function OffererPublicationDetailView() {
+export default function PublicationDetailViewAdmin() {
     const params = useParams();
     const router = useRouter();
-    const id = params.id as string;
-    
+    const id = Number(params.id) || 0;
+
     const searchParams = useSearchParams();
     const typeQuery = searchParams.get('type');
     const statusQuery = searchParams.get('status');
 
     const publicationTypeParam = typeQuery ? parseInt(typeQuery) : 0; 
-    const publicationId = parseInt(id);
     
 
     const { 
@@ -46,7 +45,7 @@ export default function OffererPublicationDetailView() {
         error,
         isMutating,
         handleClosePublication, 
-    } = useYourPublicationDetailView(publicationId, publicationTypeParam);
+    } = useYourPublicationDetailView(id, publicationTypeParam);
 
     const { notification, isVisible, close, show } = useNotification();
     
@@ -63,7 +62,7 @@ export default function OffererPublicationDetailView() {
             toast.dismiss(toastId);
             
             // ÉXITO: Redirigir para que la página de lista muestre el banner de éxito
-            router.push(`/offerer/your-publications?notification=closed`); 
+            router.push(`/admin/your-publications?notification=closed`); 
             
         } catch (e: any) {
             
@@ -102,7 +101,7 @@ export default function OffererPublicationDetailView() {
     // Handler para navegación a postulantes
     const handleViewApplicants = () => {
         if (publication) {
-            router.push(`/offerer/your-publications/${publication.id}/applicants`);
+            router.push(`/admin/your-publications/${publication.id}/applicants`);
         }
     }
 
@@ -207,7 +206,7 @@ export default function OffererPublicationDetailView() {
 
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
                 <header className="mb-10">
-                    <Link href="/offerer/your-publications"> 
+                    <Link href="/admin/your-publications"> 
                         <button className="mb-8 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all font-bold text-sm backdrop-blur-sm border border-white/10">
                             <ArrowLeft className="h-4 w-4" />
                             Volver a Publicaciones

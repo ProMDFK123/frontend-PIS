@@ -1,5 +1,4 @@
-import { YourPublicationDetailView } from "@/views/app";
-
+import YourPublicationDetailViewAdmin from "@/views/app/admin/your-publications/[id]";
 
 interface PageProps {
   params: Promise<{ id: string }>; // <--- CAMBIO: Ahora es una Promise
@@ -12,5 +11,5 @@ export default async function YourPublicationDetailPage({ params }: PageProps) {
 
   const numericId = Number(id);
   // Renderizamos el componente cliente que contiene toda la lógica y la UI.
-  return <YourPublicationDetailView id={numericId} />;
+  return <YourPublicationDetailViewAdmin id={numericId} />;
 }

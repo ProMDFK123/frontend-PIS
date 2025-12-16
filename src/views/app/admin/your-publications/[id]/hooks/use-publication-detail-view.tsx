@@ -1,7 +1,7 @@
 // src/views/app/offerer/your-publications/[id]/hooks/use-publication-detail-view.tsx
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { offererPublicationService } from "src/services/offererPublicationService";
+import {  } from "src/services/offererPublicationService";
 import type { OfferDetail, MyBuySell } from "src/models/responses";
 
 export type PublicationAction = "postulantes" | "close_publication";
