@@ -1,0 +1,1 @@
+export { useIndividualProfile } from "./use-individual-profile";

@@ -8,7 +8,6 @@ import { ChevronDown } from "lucide-react";
 
 import {
   isLoggedIn,
-  extractUserFromJwt,
   getRoleFromToken,
   logoutAndRedirect,
   cn,
@@ -76,6 +75,7 @@ export default function SiteHeader() {
     role: null as string | null,
     userType: null as string | null,
     photoUrl: null as string | null,
+    superAdmin: false
   });
 
   const [open, setOpen] = useState(false);
@@ -105,7 +105,16 @@ export default function SiteHeader() {
       role: userRole,
       userType: tokenData?.userType || null,
       photoUrl: null,
+      superAdmin: false
     });
+
+    if (logged && userRole === "Admin") {
+      profileService.getAdminProfile().then((res) => {
+        setAuth(prev => ({ ...prev, superAdmin: res.data.superAdmin || false }));
+      }).catch(() => {
+        setAuth(prev => ({ ...prev, superAdmin: false }));
+      });
+    }
 
     if (logged) {
       loadPhoto();
@@ -142,7 +151,14 @@ export default function SiteHeader() {
     ];
 
     if (auth.role === "Admin") {
-      baseItems.push({ href: "/admin/users", label: "Ver usuarios" });
+      baseItems.push({ 
+        href: "/admin/users", 
+        label: "Ver usuarios" });
+    }
+    if (auth.superAdmin) {
+      baseItems.push({ 
+        href: "/auth/register/admin", 
+        label: "Crear administrador"})
     }
 
     return baseItems.map((item) => {
@@ -152,7 +168,7 @@ export default function SiteHeader() {
       if (auth.role === "Admin") newHref = "/jobs/reports";
       return { ...item, href: newHref };
     });
-  }, [auth.userType, auth.role]);
+  }, [auth.userType, auth.role, auth.superAdmin]);
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
@@ -212,8 +228,8 @@ export default function SiteHeader() {
           ) : (
             <div className="relative ml-2" ref={menuRef}>
               <button
-                onClick={() => setOpen((v) => !v)}
-                className="flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-[var(--chip)] transition-all"
+                onClick={() => setOpen(v => !v)}
+                className="cursor-pointer flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-[var(--chip)] transition-all"
               >
                 <UserAvatar
                   name={auth.name}
@@ -241,7 +257,7 @@ export default function SiteHeader() {
                   <div className="border-t border-[var(--border)]" />
                   <button
                     onClick={() => logoutAndRedirect("/")}
-                    className="w-full text-left px-4 py-3 text-sm text-[var(--pop)] font-medium hover:bg-red-50 transition-colors"
+                    className="cursor-pointer w-full text-left px-4 py-3 text-sm text-[var(--pop)] font-medium hover:bg-red-50 transition-colors"
                   >
                     Cerrar sesión
                   </button>

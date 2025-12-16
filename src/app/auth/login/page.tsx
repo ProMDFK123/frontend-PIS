@@ -7,6 +7,8 @@ import Cookies from "js-cookie";
 import { login } from "@/services/authService";
 import type { LoginRequestDto } from "@/services/dtos/authDto";
 
+//implementado para ver que rol y redigir segun 
+import { getRoleFromToken } from "@/lib/auth";
 //implementado para ver que rol y redigir segun
 import { extractUserFromJwt } from "@/lib";
 
@@ -30,14 +32,14 @@ function LoginForm() {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   // Redirección automática si ya hay token
   useEffect(() => {
     const token = Cookies.get("token");
     if (token) {
       try {
-        const decoded = extractUserFromJwt(token);
-        const role = decoded?.role;
+        const role = getRoleFromToken(token);
         console.log("[Role] response:", role);
         const decodedReturn = rawReturnTo
           ? decodeURIComponent(rawReturnTo)
@@ -68,6 +70,9 @@ function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (loading || success) return;
+
     setError(null);
     setLoading(true);
 
@@ -88,6 +93,7 @@ function LoginForm() {
         setError(
           response.message || "Usuario no registrado o contraseña incorrecta."
         );
+        setLoading(false);
         return;
       }
 
@@ -97,11 +103,10 @@ function LoginForm() {
       });
 
       // Decodificar role desde el JWT para redirección por rol
-      let role: string | undefined;
+      let role: string | null = null;
       try {
         if (response.token) {
-          const decoded = extractUserFromJwt(response.token);
-          role = decoded?.role;
+          role = getRoleFromToken(response.token)
         }
       } catch (e) {
         // no bloquear si falla el decode
@@ -124,20 +129,29 @@ function LoginForm() {
           : "/offers");
 
       console.log(response.message || "Inicio de sesión exitoso.");
+      setSuccess(true);
       router.replace(finalRedirect);
     } catch (error: any) {
       console.error("Error en el login:", error);
 
+      if (error.response.status === 403) {
+        router.push(
+          `/auth/verify-email?email=${encodeURIComponent(
+            error.response.data.details
+          )}`
+        );
+        return;
+      }
+
       const backendError = error?.response?.data;
 
       const errorMessage =
-        backendError?.details ||
         backendError?.message ||
+        backendError?.details ||
         "Credenciales inválidas. Por favor, revisa tu correo y contraseña.";
 
       setError(errorMessage);
-    } finally {
-      setLoading(false);
+      setLoading(false); 
     }
   };
 

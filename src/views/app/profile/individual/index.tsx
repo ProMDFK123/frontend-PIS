@@ -4,16 +4,15 @@ import { useState } from "react";
 import { ArrowLeft, User, Edit2, Save, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button, NotificationBanner } from "@/components/ui";
-import { useStudentProfile } from "./hooks";
+import { useIndividualProfile } from "./hooks";
 import { 
     ProfileDetailSection, 
     ProfileSidebarSection, 
     ProfileSkeleton,
-    ChangePasswordDialog,
-    CVUploadSection
+    ChangePasswordDialog
 } from "./components";
 
-export function StudentProfileView() {
+export function IndividualProfileView() {
     const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
     const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
@@ -29,12 +28,11 @@ export function StudentProfileView() {
         handleSave,
         handleCancel,
         handlePhotoUpload,
-        handleCVUploadSuccess,
         notification,
         isVisible,
         close,
         refetch,
-    } = useStudentProfile();
+    } = useIndividualProfile();
 
     if (isLoading || !profile) {
         return (
@@ -174,14 +172,6 @@ export function StudentProfileView() {
                                 fieldErrors={fieldErrors}
                                 handleChange={handleChange}
                             />
-
-                            {/* CV Upload Section (Student Only) */}
-                            {!isEditing && (
-                                <CVUploadSection 
-                                    currentCV={profile.curriculumVitae}
-                                    onUploadSuccess={handleCVUploadSuccess}
-                                />
-                            )}
 
                             {/* Change Password Button */}
                             {isEditing && (

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FormEvent} from "react";
+import React, { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { registerStudent } from "@/services/authService";
@@ -10,6 +10,8 @@ import { useFormValidation } from "@/hooks/auth/useFormValidation";
 import { validators } from "@/utils/AuthValidatorsUtil";
 import { FormField } from "@/components/forms/FormField";
 import { PasswordField } from "@/components/forms/PasswordField";
+import { NotificationBanner } from "@/components/ui";
+import { useNotification } from "@/hooks/common/use-notification";
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(64, 64, 48, 0.4)";
@@ -28,6 +30,8 @@ const studentValidationRules = {
 
 export default function RegisterStudentPage() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const {
     formData,
@@ -49,6 +53,7 @@ export default function RegisterStudentPage() {
     },
     studentValidationRules
   );
+  const {notification, isVisible, show, close} = useNotification();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.target.name === "rut") {
@@ -61,18 +66,31 @@ export default function RegisterStudentPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
+    if (loading || success) return;
+
     if (!validateAll()) {
       const firstErrorField = Object.keys(errors)[0];
       document.getElementById(firstErrorField!)?.focus();
       return;
     }
+
+    setLoading(true);
     
     try {
       const payload = StudentAdapter.toDTO(formData);
       const response = await registerStudent(payload);
 
-      alert(response.message || "Registro exitoso. Revisa tu correo para verificar tu cuenta.");
-      router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
+      show(
+        "Registro Exitoso",
+        response.message ||"Se ha enviado un correo de verificación a la dirección proporcionada.",
+        "success"
+      );
+      
+      setSuccess(true);
+
+      setTimeout(() => {
+        router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
+      }, 2000);
     }catch (error: any) {
       console.error("Error en el registro:", error);
 
@@ -93,12 +111,18 @@ export default function RegisterStudentPage() {
         }
       }
 
-      alert(errorMessage);
+      show(
+        "Error de Registro", 
+        errorMessage, 
+        "error"
+      );
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col">
+      <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
       <main
         className="flex-grow flex items-center justify-center bg-cover bg-center"
         style={{ backgroundImage: "url('/ucnferia.png')" }}
@@ -239,10 +263,13 @@ export default function RegisterStudentPage() {
 
                 <button
                   type="submit"
-                  className="w-full text-white rounded-md py-2 font-medium transition mt-6"
+                  className={loading || success 
+                    ? "w-full text-white rounded-md py-2 font-medium transition mt-6" 
+                    : "cursor-pointer w-full text-white rounded-md py-2 font-medium transition mt-6"}
                   style={{ backgroundColor: PRIMARY_COLOR }}
+                  disabled={loading || success}
                 >
-                  Crear cuenta
+                  {success ? "Redirigiendo..." : loading ? "Creando cuenta..." : "Crear Cuenta"}
                 </button>
               </form>
 

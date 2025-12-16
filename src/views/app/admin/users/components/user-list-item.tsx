@@ -39,8 +39,9 @@ export function UserListItem({ user, onToggleBlock }: UserListItemProps) {
     };
 
     return (
-        <Link href={`/admin/users/${user.id}`} className="block">
             <div className="flex items-center justify-between p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl hover:bg-white/15 transition-all group">
+                <Link href={`/admin/users/${user.id}`} className="absolute inset-0 z-0 rounded-2xl" />
+
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                     {/* Avatar */}
                     <div className="flex-shrink-0">
@@ -92,7 +93,7 @@ export function UserListItem({ user, onToggleBlock }: UserListItemProps) {
                             e.stopPropagation();
                             setIsDialogOpen(true);
                         }}
-                        className={`cursor-pointer flex flex-col items-center gap-1 px-4 py-3 rounded-2xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 w-[130px] ${
+                        className={`cursor-pointer relative z-30 flex flex-col items-center gap-1 px-4 py-3 rounded-2xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 w-[130px] ${
                             user.banned
                                 ? "bg-red-500/20 hover:bg-green-500 border-2 border-red-400 hover:border-green-500 text-red-200 hover:text-white"
                                 : "bg-green-500/20 hover:bg-red-500 border-2 border-green-400 hover:border-red-500 text-green-200 hover:text-white"
@@ -133,6 +134,6 @@ export function UserListItem({ user, onToggleBlock }: UserListItemProps) {
                     onConfirm={handleConfirmToggle}
                 />
             </div>
-        </Link>
+
     );
 }

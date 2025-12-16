@@ -4,16 +4,15 @@ import { useState } from "react";
 import { ArrowLeft, User, Edit2, Save, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button, NotificationBanner } from "@/components/ui";
-import { useStudentProfile } from "./hooks";
+import { useAdminProfile } from "./hooks";
 import { 
     ProfileDetailSection, 
     ProfileSidebarSection, 
     ProfileSkeleton,
     ChangePasswordDialog,
-    CVUploadSection
 } from "./components";
 
-export function StudentProfileView() {
+export function AdminProfileView() {
     const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
     const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
@@ -29,12 +28,11 @@ export function StudentProfileView() {
         handleSave,
         handleCancel,
         handlePhotoUpload,
-        handleCVUploadSuccess,
         notification,
         isVisible,
         close,
         refetch,
-    } = useStudentProfile();
+    } = useAdminProfile();
 
     if (isLoading || !profile) {
         return (
@@ -117,7 +115,7 @@ export function StudentProfileView() {
                         <div className="flex flex-col gap-2">
                             <div className="inline-flex items-center gap-2 self-start px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold uppercase tracking-wider shadow-lg">
                                 <User className="w-3 h-3" />
-                                Estudiante
+                                Administrador
                             </div>
                             <h1 className="text-3xl md:text-5xl font-black tracking-tight drop-shadow-lg leading-tight">
                                 Mi Perfil
@@ -174,14 +172,6 @@ export function StudentProfileView() {
                                 fieldErrors={fieldErrors}
                                 handleChange={handleChange}
                             />
-
-                            {/* CV Upload Section (Student Only) */}
-                            {!isEditing && (
-                                <CVUploadSection 
-                                    currentCV={profile.curriculumVitae}
-                                    onUploadSuccess={handleCVUploadSuccess}
-                                />
-                            )}
 
                             {/* Change Password Button */}
                             {isEditing && (
