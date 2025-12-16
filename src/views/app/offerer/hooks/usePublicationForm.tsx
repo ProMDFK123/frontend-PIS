@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { AxiosError } from "axios";
 import { offererPublicationService } from "src/services/offererPublicationService"; // Asegúrate de importar la interfaz
-import { buildLoginUrl } from "src/lib/auth";
+import { buildLoginUrl, extractUserFromJwt } from "src/lib/auth";
 import { CreateBuySellData } from "@/models/responses";
 import { useNotification } from "@/hooks/common/use-notification";
 
@@ -128,6 +128,8 @@ export const usePublicationForm = () => {
 
       if (!formData.deadlineDate)
         newErrors.deadlineDate = "Cierre de postulaciones requerido";
+      if (!formData.location.trim())
+        newErrors.location = "La ubicación es requerida";
       if (!formData.endDate) newErrors.endDate = "Fecha de término requerida";
 
       // Validar coherencia de fechas
@@ -153,6 +155,14 @@ export const usePublicationForm = () => {
       ) {
         newErrors.remuneration =
           "Un voluntariado no puede tener remuneración mayor a 0";
+      }
+
+      if (
+        formData.jobType === "JobOffer" &&
+        parseFloat(formData.remuneration || "0") <= 0
+      ) {
+        newErrors.remuneration =
+          "La remuneración debe ser mayor a 0 para una oferta de trabajo";
       }
     }
 
@@ -217,9 +227,23 @@ export const usePublicationForm = () => {
         await offererPublicationService.createBuySell(buySellData);
       }
 
+      // Obtener el rol del token para construir la ruta de redirección
+      const token = Cookies.get("token");
+      let rolePath = "offerer"; // Ruta por defecto
+      if (token) {
+        try {
+          const decoded = extractUserFromJwt(token);
+          // Si es Admin usa 'admin', si es Offerent/Offerer usa 'offerer'
+          if (decoded?.role === "Admin") rolePath = "admin";
+        } catch (e) {
+          console.error("Error leyendo rol", e);
+        }
+      }
+
       show("¡Éxito!", "Publicación creada exitosamente.", "success");
       setTimeout(() => {
-        router.push("/offerer/your-publications?success=true");
+        // Corrección: Usar backticks ` para que funcione la interpolación ${rolePath}
+        router.push(`/${rolePath}/your-publications?success=true`);
       }, 1500);
     } catch (error) {
       if (error instanceof AxiosError && error.response?.data?.errors) {
@@ -237,7 +261,6 @@ export const usePublicationForm = () => {
             : "Error inesperado";
         show("Error", msg, "error");
       }
-    } finally {
       setIsSubmitting(false);
     }
   };

@@ -80,6 +80,13 @@ export default function StudentReviewsPage() {
   const [commentJob, setCommentJob] = useState("");
   const [commentEmployer, setCommentEmployer] = useState("");
   const [rating, setRating] = useState(0);
+  const MAX_CHARS = 115;
+
+  const remainingJobChars = MAX_CHARS - commentJob.length;
+  const remainingEmployerChars = MAX_CHARS - commentEmployer.length;
+
+  const isJobOverLimit = remainingJobChars < 0;
+  const isEmployerOverLimit = remainingEmployerChars < 0;
 
   const openModal = (item: CombinedReviewDTO) => {
     setSelectedReview(item);
@@ -119,9 +126,18 @@ export default function StudentReviewsPage() {
 
   /* ======= CONFIRMAR ENVÍO ======= */
   const handleOpenConfirm = () => {
-    if (!commentEmployer.trim() || rating === 0) return;
-    setShowConfirmModal(true);
-  };
+  if (
+    !commentEmployer.trim() ||
+    rating === 0 ||
+    isJobOverLimit ||
+    isEmployerOverLimit
+  ) {
+    return;
+  }
+
+  setShowConfirmModal(true);
+};
+
 
   const handleCancelConfirm = () => {
     setShowConfirmModal(false);
@@ -244,6 +260,22 @@ export default function StudentReviewsPage() {
       .catch(() => setError("Error al cargar reseñas."))
       .finally(() => setLoading(false));
   }, []);
+
+
+  useEffect(() => {
+  const isAnyModalOpen = showModal || showFinishModal || showConfirmModal;
+
+  if (isAnyModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showModal, showFinishModal, showConfirmModal]);
+
 
   useEffect(() => {
   if (!isNotificationVisible) return;
@@ -423,14 +455,15 @@ export default function StudentReviewsPage() {
           MODAL DETALLES
       ================================================================= */}
       {showModal && selectedReview && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-100">
-          <div className="bg-white w-[90%] max-w-3xl rounded-lg shadow-lg p-6 relative">
-            <button
-              onClick={closeModal}
-              className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl"
-            >
-              ✕
-            </button>
+      <div className="fixed inset-0 h-screen w-screen z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        
+        <div className="bg-white w-[90%] max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg shadow-lg p-6 relative">
+          <button
+            onClick={closeModal}
+            className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl"
+          >
+            ✕
+          </button>
 
             <h2 className="text-2xl font-bold text-center mb-6">
               Detalles de la reseña #{selectedReview.review.idReview}
@@ -468,7 +501,11 @@ export default function StudentReviewsPage() {
               </div>
 
               <p className="mt-2 text-sm text-gray-700">
-                {selectedReview.review.commentForStudent || "Sin reseña"}
+                {selectedReview.review.hasReviewForOfferorBeenDeleted
+                  ? "La reseña del oferente fue eliminada por un administrador."
+                  : selectedReview.review.commentForStudent?.trim()
+                    ? selectedReview.review.commentForStudent
+                    : "Reseña pendiente"}
               </p>
             </div>
 
@@ -595,8 +632,9 @@ export default function StudentReviewsPage() {
           MODAL FINALIZAR EVALUACIÓN
       ================================================================= */}
       {showFinishModal && finishReview && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white w-[95%] max-w-3xl rounded-xl shadow-xl p-8 relative">
+        <div className="fixed inset-0 h-screen w-screen z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          
+          <div className="bg-white w-[90%] max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl shadow-xl p-6 relative">
             <button
               onClick={closeFinishModal}
               className="absolute top-4 right-4 text-gray-500 hover:text-black text-xl"
@@ -624,12 +662,26 @@ export default function StudentReviewsPage() {
                 ¿Cómo fue tu experiencia en este trabajo?
               </label>
               <textarea
-                rows={3}
-                value={commentJob}
-                onChange={(e) => setCommentJob(e.target.value)}
-                placeholder="Escribe tu comentario..."
-                className="w-full border border-purple-300 rounded-lg p-3 mt-2 focus:outline-purple-500"
-              />
+              rows={3}
+              value={commentJob}
+              onChange={(e) => setCommentJob(e.target.value)}
+              placeholder="Escribe tu comentario..."
+              className={`w-full rounded-lg p-3 mt-2 focus:outline-none border-2 ${
+                isJobOverLimit
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-purple-300 focus:border-purple-500"
+              }`}
+            />
+
+            <p
+              className={`mt-1 text-xs ${
+                isJobOverLimit ? "text-red-600" : "text-gray-500"
+              }`}
+            >
+              {remainingJobChars >= 0
+                ? `115 carácteres maximo | ${remainingJobChars} restantes`
+                : `Te excediste por ${Math.abs(remainingJobChars)} carácteres.`}
+            </p>
             </div>
 
             <div className="mt-6">
@@ -641,8 +693,23 @@ export default function StudentReviewsPage() {
                 value={commentEmployer}
                 onChange={(e) => setCommentEmployer(e.target.value)}
                 placeholder="Escribe tu comentario..."
-                className="w-full border border-purple-300 rounded-lg p-3 mt-2 focus:outline-purple-500"
+                className={`w-full rounded-lg p-3 mt-2 focus:outline-none border-2 ${
+                  isEmployerOverLimit
+                    ? "border-red-500 focus:border-red-500"
+                    : "border-purple-300 focus:border-purple-500"
+                }`}
               />
+
+              <p
+                className={`mt-1 text-xs ${
+                  isEmployerOverLimit ? "text-red-600" : "text-gray-500"
+                }`}
+              >
+                {remainingEmployerChars >= 0
+                  ? `115 carácteres maximo | ${remainingEmployerChars} restantes`
+                  : `Te excediste por ${Math.abs(remainingEmployerChars)} carácteres.`}
+              </p>
+
             </div>
 
             <div className="flex flex-col items-center mt-8">
@@ -665,7 +732,13 @@ export default function StudentReviewsPage() {
             <div className="flex justify-center mt-10">
               <button
                 onClick={handleOpenConfirm}
-                disabled={!commentEmployer.trim() || rating === 0}
+                disabled={
+                  !commentEmployer.trim() ||
+                  rating === 0 ||
+                  isJobOverLimit ||
+                  isEmployerOverLimit
+                }
+
                 className="px-8 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md disabled:bg-gray-400"
               >
                 Enviar
