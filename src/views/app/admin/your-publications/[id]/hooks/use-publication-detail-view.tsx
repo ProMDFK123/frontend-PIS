@@ -1,7 +1,7 @@
-// src/views/app/offerer/your-publications/[id]/hooks/use-publication-detail-view.tsx
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import {  } from "src/services/offererPublicationService";
+
+import { adminPublicationService } from "src/services/adminPublicationService";
 import type { OfferDetail, MyBuySell } from "src/models/responses";
 
 export type PublicationAction = "postulantes" | "close_publication";
@@ -9,7 +9,7 @@ export type PublicationAction = "postulantes" | "close_publication";
 // El hook recibe el 'id' y el 'type'
 export const useYourPublicationDetailView = (id: number, type: number) => {
   const router = useRouter();
-  const [detail, setDetail] = useState< OfferDetail | MyBuySell| null>(null);
+  const [detail, setDetail] = useState<OfferDetail | MyBuySell | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMutating, setIsMutating] = useState(false);
@@ -17,21 +17,20 @@ export const useYourPublicationDetailView = (id: number, type: number) => {
   const fetchDetail = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       let response;
 
       // Se usa el parámetro 'type' para discriminar el fetch
       // 0: Oferta de Trabajo, 2: Voluntariado -> getMyPublicationById
-      if (type === 0 || type === 2) { 
-        response = await offererPublicationService.getMyPublicationById(id);
-        setDetail(response.data.data as OfferDetail); 
+      if (type === 0 || type === 2) {
+        response = await adminPublicationService.getMyPublicationById(id);
+        setDetail(response.data.data as OfferDetail);
       } else {
         // 1: Compra/Venta -> getMyBullSellById
-        response = await offererPublicationService.getMyBullSellById(id);
+        response = await adminPublicationService.getMyBuySellById(id);
         setDetail(response.data.data as MyBuySell);
       }
-
     } catch (err: any) {
       const status = err.response?.status;
       const message =
@@ -52,7 +51,6 @@ export const useYourPublicationDetailView = (id: number, type: number) => {
   }, [id, fetchDetail]);
 
   const handleAction = async (action: PublicationAction) => {
-    // ... (función handleAction sin cambios) ...
     if (!detail) return;
 
     setIsMutating(true);
@@ -61,34 +59,36 @@ export const useYourPublicationDetailView = (id: number, type: number) => {
         router.push(`/offerer/your-publications/${id}/applicants`);
       }
     } catch (err: any) {
-      alert("Error al realizar la acción: " + (err.response?.data?.message || err.message));
+      alert(
+        "Error al realizar la acción: " +
+          (err.response?.data?.message || err.message)
+      );
     } finally {
       setIsMutating(false);
     }
   };
-    
+
   // FUNCIÓN DE CIERRE ACTUALIZADA: Pasa el ID y el TIPO al servicio
   const handleClosePublication = useCallback(async () => {
     if (!detail) throw new Error("Publicación no cargada.");
 
     setIsMutating(true);
     try {
-        // Se llama al servicio con el ID y el TIPO
-        await offererPublicationService.closePublication(id, type); 
-    } catch (err: any) { // <-- Tipado para poder acceder a la respuesta de Axios
-        
-        // LÓGICA DE ERROR DINÁMICA: DETECTAR EL CÓDIGO 409
-        if (err.response && err.response.status === 409) {
-            // Lanzamos el nuevo error con el mensaje específico para el banner
-            throw new Error("El estado actual de la publicación (Pendiente o Rechazada) no permite el cierre.");
-        }
-        
-        throw err; // Relanzar cualquier otro error
+      // Se llama al servicio con el ID y el TIPO
+      await adminPublicationService.closePublication(id, type);
+    } catch (err: any) {
+      // LÓGICA DE ERROR DINÁMICA: DETECTAR EL CÓDIGO 409
+      if (err.response && err.response.status === 409) {
+        throw new Error(
+          "El estado actual de la publicación (Pendiente o Rechazada) no permite el cierre."
+        );
+      }
+
+      throw err;
     } finally {
-        setIsMutating(false);
+      setIsMutating(false);
     }
   }, [id, type, detail]);
-
 
   const handleRetry = () => {
     fetchDetail();
@@ -101,6 +101,6 @@ export const useYourPublicationDetailView = (id: number, type: number) => {
     isMutating,
     handleAction,
     handleRetry,
-    handleClosePublication, 
+    handleClosePublication,
   };
 };
