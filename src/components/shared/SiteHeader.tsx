@@ -142,7 +142,8 @@ export default function SiteHeader() {
         href:
           auth.role === "Admin"
             ? "/admin/your-publications"
-            : "/offerer/your-publications",
+            : auth.role === "Offerent"
+            ? "/offerer/your-publications":"/students/your-publications",
         label: "Mis Publicaciones",
       },
     ];
