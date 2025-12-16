@@ -6,12 +6,12 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { getProfileRoute, getUserFromToken, getTokenFromCookie } from "@/lib";
 import { ChevronDown } from "lucide-react";
 
-import { 
+import {
   isLoggedIn,
   extractUserFromJwt,
   getRoleFromToken,
   logoutAndRedirect,
-  cn
+  cn,
 } from "@/lib";
 
 import { profileService } from "@/services/profileService";
@@ -43,20 +43,33 @@ const studentNavLinks = [
 
 function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
   const initials =
-    name?.trim()?.split(/\s+/).slice(0, 2).map(n => n[0]?.toUpperCase()).join("") || "U";
+    name
+      ?.trim()
+      ?.split(/\s+/)
+      .slice(0, 2)
+      .map((n) => n[0]?.toUpperCase())
+      .join("") || "U";
 
   return (
     <div className="flex items-center gap-2">
       <div className="size-9 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--pop)] p-0.5">
         <div className="w-full h-full rounded-full bg-white grid place-items-center overflow-hidden">
           {photoUrl ? (
-            <img src={photoUrl} alt="Foto" className="w-full h-full object-cover" />
+            <img
+              src={photoUrl}
+              alt="Foto"
+              className="w-full h-full object-cover"
+            />
           ) : (
-            <span className="text-[var(--primary)] font-bold text-sm">{initials}</span>
+            <span className="text-[var(--primary)] font-bold text-sm">
+              {initials}
+            </span>
           )}
         </div>
       </div>
-      <span className="hidden sm:inline text-[var(--ink)] font-medium">{name ?? "Usuario"}</span>
+      <span className="hidden sm:inline text-[var(--ink)] font-medium">
+        {name ?? "Usuario"}
+      </span>
     </div>
   );
 }
@@ -68,7 +81,7 @@ export default function SiteHeader() {
     name: "Usuario",
     role: null as string | null,
     userType: null as string | null,
-    photoUrl: null as string | null
+    photoUrl: null as string | null,
   });
 
   const [open, setOpen] = useState(false);
@@ -78,10 +91,13 @@ export default function SiteHeader() {
   const loadPhoto = async () => {
     const res = await profileService.getProfilePhoto();
     if (res.data?.photoUrl) {
-      setAuth(prev => ({ ...prev, photoUrl: `${res.data.photoUrl}?v=${Date.now()}` }));
+      setAuth((prev) => ({
+        ...prev,
+        photoUrl: `${res.data.photoUrl}?v=${Date.now()}`,
+      }));
     }
-  }
-  
+  };
+
   useEffect(() => {
     const logged = isLoggedIn();
     const token = getTokenFromCookie();
@@ -94,7 +110,7 @@ export default function SiteHeader() {
       name: info?.userName || info?.email?.split("@")[0] || "Usuario",
       role: userRole,
       userType: tokenData?.userType || null,
-      photoUrl: null
+      photoUrl: null,
     });
 
     if (logged) {
@@ -104,28 +120,38 @@ export default function SiteHeader() {
 
   useEffect(() => {
     const handlePhotoUpdate = () => {
-      if(auth.logged) {
+      if (auth.logged) {
         loadPhoto();
       }
     };
-    window.addEventListener('profilePhotoUpdated', handlePhotoUpdate);
-    return () => window.removeEventListener('profilePhotoUpdated', handlePhotoUpdate);
+    window.addEventListener("profilePhotoUpdated", handlePhotoUpdate);
+    return () =>
+      window.removeEventListener("profilePhotoUpdated", handlePhotoUpdate);
   }, [auth.logged]);
 
   const dropdownItems = useMemo(() => {
     const baseItems = [
-      { href: getProfileRoute(auth.userType ?? undefined), label: "Editar perfil" },
+      {
+        href: getProfileRoute(auth.userType ?? undefined),
+        label: "Editar perfil",
+      },
       { href: "/jobs/history", label: "Historial de postulaciones" },
       { href: "/jobs/reports", label: "Historial de trabajos" },
       { href: "/offerer/create-publication", label: "Publicar" },
-      { href: "/offerer/your-publications", label: "Mis Publicaciones" },
+      {
+        href:
+          auth.role === "Admin"
+            ? "/admin/your-publications"
+            : "/offerer/your-publications",
+        label: "Mis Publicaciones",
+      },
     ];
 
     if (auth.role === "Admin") {
       baseItems.push({ href: "/admin/users", label: "Ver usuarios" });
     }
-    
-    return baseItems.map(item => {
+
+    return baseItems.map((item) => {
       if (item.label !== "Historial de trabajos") return item;
       let newHref = "/jobs/reviews/student";
       if (auth.role === "Offerent") newHref = "/jobs/reviews/employer";
@@ -155,9 +181,11 @@ export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[var(--border)] bg-white/80 backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        
         {/* Logo con href dinámico */}
-        <Link href={logoHref} className="flex items-center gap-2 font-extrabold text-xl group">
+        <Link
+          href={logoHref}
+          className="flex items-center gap-2 font-extrabold text-xl group"
+        >
           <span className="text-[var(--ink)]">Bolsa</span>
           <span className="px-3 py-1 rounded-xl bg-white text-[var(--primary)] border border-[var(--primary)] font-bold shadow-sm">
             FEUCN
@@ -171,7 +199,8 @@ export default function SiteHeader() {
               href={l.href}
               className={cn(
                 "rounded-xl px-4 py-2.5 text-sm font-medium text-[var(--muted-ink)] hover:text-[var(--ink)] hover:bg-[var(--chip)] transition-all",
-                pathname === l.href && "bg-[var(--chip)] text-[var(--primary)] font-semibold"
+                pathname === l.href &&
+                  "bg-[var(--chip)] text-[var(--primary)] font-semibold"
               )}
             >
               {l.label}
@@ -188,11 +217,19 @@ export default function SiteHeader() {
           ) : (
             <div className="relative ml-2" ref={menuRef}>
               <button
-                onClick={() => setOpen(v => !v)}
+                onClick={() => setOpen((v) => !v)}
                 className="flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-[var(--chip)] transition-all"
               >
-                <UserAvatar name={auth.name} photoUrl={auth.photoUrl ?? undefined} />
-                <ChevronDown className={cn("w-4 h-4 text-[var(--muted-ink)] transition-transform", open && "rotate-180")} />
+                <UserAvatar
+                  name={auth.name}
+                  photoUrl={auth.photoUrl ?? undefined}
+                />
+                <ChevronDown
+                  className={cn(
+                    "w-4 h-4 text-[var(--muted-ink)] transition-transform",
+                    open && "rotate-180"
+                  )}
+                />
               </button>
 
               {open && (
