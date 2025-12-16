@@ -1,11 +1,13 @@
 "use client";
 
+import { NotificationBanner } from "@/components/ui/notification";
+import type { NotificationState } from "@/hooks/common/use-notification";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
 
 /* ======= DTOs ======= */
-
 interface ImageDTO {
   id: number;
   url: string;
@@ -33,10 +35,12 @@ interface ReviewDetailDTO {
   commentForOfferor: string;
   atTime: boolean;
   goodPresentation: boolean;
+  studentHasRespectOfferor: boolean; 
   isCompleted: boolean;
   isReviewForStudentCompleted: boolean;
   isReviewForOfferorCompleted: boolean;
-  isClosed: boolean;
+  hasReviewForOfferorBeenDeleted: boolean;
+  hasReviewForStudentBeenDeleted: boolean;
 }
 
 interface CombinedReviewDTO {
@@ -71,6 +75,7 @@ export default function OfferentReviewsPage() {
   const [rating, setRating] = useState(0);
   const [atTime, setAtTime] = useState(false);
   const [goodPresentation, setGoodPresentation] = useState(false);
+  const [studentHasRespectOfferor, setStudentHasRespectOfferor] = useState(false);
 
   const openModal = (item: CombinedReviewDTO) => {
     setSelectedReview(item);
@@ -83,23 +88,34 @@ export default function OfferentReviewsPage() {
   };
 
   const openFinishModal = (item: CombinedReviewDTO) => {
-    setFinishReview(item);
-    setShowFinishModal(true);
-    // Reseteamos formulario cada vez
-    setCommentStudent("");
-    setRating(0);
-    setAtTime(false);
-    setGoodPresentation(false);
-  };
+  if (item.review.hasReviewForStudentBeenDeleted) return;
+  setFinishReview(item);
+  setShowFinishModal(true);
+
+  setCommentStudent("");
+  setRating(0);
+  setAtTime(false);
+  setGoodPresentation(false);
+  setStudentHasRespectOfferor(false);
+};
 
   const closeFinishModal = () => {
-    setShowFinishModal(false);
-    setFinishReview(null);
-    setCommentStudent("");
-    setRating(0);
-    setAtTime(false);
-    setGoodPresentation(false);
-  };
+  setShowFinishModal(false);
+  setFinishReview(null);
+
+  setCommentStudent("");
+  setRating(0);
+  setAtTime(false);
+  setGoodPresentation(false);
+  setStudentHasRespectOfferor(false); 
+};
+
+
+  /* ======= NOTIFICACIONES ======= */
+  const [notification, setNotification] = useState<NotificationState | null>(null);
+  const [isNotificationVisible, setIsNotificationVisible] = useState(false);
+
+  /* ======= Refrescar pagina sin reiniciarla ======= */
 
   const refreshReviews = async () => {
     const token = Cookies.get("token");
@@ -131,13 +147,15 @@ export default function OfferentReviewsPage() {
 
     try {
       const body = {
-        ratingForStudent: rating,
-        commentForStudent: commentStudent.trim(),
-        sendedAt: new Date(),
-        atTime,
-        goodPresentation,
-        reviewId: finishReview.review.idReview,
-      };
+      ratingForStudent: rating,
+      commentForStudent: commentStudent.trim(),
+      sendedAt: new Date(),
+      atTime,
+      goodPresentation,
+      studentHasRespectOfferor,
+      reviewId: finishReview.review.idReview,
+    };
+
 
       await axios.post(
         "http://localhost:5185/api/Review/AddStudentReview",
@@ -148,8 +166,16 @@ export default function OfferentReviewsPage() {
       setShowConfirmModal(false);
       closeFinishModal();
 
-      // 🔄 Recargar los datos sin refrescar la página
+      // Recargar los datos sin refrescar la página
       await refreshReviews();
+      // Mostrar notificacion de reseña enviada
+      setNotification({
+        type: "success",
+        title: "Reseña enviada",
+        message: `La evaluación del estudiante "${finishReview.review.studentName}" fue enviada correctamente para el trabajo "${finishReview.publication.title}" (Reseña #${finishReview.review.idReview}).`,
+      });
+      setIsNotificationVisible(true);
+
     } catch (err) {
       console.error("Error al enviar reseña:", err);
       setShowConfirmModal(false);
@@ -191,8 +217,8 @@ export default function OfferentReviewsPage() {
     // Solo trabajos (types == 0)
     if (publication.types !== 0) return false;
 
-    if (filterStatus === "open" && review.isClosed) return false;
-    if (filterStatus === "closed" && !review.isClosed) return false;
+    if (filterStatus === "open" && review.isCompleted) return false;
+    if (filterStatus === "closed" && !review.isCompleted) return false;
 
     if (filterScore !== "all") {
       const s = Number(filterScore);
@@ -230,11 +256,37 @@ export default function OfferentReviewsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    const isAnyModalOpen = showModal || showFinishModal || showConfirmModal;
+
+    if (isAnyModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showModal, showFinishModal, showConfirmModal]);
+
+  // Auto cerrar notificacion
+  useEffect(() => {
+  if (!isNotificationVisible) return;
+
+  const timer = setTimeout(() => {
+    setIsNotificationVisible(false);
+  }, 3500);
+
+  return () => clearTimeout(timer);
+  }, [isNotificationVisible]);
+
+
   if (loading) return <p className="text-center mt-10">Cargando reseñas...</p>;
   if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 space-y-6 pb-20">
+    <div className="min-h-screen max-w-3xl mx-auto mt-10 space-y-6 pb-20">
       <h1 className="text-3xl font-bold text-center">
         Historial de estudiantes evaluados
       </h1>
@@ -308,12 +360,12 @@ export default function OfferentReviewsPage() {
 
             <span
               className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                review.isClosed
+                review.isCompleted
                   ? "bg-green-100 text-green-700"
                   : "bg-yellow-100 text-yellow-700"
               }`}
             >
-              {review.isClosed ? "Cerrada" : "Abierta"}
+              {review.isCompleted ? "Cerrada" : "Abierta"}
             </span>
           </div>
 
@@ -351,9 +403,12 @@ export default function OfferentReviewsPage() {
 
           <button
             onClick={() => openFinishModal({ publication, review })}
-            disabled={review.isReviewForStudentCompleted}
+            disabled={
+              review.isReviewForStudentCompleted ||
+              review.hasReviewForStudentBeenDeleted
+            }
             className={`mt-2 w-full text-center text-sm font-medium rounded-lg py-2 transition ${
-              review.isReviewForStudentCompleted
+              review.isReviewForStudentCompleted || review.hasReviewForStudentBeenDeleted
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                 : "bg-purple-600 text-white hover:bg-purple-700"
             }`}
@@ -392,8 +447,9 @@ export default function OfferentReviewsPage() {
           MODAL DETALLES
       ================================================================= */}
       {showModal && selectedReview && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-40">
-          <div className="bg-white w-[90%] max-w-3xl rounded-lg shadow-lg p-6 relative">
+        <div className="fixed top-0 left-0 right-0 bottom-0 h-screen w-screen z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+
+         <div className="bg-white w-[90%] max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg shadow-lg p-6 relative">
             <button
               onClick={closeModal}
               className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl"
@@ -437,8 +493,13 @@ export default function OfferentReviewsPage() {
               </div>
 
               <p className="mt-2 text-sm text-gray-700">
-                {selectedReview.review.commentForStudent || "Sin reseña"}
+                {selectedReview.review.hasReviewForStudentBeenDeleted
+                  ? "Tu reseña fue eliminada por un administrador"
+                  : selectedReview.review.commentForStudent?.trim()
+                    ? selectedReview.review.commentForStudent
+                    : "Reseña pendiente"}
               </p>
+
             </div>
 
             {/* ESTUDIANTE → OFERENTE */}
@@ -457,7 +518,12 @@ export default function OfferentReviewsPage() {
               </div>
 
               <p className="mt-2 text-sm text-gray-700">
-                {selectedReview.review.commentForOfferor || "Sin reseña"}
+                {selectedReview.review.hasReviewForOfferorBeenDeleted
+                  ? "La reseña del estudiante fue eliminada por un administrador."
+                  : selectedReview.review.commentForOfferor &&
+                    selectedReview.review.commentForOfferor !== "Reseña eliminada"
+                      ? selectedReview.review.commentForOfferor
+                      : "Reseña pendiente"}
               </p>
             </div>
 
@@ -518,6 +584,30 @@ export default function OfferentReviewsPage() {
                 </span>
                 ¿Buena presentación personal?
               </label>
+
+              <label className="flex items-center gap-3">
+                <span
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                    selectedReview.review.studentHasRespectOfferor
+                      ? "bg-purple-700 border-purple-800"
+                      : "bg-white border-gray-400"
+                  }`}
+                >
+                  {selectedReview.review.studentHasRespectOfferor && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </span>
+                ¿El estudiante fue respetuoso con el oferente?
+              </label>
             </div>
 
             <div className="flex justify-end mt-6">
@@ -536,8 +626,9 @@ export default function OfferentReviewsPage() {
           MODAL FINALIZAR EVALUACIÓN (OFERENTE → ESTUDIANTE)
       ================================================================= */}
       {showFinishModal && finishReview && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-40">
-          <div className="bg-white w-[95%] max-w-3xl rounded-xl shadow-xl p-8 relative">
+        <div className="fixed top-0 left-0 right-0 bottom-0 h-screen w-screen z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+         <div className="bg-white w-[90%] max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg shadow-lg p-6 relative">
+
             <button
               onClick={closeFinishModal}
               className="absolute top-4 right-4 text-gray-500 hover:text-black text-xl"
@@ -553,36 +644,6 @@ export default function OfferentReviewsPage() {
               <h2 className="text-2xl md:text-3xl font-bold mt-1">
                 Evalúa al estudiante
               </h2>
-              <p className="text-sm text-gray-600 mt-2">
-                Tu opinión nos ayuda a mejorar la experiencia de trabajo y
-                orientar a futuros oferentes.
-              </p>
-            </div>
-
-            {/* Indicador de pasos simple */}
-            <div className="flex items-center gap-2 mb-8 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs font-bold">
-                  1
-                </div>
-                <span className="font-medium text-purple-700">
-                  Completa el formulario
-                </span>
-              </div>
-              <span className="text-gray-400 mx-1">›</span>
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">
-                  2
-                </div>
-                <span className="text-gray-500">Revisa tu evaluación</span>
-              </div>
-              <span className="text-gray-400 mx-1">›</span>
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">
-                  3
-                </div>
-                <span className="text-gray-500">Envío final</span>
-              </div>
             </div>
 
             {/* Nombre del estudiante + explicación */}
@@ -659,6 +720,35 @@ export default function OfferentReviewsPage() {
                 </button>
                 El estudiante tuvo una buena presentación personal.
               </label>
+
+              <label className="flex items-center gap-3 text-sm text-gray-800">
+                <button
+                  type="button"
+                  onClick={() => setStudentHasRespectOfferor((prev) => !prev)}
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition ${
+                    studentHasRespectOfferor
+                      ? "bg-purple-600 border-purple-700"
+                      : "bg-white border-gray-400"
+                  }`}
+                >
+                  {studentHasRespectOfferor && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3 w-3 text-white"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+                El estudiante fue respetuoso durante el trabajo.
+              </label>
+
             </div>
 
             {/* Rating */}
@@ -696,9 +786,6 @@ export default function OfferentReviewsPage() {
                 placeholder="Describe el desempeño, fortalezas o aspectos a mejorar del estudiante..."
                 className="w-full border border-purple-300 rounded-lg p-3 mt-2 focus:outline-purple-500"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Máximo 320 caracteres.
-              </p>
             </div>
 
             <div className="flex justify-center mt-10">
@@ -717,34 +804,35 @@ export default function OfferentReviewsPage() {
       {/* ================================================================
           MODAL CONFIRMACIÓN (blur + morado)
       ================================================================= */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-md text-center">
-            <h2 className="text-xl font-semibold mb-4">Confirmar envío</h2>
-            <p className="text-gray-700 mb-6">
-              ¿Seguro que deseas enviar esta evaluación del estudiante?{" "}
-              <br />
-              Una vez enviada no podrás editarla.
-            </p>
+      <ConfirmDialog
+        open={showConfirmModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowConfirmModal(false);
+          }
+        }}
+        title="Confirmar envío"
+        description="¿Seguro que deseas enviar esta evaluación del estudiante? Una vez enviada no podrás editarla."
+        confirmText="Confirmar envío"
+        cancelText="Cancelar"
+        onConfirm={confirmSubmitStudentReview}
+        onCancel={handleCancelConfirm}
+      />
 
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={handleCancelConfirm}
-                className="px-6 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
-              >
-                Cancelar
-              </button>
 
-              <button
-                onClick={confirmSubmitStudentReview}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-              >
-                Confirmar envío
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ======= NOTIFICACION ======= */}
+      <div
+        className={`fixed top-0 right-0 z-50 ${
+          isNotificationVisible ? "pointer-events-auto" : "pointer-events-none"
+        }`}
+      >
+        <NotificationBanner
+          data={notification}
+          isVisible={isNotificationVisible}
+          onClose={() => setIsNotificationVisible(false)}
+        />
+      </div>
+
     </div>
   );
 }
