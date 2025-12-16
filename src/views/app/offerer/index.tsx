@@ -1,4 +1,5 @@
 "use client"
+import { useEffect } from 'react';
 import LoadingSpinner from './components/loading-spinner';
 import { useRouter } from 'next/navigation';
 import { usePublicationForm } from './hooks/usePublicationForm';
@@ -27,6 +28,13 @@ export default function PublicationFormView() {
   // Flags para renderizado condicional de secciones del formulario
   const isJobOffer = formData.offerType === '0'; 
   const isProduct = formData.offerType === '1';
+
+  // Efecto para asegurar que "Voluntariado" esté seleccionado visualmente por defecto
+  useEffect(() => {
+    if (isJobOffer && !formData.jobType) {
+        handleInputChange({ target: { name: 'jobType', value: 'JobOffer' } } as any);
+    }
+  }, [isJobOffer, formData.jobType, handleInputChange]);
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -133,7 +141,20 @@ export default function PublicationFormView() {
                 </div>
 
             </div>
-
+            {/* --- SECCIÓN COMÚN: CONTACTO --- */}
+            <div>
+               <label className={labelClass}>Información de Contacto *</label>
+               <div className="relative">
+                    <input
+                        type="text" name="contactInfo"
+                        value={formData.contactInfo} onChange={handleInputChange}
+                        className={inputClass(!!errors.contactInfo)}
+                        placeholder="Ej: correo@ucn.cl"
+                    />
+                    <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+               </div>
+               {errors.contactInfo && <p className="text-red-500 text-xs mt-2 font-medium">{errors.contactInfo}</p>}
+            </div>
             {/* --- SECCIÓN ESPECÍFICA: VENTA (TIPO 2) --- */}
             {isProduct && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -178,12 +199,11 @@ export default function PublicationFormView() {
             {isJobOffer && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div>
-                        <label className={labelClass}>Tipo de Jornada *</label>
-                        <div className="grid grid-cols-3 gap-3">
+                        <label className={labelClass}>Tipo de Trabajo *</label>
+                        <div className="grid grid-cols-2 gap-3">
                             {[
                                 { id: 'JobOffer', label: 'Trabajo' },
                                 { id: 'Volunteering', label: 'Voluntariado' },
-                                { id: 'Internship', label: 'Práctica' }
                             ].map((type) => (
                                 <label key={type.id} className={`
                                     cursor-pointer rounded-xl border p-3 text-center transition-all
@@ -208,18 +228,18 @@ export default function PublicationFormView() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className={labelClass}>Cierre Postulaciones</label>
+                            <label className={labelClass}>Cierre Postulaciones *</label>
                             <div className="relative">
-                                <input type="datetime-local" name="deadlineDate" value={formData.deadlineDate} onChange={handleInputChange} 
+                                <input type="date" name="deadlineDate" value={formData.deadlineDate} onChange={handleInputChange} 
                                     className={inputClass(!!errors.deadlineDate)} />
                                 <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                             </div>
                             {errors.deadlineDate && <p className="text-red-500 text-xs mt-2 font-medium">{errors.deadlineDate}</p>}
                         </div>
                         <div>
-                            <label className={labelClass}>Fecha de Término</label>
+                            <label className={labelClass}>Fecha de Término *</label>
                             <div className="relative">
-                                <input type="datetime-local" name="endDate" value={formData.endDate} onChange={handleInputChange} 
+                                <input type="date" name="endDate" value={formData.endDate} onChange={handleInputChange} 
                                     className={inputClass(!!errors.endDate)} />
                                 <Clock className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                             </div>
@@ -238,6 +258,7 @@ export default function PublicationFormView() {
                                     className={inputClass(!!errors.remuneration) + " pl-8"}
                                     placeholder="0.00"
                                     disabled={formData.jobType === 'Volunteering'}
+                                    min={formData.jobType === 'JobOffer' ? "1" : "0"}
                                 />
                             </div>
                             {formData.jobType === 'Volunteering' && (
@@ -246,12 +267,13 @@ export default function PublicationFormView() {
                             {errors.remuneration && <p className="text-red-500 text-xs mt-2 font-medium">{errors.remuneration}</p>}
                         </div>
                         <div>
-                            <label className={labelClass}>Ubicación</label>
+                            <label className={labelClass}>Ubicación *</label>
                             <div className="relative">
                                 <input type="text" name="location" value={formData.location} onChange={handleInputChange} 
-                                    className={inputClass(false)} placeholder="Ej: Coquimbo"/>
+                                    className={inputClass(!!errors.location)} placeholder="Ej: Coquimbo"/>
                                 <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                             </div>
+                            {errors.location && <p className="text-red-500 text-xs mt-2 font-medium">{errors.location}</p>}
                         </div>
                     </div>
 
@@ -272,20 +294,7 @@ export default function PublicationFormView() {
                 </div>
             )}
 
-            {/* --- SECCIÓN COMÚN: CONTACTO --- */}
-            <div>
-               <label className={labelClass}>Información de Contacto *</label>
-               <div className="relative">
-                    <input
-                        type="text" name="contactInfo"
-                        value={formData.contactInfo} onChange={handleInputChange}
-                        className={inputClass(!!errors.contactInfo)}
-                        placeholder="Ej: correo@ucn.cl"
-                    />
-                    <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
-               </div>
-               {errors.contactInfo && <p className="text-red-500 text-xs mt-2 font-medium">{errors.contactInfo}</p>}
-            </div>
+           
 
             {/* Botón de Envío */}
             <button 
