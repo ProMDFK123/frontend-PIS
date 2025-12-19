@@ -12,9 +12,9 @@ interface Props {
   offerId: string | number;
 }
 
-export default function ApplicantsPageView({ offerId }: Props) {
+export default function StudentsApplicantsPageView({ offerId }: Props) {
   const router = useRouter();
-  const backRoute = `/offerer/your-publications/${offerId}`;
+  const backRoute = `/students/your-publications/${offerId}`;
   const { 
     applicants: rawApplicants,
     isLoading, 
@@ -38,7 +38,7 @@ export default function ApplicantsPageView({ offerId }: Props) {
   const finalCount = filteredApplicants.length;
 
   const handleViewDetail = (postulantId: number) => {
-    router.push(`/offerer/your-publications/${offerId}/applicants/${postulantId}`);
+    router.push(`/students/your-publications/${offerId}/applicants/${postulantId}`);
   };
 
   const renderContent = () => {

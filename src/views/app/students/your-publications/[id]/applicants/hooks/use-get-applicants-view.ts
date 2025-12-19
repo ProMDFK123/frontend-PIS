@@ -1,22 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 // import { useGetOffererPostulantsQuery } from "@/hooks/api/use-manage-service";
 // import { mapApplicantToView } from "@/lib";
 // import { ViewAppplicantsForAdmin } from "@/models/responses";
 // import { handleApiError } from '@/lib';
-import {offererPublicationService} from "@/services/offererPublicationService";
+import { studentPublicationService } from "@/services/studentsPublicationService";
 import { ApplicantResponse } from "@/models/responses";
-
 
 export type ApplicantFilterType = "All" | "Accepted" | "Pending" | "Rejected";
 export const useGetOfferApplicants = (offerId: number | string) => {
   return useQuery({
-    queryKey: ['offer-applicants', offerId],
+    queryKey: ["offer-applicants", offerId],
     queryFn: async () => {
       // 1. Llamada al servicio
-      const response = await offererPublicationService.getOfferApplicantsForOfferer(offerId);
+      const response =
+        await studentPublicationService.getOfferApplicantsForStudent(offerId);
       // 2. Extracción de datos
       // response.data -> Es tu objeto ApiResponse { message: "...", data: [...] }
       // response.data.data -> Es el array de ApplicantResponse[]
@@ -41,7 +41,7 @@ export const useGetOfferApplicants = (offerId: number | string) => {
 
 // export const useGetOffererApplicantsView = (publicationId: string): UseApplicantsViewResult => {
 //     const [filterType, setFilterType] = useState<ApplicantFilterType>("All");
-//     const [text, setText] = useState<string>(""); 
+//     const [text, setText] = useState<string>("");
 //     const {
 //         data: rawApplicants,
 //         isLoading,
@@ -55,27 +55,27 @@ export const useGetOfferApplicants = (offerId: number | string) => {
 //         if (filterType !== "All") {
 //             list = list.filter(applicant => applicant.status === filterType);
 //         }
-        
+
 //         const searchText = text.toLowerCase().trim();
 //         if (searchText) {
-//             list = list.filter(applicant => 
-//                 applicant.applicant.toLowerCase().includes(searchText) 
+//             list = list.filter(applicant =>
+//                 applicant.applicant.toLowerCase().includes(searchText)
 //             );
 //         }
 
 //         return list;
-//     }, [rawApplicants, filterType, text]); 
-    
+//     }, [rawApplicants, filterType, text]);
+
 //     const errorMessage = error ? (handleApiError(error).details || error.message) : null;
-    
+
 //     return {
 //         applicants: applicantsList,
 //         isLoading,
 //         error: errorMessage,
 //         totalCount: applicantsList.length,
 //         refetch,
-//         filterState: { 
-//             filterType, 
+//         filterState: {
+//             filterType,
 //             setFilterType,
 //             text, // <-- Devuelto
 //             setText // <-- Devuelto

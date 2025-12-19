@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { ApplicantDetailViewOfferer } from "@/views/app";
+import { ApplicantDetailViewStudents } from "@/views/app";
 
 interface ApplicantDetailPageProps {
   params: { id: string; postulantId: string };
@@ -16,7 +16,7 @@ export default function ApplicantDetailPage({ params }: ApplicantDetailPageProps
   const { id, postulantId } = params;
 
   return (
-    <ApplicantDetailViewOfferer
+    <ApplicantDetailViewStudents
       id={id}
       postulantId={postulantId}
     />

@@ -11,11 +11,12 @@ import { NotificationBanner } from "@/components/ui";
 import { useNotification } from "@/hooks/common/use-notification";
 import {
   useOffererGetPostulantDetailQuery,
+  useStudentsGetPostulantDetailQuery,
   useAcceptApplicationMutation,
   useRejectApplicationMutation
 } from "@/hooks/api/use-manage-service";
 
-export default function ApplicantDetailViewOfferer({
+export default function ApplicantDetailViewStudents({
   id,
   postulantId,
 }: {
@@ -27,7 +28,7 @@ export default function ApplicantDetailViewOfferer({
   const { notification, isVisible, show, close } = useNotification();
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
-  const { data: postulant, isLoading, error } = useOffererGetPostulantDetailQuery(id, postulantId);
+  const { data: postulant, isLoading, error } = useStudentsGetPostulantDetailQuery(id, postulantId);
   const acceptMutation = useAcceptApplicationMutation();
   const rejectMutation = useRejectApplicationMutation();
   const isMutating = acceptMutation.isPending || rejectMutation.isPending;

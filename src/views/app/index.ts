@@ -16,3 +16,5 @@ export { default as StudentYourPublicationsView } from "@/views/app/students/you
 export { default as StudentYourPublicationDetailView } from "@/views/app/students/your-publications/[id]";
 export {default as OffererView} from "@/views/app/offerer";
 export {default as defaultYourPublicationDetailViewAdmin } from "@/views/app/admin/your-publications/[id]";
+export {default as StudentsApplicantPageView} from "@/views/app/students/your-publications/[id]/applicants";
+export{default as ApplicantDetailViewStudents } from "@/views/app/students/your-publications/[id]/applicants/[postulantId]";
