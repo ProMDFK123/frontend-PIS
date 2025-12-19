@@ -42,6 +42,7 @@ export function ConfirmDialog({
 
         <AlertDialogFooter>
           <AlertDialogCancel
+            className="cursor-pointer"
             onClick={() => {
               onCancel?.();
               onOpenChange(false);
@@ -51,6 +52,7 @@ export function ConfirmDialog({
           </AlertDialogCancel>
 
           <AlertDialogAction
+            className="cursor-pointer"
             onClick={() => {
               onConfirm();
               onOpenChange(false);

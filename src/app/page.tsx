@@ -30,15 +30,16 @@ export default function HomePage() {
   }, [])
 
   const handleExplore = () => {
-    if (!accepted && !token) {
+    if (accepted || token) {
+      router.push("/offers");
+      return;
+    } else {
       setError(true);
       const rulesSection = document.getElementById("rules-section");
       if (rulesSection) {
         rulesSection.scrollIntoView({ behavior: "smooth" });
-      }
-      return;
+      } 
     }
-    router.push("/offers");
   };
   const handleKnowMore = () => {
     const featuresSection = document.getElementById("features-section");

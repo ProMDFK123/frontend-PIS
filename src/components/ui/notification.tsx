@@ -12,8 +12,8 @@ export function NotificationBanner({ data, isVisible, onClose }: NotificationBan
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 w-full max-w-sm px-4 transition-all duration-500 ease-out transform
-        ${isVisible ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"}`}
+      className={`fixed top-4 right-4 z-[9999] w-full max-w-sm px-4 transition-all duration-500 ease-out transform
+        ${isVisible ? "translate-y-0 opacity-100 pointer-events-auto" : "-translate-y-4 opacity-0 pointer-events-none"}`}
     >
       <div
         className="rounded-2xl border border-black shadow-xl px-4 py-3 text-sm bg-white"

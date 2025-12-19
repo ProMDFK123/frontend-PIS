@@ -1,21 +1,29 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { verifyEmail, resendVerification } from "@/services/authService";
 import type { VerifyEmailDto, ResendVerificationDto } from "@/services/dtos/authDto";
+import { useNotification } from "@/hooks/common/use-notification";
+import { NotificationBanner } from "@/components/ui";
+
 
 export default function VerifyEmailPage() {
+  const router = useRouter()
   const searchParams = useSearchParams();
   const emailFromQuery = searchParams.get("email") || "";
+  const {
+    notification,
+    isVisible,
+    show,
+    close,
+  } = useNotification();
 
   const [form, setForm] = useState({
     email: emailFromQuery,
     VerificationCode: "",
   });
 
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -32,8 +40,6 @@ export default function VerifyEmailPage() {
   const handleVerifyEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    setMessage(null);
 
     const payload: VerifyEmailDto = {
       Email: form.email,
@@ -42,10 +48,22 @@ export default function VerifyEmailPage() {
 
     try {
       const result = await verifyEmail(payload);
-      setMessage(result.info || result.message);
+      show(
+        "Éxito", 
+        result.message || 
+        "Correo verificado correctamente.", "success"
+      );
+      setTimeout(() => {
+        router.push(`/auth/login?email=${encodeURIComponent(form.email)}`);
+      }, 2000);
+      
     } catch (err) {
       console.error("Error verificando el correo:", err);
-      setError("Error verificando el correo. Intenta nuevamente.");
+      show(
+        "Error", 
+        "Error verificando el correo. Intenta nuevamente.", 
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -53,8 +71,6 @@ export default function VerifyEmailPage() {
 
   const handleResendCode = async () => {
     setLoading(true);
-    setError(null);
-    setMessage(null);
 
     const payload: ResendVerificationDto = {
       Email: form.email,
@@ -62,10 +78,18 @@ export default function VerifyEmailPage() {
 
     try {
       const result = await resendVerification(payload);
-      setMessage(result.info || result.message);
+      show(
+        "Éxito", 
+        result.message || "Código reenviado correctamente.", 
+        "success"
+      );
     } catch (err) {
       console.error("Error reenviando el código:", err);
-      setError("No se pudo reenviar el código. Intenta más tarde.");
+      show(
+        "Error", 
+        "No se pudo reenviar el código. Intenta más tarde.", 
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -73,6 +97,7 @@ export default function VerifyEmailPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-blue-600 px-4">
+      <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
       <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-8">
         {/* Logo */}
         <div className="flex justify-center mb-6">
@@ -87,20 +112,6 @@ export default function VerifyEmailPage() {
         <h2 className="text-center text-xl font-semibold mb-6">
           Verificar Correo
         </h2>
-
-        {/* Mensajes */}
-        {message && (
-          <div className="bg-green-100 text-green-800 p-2 rounded mb-4 text-center">
-            {message}
-          </div>
-        )}
-
-        {/* Errores */}
-        {error && (
-          <div className="bg-red-100 text-red-800 p-2 rounded mb-4 text-center">
-            {error}
-          </div>
-        )}
 
         {/* Formulario */}
         <form onSubmit={handleVerifyEmail} className="space-y-4">

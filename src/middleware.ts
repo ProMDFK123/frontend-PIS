@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { extractUserFromJwt } from "@/lib/auth";
+import { getRoleFromToken } from "@/lib/auth";
 
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value || null;
   const { pathname } = req.nextUrl;
-  const disclaimerAccepted = req.cookies.get("disclaimerAccepted")?.value === "true";
+  const disclaimerAccepted = req.cookies.get("disclaimer-accepted")?.value === "true";
 
   // Debug logs: ayudan a entender por qué se hacen redirecciones en middleware
   // eslint-disable-next-line no-console
@@ -33,6 +33,8 @@ export function middleware(req: NextRequest) {
   if (pathname.startsWith("/offers") && !disclaimerAccepted && !token) {
     // eslint-disable-next-line no-console
     console.log("[middleware] visiting /offers but disclaimer not accepted -> redirect to / (home)");
+    console.log("[middleware] disclaimer accepted:", disclaimerAccepted);
+
     return NextResponse.redirect(new URL("/", req.url));
   }
 
@@ -52,10 +54,11 @@ export function middleware(req: NextRequest) {
 
   // Si intenta registrar admin sin autorizacion => home
   if (pathname === "/auth/register/admin" && token) {
-    const role = extractUserFromJwt(token).role;
-    if (role !== "admin") {
+    const role = getRoleFromToken(token);
+    if (!role || role.trim() !== "Admin") {
       // eslint-disable-next-line no-console
       console.log("[middleware] visiting /auth/register/admin without admin role -> redirect to / (home)");
+      console.log("[middleware] user role:", role ? role : "no role found");
       return NextResponse.redirect(new URL("/", req.url));
     }
   } // si intenta ir a /auth/register teniendo token => home
@@ -64,7 +67,6 @@ export function middleware(req: NextRequest) {
     console.log("[middleware] visiting /auth/register but token present -> redirect to / (home)");
     return NextResponse.redirect(new URL("/", req.url));
   }
-
   return NextResponse.next();
 }
 

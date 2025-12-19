@@ -7,9 +7,11 @@ import { registerAdmin } from "@/services/authService";
 import { AdminAdapter } from "@/services/adapters/authAdapter";
 import { formatRut } from "@/utils/Util"
 import { useFormValidation } from "@/hooks/auth/useFormValidation";
+import { useNotification } from "@/hooks/common/use-notification";
 import { validators } from "@/utils/AuthValidatorsUtil";
 import { FormField } from "@/components/forms/FormField";
 import { PasswordField } from "@/components/forms/PasswordField";
+import { NotificationBanner } from "@/components/ui";
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";
@@ -28,7 +30,9 @@ const individualValidationRules = {
 
 export default function RegisterAdminPage() {
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const router = useRouter();
+  const {notification, isVisible, show, close} = useNotification();
   const {
     formData,
     errors,
@@ -60,7 +64,9 @@ export default function RegisterAdminPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    
+    if (loading || success) return;
+
     if (!validateAll()) {
       const firstErrorField = Object.keys(errors)[0];
       document.getElementsByName(firstErrorField)[0]?.focus();
@@ -68,12 +74,23 @@ export default function RegisterAdminPage() {
       return;
     }
 
+    setLoading(true);
+
     try {
-          const payload = AdminAdapter.toDTO(formData);
-          const response = await registerAdmin(payload);
-    
-          alert(response.message || "Registro exitoso. Revisa tu correo para verificar tu cuenta.");
-          router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
+      const payload = AdminAdapter.toDTO(formData);
+      const response = await registerAdmin(payload);
+
+      show(
+        "Registro Exitoso",
+        response.message ||"Se ha enviado un correo de verificación a la dirección proporcionada.",
+        "success"
+      );
+
+      setSuccess(true);
+      
+      setTimeout(() => {
+        router.push(`/`);
+      }, 2000);
     }catch (error: any) {
       console.error("Error en el registro:", error);
 
@@ -98,14 +115,18 @@ export default function RegisterAdminPage() {
         }
       }
 
-      alert(errorMessage);
-    } finally {
+      show(
+        "Error de Registro", 
+        errorMessage, 
+        "error"
+      );
       setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-gray-100">
+      <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
       <main
         className="flex-grow flex items-center justify-center bg-cover bg-center"
         style={{ backgroundImage: "url('/ucnferia.png')" }}
@@ -237,11 +258,13 @@ export default function RegisterAdminPage() {
 
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full text-white rounded-lg py-3 font-semibold transition duration-150 hover:opacity-90 shadow-md hover:shadow-lg mt-6 disabled:opacity-60"
+                  disabled={loading || success}
+                  className={loading || success 
+                    ? "w-full text-white rounded-md py-2 font-medium transition mt-6" 
+                    : "cursor-pointer w-full text-white rounded-md py-2 font-medium transition mt-6"}
                   style={{ backgroundColor: PRIMARY_COLOR }}
                 >
-                  {loading ? "Creando cuenta..." : "Crear Cuenta"}
+                  {success ? "Redirigiendo..." : loading ? "Creando cuenta..." : "Crear Cuenta"}
                 </button>
               </form>
 

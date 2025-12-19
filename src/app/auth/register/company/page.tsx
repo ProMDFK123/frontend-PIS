@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { registerCompany } from "@/services/authService";
@@ -10,6 +10,8 @@ import { useFormValidation } from "@/hooks/auth/useFormValidation";
 import { validators } from "@/utils/AuthValidatorsUtil";
 import { FormField } from "@/components/forms/FormField";
 import { PasswordField } from "@/components/forms/PasswordField";
+import { NotificationBanner } from "@/components/ui";
+import { useNotification } from "@/hooks/common/use-notification";
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";
@@ -30,6 +32,9 @@ const individualValidationRules = {
 
 export default function RegisterCompanyPage() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
   const {
     formData,
     errors,
@@ -49,6 +54,7 @@ export default function RegisterCompanyPage() {
     },
     individualValidationRules
   );
+  const {notification, isVisible, show, close} = useNotification();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.target.name === "rutEmpresa") {
@@ -61,18 +67,31 @@ export default function RegisterCompanyPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
+    if (loading || success) return;
+
     if (!validateAll()) {
       const firstErrorField = Object.keys(errors)[0];
       document.getElementById(firstErrorField!)?.focus();
       return;
     }
 
+    setLoading(true);
+
     try {
       const payload = CompanyAdapter.toDTO(formData);
       const response = await registerCompany(payload);
         
-      alert(response.message || "Registro exitoso. Revisa tu correo para verificar tu cuenta.");
-      router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
+      show(
+        "Registro Exitoso",
+        response.message ||"Se ha enviado un correo de verificación a la dirección proporcionada.",
+        "success"
+      );
+
+      setSuccess(true);
+      
+      setTimeout(() => {
+        router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
+      }, 2000);
     }catch (error: any) {
       console.error("Error en el registro:", error);
 
@@ -97,12 +116,18 @@ export default function RegisterCompanyPage() {
         }
       }
 
-      alert(errorMessage);
+      show(
+        "Error de Registro", 
+        errorMessage, 
+        "error"
+      );
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col">
+      <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
       <main
         className="flex-grow flex items-center justify-center bg-cover bg-center"
         style={{ backgroundImage: "url('/ucnferia.png')" }}
@@ -224,11 +249,13 @@ export default function RegisterCompanyPage() {
 
                 <button
                   type="submit"
-                  className="w-full text-white rounded-md py-2 font-medium 
-                transition mt-6 shadow-md hover:shadow-lg"
+                  disabled={loading || success}
+                  className={loading || success 
+                    ? "w-full text-white rounded-md py-2 font-medium transition mt-6" 
+                    : "cursor-pointer w-full text-white rounded-md py-2 font-medium transition mt-6"}
                   style={{ backgroundColor: PRIMARY_COLOR }}
                 >
-                  Crear Cuenta
+                  {success ? "Redirigiendo..." : loading ? "Creando cuenta..." : "Crear Cuenta"}
                 </button>
               </form>
 
@@ -240,7 +267,7 @@ export default function RegisterCompanyPage() {
                     e.preventDefault();
                     router.push("/login");
                   }}
-                  className="text-blue-600 hover:underline transition"
+                  className="cursor-pointer text-blue-600 hover:underline transition"
                 >
                   Inicia sesión aquí
                 </a>
