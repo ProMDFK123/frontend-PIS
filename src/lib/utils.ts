@@ -6,8 +6,11 @@ import {
     BuySellBasic 
 } from "@/models/responses/publication";
 
-export function thousandSeparatorPipe(num: number): string {
-  return num
+export function thousandSeparatorPipe(num: number | null | undefined): string {
+  // Si num es null o undefined, se usa 0 para evitar el error .toFixed.
+  const finalNum = num ?? 0;
+
+  return finalNum
     .toFixed(0)
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, ".");

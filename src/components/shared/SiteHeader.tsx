@@ -34,6 +34,12 @@ const offererNavLinks = [
   { href: "/offerer/your-publications", label: "Mis Publicaciones" },
 ];
 
+const studentNavLinks = [
+  { href: "/", label: "Inicio" },
+   { href: "/offerer/create-publication", label: "Publicar" },
+  { href: "/students/your-publications", label: "Mis Publicaciones" },
+];
+
 function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
   const initials =
     name
@@ -150,7 +156,8 @@ export default function SiteHeader() {
         href:
           auth.role === "Admin"
             ? "/admin/your-publications"
-            : "/offerer/your-publications",
+            : auth.role === "Offerent"
+            ? "/offerer/your-publications":"/students/your-publications",
         label: "Mis Publicaciones",
       },
     ];
@@ -174,6 +181,7 @@ export default function SiteHeader() {
       return { ...item, href: newHref };
     });
   }, [auth.userType, auth.role, auth.superAdmin]);
+  
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
@@ -185,11 +193,9 @@ export default function SiteHeader() {
 
   const isAdmin = auth.role === "Admin";
   const isOfferer = auth.role === "Offerent";
-  const mainLinks = isAdmin
-    ? adminNavLinks
-    : isOfferer
-    ? offererNavLinks
-    : userLinks;
+  const isStudent = auth.role === "Applicant";
+
+  const mainLinks = isAdmin ? adminNavLinks : isOfferer ? offererNavLinks :isStudent ? studentNavLinks :userLinks;
 
   // Lógica para determinar a dónde redirige el Logo
   const logoHref = isAdmin ? "/admin/publications" : "/";

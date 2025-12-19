@@ -10,5 +10,11 @@ export { default as YourPublicationDetailView } from "@/views/app/offerer/your-p
 export { default as ApplicantDetailView } from "@/views/app/admin/manage/[id]/applicants/[postulantId]";
 export { default as ApplicantPageView } from "@/views/app/offerer/your-publications/[id]/applicants";
 export { default as ApplicantDetailViewOfferer } from "@/views/app/offerer/your-publications/[id]/applicants/[postulantId]";
+
+export { default as StudentsView } from "@/views/app/students";
+export { default as StudentYourPublicationsView } from "@/views/app/students/your-publications";
+export { default as StudentYourPublicationDetailView } from "@/views/app/students/your-publications/[id]";
 export {default as OffererView} from "@/views/app/offerer";
 export {default as defaultYourPublicationDetailViewAdmin } from "@/views/app/admin/your-publications/[id]";
+export {default as StudentsApplicantPageView} from "@/views/app/students/your-publications/[id]/applicants";
+export{default as ApplicantDetailViewStudents } from "@/views/app/students/your-publications/[id]/applicants/[postulantId]";

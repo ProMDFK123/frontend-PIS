@@ -239,7 +239,7 @@ export const profileService = {
     //GET api/user/profile/photo
     async getProfilePhoto(): Promise<PhotoResponse> {
         const response = await api.get<PhotoResponse>("/user/profile/photo");
-        return response.data;   
+        return response.data;
     },
     //PATCH api/user/profile/photo
     async updateProfilePhoto(data: UpdatePhotoDTO) {

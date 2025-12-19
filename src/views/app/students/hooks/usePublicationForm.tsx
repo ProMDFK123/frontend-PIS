@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { AxiosError } from "axios";
-import { offererPublicationService } from "src/services/offererPublicationService"; // Asegúrate de importar la interfaz
-import { buildLoginUrl, extractUserFromJwt } from "src/lib/auth";
+import { studentPublicationService } from "src/services/studentsPublicationService"; // Asegúrate de importar la interfaz
+import { buildLoginUrl } from "src/lib/auth";
 import { CreateBuySellData } from "@/models/responses";
 import { useNotification } from "@/hooks/common/use-notification";
 
@@ -128,8 +128,7 @@ export const usePublicationForm = () => {
 
       if (!formData.deadlineDate)
         newErrors.deadlineDate = "Cierre de postulaciones requerido";
-      if (!formData.location.trim())
-        newErrors.location = "La ubicación es requerida";
+      if (!formData.location.trim()) newErrors.location = "La ubicación es requerida";
       if (!formData.endDate) newErrors.endDate = "Fecha de término requerida";
 
       // Validar coherencia de fechas
@@ -196,7 +195,7 @@ export const usePublicationForm = () => {
 
       if (isJobOffer) {
         // --- LÓGICA PARA OFERTA LABORAL (TIPO 1) ---
-        await offererPublicationService.create({
+        await studentPublicationService.create({
           Title: formData.title,
           Description: formData.description,
           OfferType: formData.jobType === "JobOffer" ? 0 : 1,
@@ -224,27 +223,12 @@ export const usePublicationForm = () => {
           ImagesURL: [],
         };
 
-        await offererPublicationService.createBuySell(buySellData);
-      }
-
-      // Obtener el rol del token para construir la ruta de redirección
-      const token = Cookies.get("token");
-      let rolePath = "offerer"; // Ruta por defecto
-      if (token) {
-        try {
-          const decoded = extractUserFromJwt(token);
-          // Si es Admin usa 'admin', si es Offerent/Offerer usa 'offerer'
-          if (decoded?.role === "Admin") rolePath = "admin";
-          if (decoded?.role === "Applicant") rolePath = "students";
-        } catch (e) {
-          console.error("Error leyendo rol", e);
-        }
+        await studentPublicationService.createBuySell(buySellData);
       }
 
       show("¡Éxito!", "Publicación creada exitosamente.", "success");
       setTimeout(() => {
-        // Corrección: Usar backticks ` para que funcione la interpolación ${rolePath}
-        router.push(`/${rolePath}/your-publications?success=true`);
+        router.push("/students/your-publications?success=true");
       }, 1500);
     } catch (error) {
       if (error instanceof AxiosError && error.response?.data?.errors) {
